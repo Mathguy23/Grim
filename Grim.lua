@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 1.0.0
+--- VERSION: 0.9.1
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -448,8 +448,8 @@ SMODS.Tarot {
     pos = {x = 0, y = 0},
     config = {mod_conv = 'm_grm_rpg', max_highlighted = 3},
     loc_vars = function(self, info_queue, card)
-        info_queue[#info_queue+1] = G.P_CENTERS[card.ability.mod_conv]
-        return {vars = {card.ability.max_highlighted, localize{type = 'name_text', set = 'Enhanced', key = card.ability.mod_conv}}}
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_rpg']
+        return {vars = {(card and card.ability.max_highlighted or 3), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_rpg')}}}
     end,
 }
 
