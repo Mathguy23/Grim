@@ -212,6 +212,9 @@ target = 'functions/common_events.lua'
 pattern = '''elseif _c.set == 'Joker' then'''
 position = 'before'
 payload = '''elseif _c.set == 'Skill' then
+    if _c.name == "Mystical III" then
+        info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
+    end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = specific_vars or {}}
         localize{type = 'descriptions', key = 'unlearned_skill', set = 'Other', nodes = desc_nodes, vars = {card.config.center.xp_req}}

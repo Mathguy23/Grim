@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 0.9.1
+--- VERSION: 0.9.2
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -438,7 +438,7 @@ SMODS.Shader {
 SMODS.Tarot {
     key = 'craft',
     loc_txt = {
-        name = "Craft",
+        name = "The Craft",
         text = {
             "Enhances {C:attention}#1#",
             "selected cards to",
@@ -523,10 +523,10 @@ SMODS.Enhancement {
         }
     },
     atlas = 'enhance',
-    config = {xp = 3},
+    config = {xp = 5},
     pos = {x = 0, y = 0},
     loc_vars = function(self, info_queue, card)
-        return {vars = {card and card.ability.xp or 3}}
+        return {vars = {card and card.ability.xp or 5}}
     end,
     set_ability = function(self, card, initial, delay_sprites)
         card.ability.xp = self.config.xp
