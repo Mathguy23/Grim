@@ -353,7 +353,7 @@ function calculate_skill(skill, context)
             ease_ante(-1, true)
         end
     elseif context.using_consumeable then
-        if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') then
+        if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.5) then
             local fool = SMODS.create_card {key = "c_fool", no_edition = true}
             fool:set_edition('e_negative')
             fool:add_to_deck()
@@ -592,8 +592,9 @@ function SMODS.current_mod.process_loc_text()
         sk_grm_mystical_3 = {
             name = "Mystical III",
             text = {
-                "Create a {C:dark_edition}Negative{} {C:tarot}The Fool{}",
-                "when a {C:tarot}Tarot{} is used",
+                "{C:green}50%{} chance to create a",
+                "{C:dark_edition}Negative{} {C:tarot}The Fool{} when",
+                "a {C:tarot}Tarot{} is used",
                 "{C:inactive}({C:tarot}The Fool{C:inactive} excluded)"
             }
         },
