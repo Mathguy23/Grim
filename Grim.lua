@@ -410,8 +410,9 @@ G.FUNCS.your_game_skill_page = function(args)
         end
     end
     for i = 1, 5 do
-        for j = 1 + 3 * (args.cycle_config.current_option - 1), 3 + 3 * (args.cycle_config.current_option - 1) do
-            local center = shown_skills[i+(j-1)*5]
+        for j = 1, 3 do
+            local adding = 3  * (args.cycle_config.current_option - 1)
+            local center = shown_skills[i+(j-1)*5 + 5 * adding]
             if not center then break end
             local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center[1])
             G.areas[j]:emplace(card)
