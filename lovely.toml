@@ -121,6 +121,8 @@ payload = '''self.P_SKILLS = {
     sk_grm_skillful_3 = {order = 20, key = 'sk_grm_skillful_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful III", xp_req = 800, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_2'}},
     sk_grm_motley_1 = {order = 21, key = 'sk_grm_motley_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley I", xp_req = 400, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
     sk_grm_fortunate_1 = {order = 22, key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 100, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
+    sk_grm_motley_2 = {order = 23, key = 'sk_grm_motley_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley II", xp_req = 400, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}},
+    sk_grm_motley_3 = {order = 24, key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 800, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
 }'''
 match_indent = true
 
@@ -220,6 +222,12 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
     elseif _c.name == "Stake III" then
         loc_vars = {tonumber(string.format("%.2f", (1.3 ^ (G.GAME.round_resets.ante or 0))))}
+    elseif _c.name == "Motley I" then
+        info_queue[#info_queue+1] = G.P_CENTERS["m_wild"]
+    elseif _c.name == "Motley II" then
+        info_queue[#info_queue+1] = G.P_CENTERS["c_lovers"]
+    elseif _c.name == "Motley III" then
+        info_queue[#info_queue+1] = G.P_CENTERS["m_wild"]
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -358,6 +366,17 @@ pattern = '''local _size = self.ability.extra'''
 position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_1"] and self.ability.name:find('Arcana') then
     _size = _size + 1
+end
+local lovers_indexes = nil
+if G.GAME.skills["sk_grm_motley_2"] and self.ability.name:find('Arcana') then
+    lovers_indexes = {math.floor(pseudorandom('motley') * _size) + 1}
+    table.insert(lovers_indexes, math.floor(pseudorandom('motley') * (_size - 1)) + 1)
+    if lovers_indexes[2] >= lovers_indexes[1] then
+        lovers_indexes[2] = lovers_indexes[2] + 1
+    end
+    if lovers_indexes[2] < lovers_indexes[1] then
+        lovers_indexes = {lovers_indexes[2], lovers_indexes[1]}
+    end
 end'''
 match_indent = true
 
@@ -494,3 +513,57 @@ else
 end'''
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''pack_cards[i] = card'''
+position = 'after'
+payload = '''::continue::'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local card = nil'''
+position = 'after'
+payload = '''if lovers_indexes and (((lovers_indexes[1] == i) and not G.GAME.used_jokers['c_lovers']) or (lovers_indexes[2] == i)) then
+    card = create_card("Tarot", G.pack_cards, nil, nil, true, true, 'c_lovers', 'ar1')
+    card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+    card.T.x = self.T.x
+    card.T.y = self.T.y
+    pack_cards[i] = card
+    goto continue
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if context.scoring_hand[i].ability.name ~= 'Wild Card' and not context.scoring_hand[i].config.center.any_suit then'''
+position = 'at'
+payload = '''if context.scoring_hand[i].ability.name ~= 'Wild Card' and not context.scoring_hand[i].config.center.any_suit and not (G.GAME.skills["sk_grm_motley_3"] and (context.scoring_hand[i].config.center ~= G.P_CENTERS.c_base)) then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit then'''
+position = 'at'
+payload = '''if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit or (G.GAME.skills["sk_grm_motley_3"] and (context.scoring_hand[i].config.center ~= G.P_CENTERS.c_base)) then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if (self.ability.name == 'Wild Card' or self.config.center.any_suit) and not self.debuff then'''
+position = 'at'
+payload = '''if (self.ability.name == 'Wild Card' or self.config.center.any_suit or (G.GAME.skills["sk_grm_motley_3"] and (self.config.center ~= G.P_CENTERS.c_base))) and not self.debuff then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.name == 'Wild Card' or self.config.center.any_suit then'''
+position = 'at'
+payload = '''if self.ability.name == 'Wild Card' or self.config.center.any_suit or (G.GAME.skills["sk_grm_motley_3"] and (self.config.center ~= G.P_CENTERS.c_base)) then'''
+match_indent = true

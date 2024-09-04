@@ -16,7 +16,7 @@ SMODS.current_mod.custom_collection_tabs = function()
 end
 
 SMODS.current_mod.set_debuff = function(card)
-    if G.GAME.skills["sk_grm_motley_1"] and (card.ability.name == 'Wild Card') then
+    if G.GAME.skills["sk_grm_motley_1"] and ((card.ability.name == 'Wild Card') or (G.GAME.skills["sk_grm_motley_3"] and (card.config.center ~= G.P_CENTERS.c_base))) then
         return 'prevent_debuff'
     end
 end
@@ -740,7 +740,21 @@ function SMODS.current_mod.process_loc_text()
                 "can create the {C:dark_edition}Negative{}",
                 "edition"
             }
-        }
+        },
+        sk_grm_motley_2 = {
+            name = "Motley II",
+            text = {
+                "{C:tarot}Arcana Packs{} have",
+                "2 {C:tarot}The Lovers{}"
+            }
+        },
+        sk_grm_motley_3 = {
+            name = "Motley III",
+            text = {
+                "{C:attention}Enhanced Cards{} are",
+                "considered {C:attention}Wild Cards{}"
+            }
+        },
     }
     G.localization.descriptions.Other["undiscovered_skill"] = {
         name = "Not Discovered",
