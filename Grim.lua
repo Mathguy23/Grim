@@ -263,6 +263,19 @@ function learn_skill(card)
                 G.jokers.config.card_limit = G.jokers.config.card_limit + 1
             end
         return true end }))
+    elseif key == "sk_grm_stake_3" then
+        local mult = 1.3 ^ G.GAME.round_resets.ante
+        local new_scaling = 0.01 * math.max(1,math.floor(mult * 100))
+        G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * new_scaling
+        if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
+            G.GAME.blind.chips = math.floor(G.GAME.blind.chips * new_scaling)
+            G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
+        end
+        G.E_MANAGER:add_event(Event({func = function()
+            if G.jokers then 
+                G.jokers.config.card_limit = G.jokers.config.card_limit + 3
+            end
+        return true end }))
     end
 end
 
@@ -343,14 +356,28 @@ function calculate_skill(skill, context)
     if context.end_of_round then
         if skill == "sk_grm_skillful_1" then
             add_skill_xp(30, G.deck)
+        elseif skill == "sk_grm_ease_3" and context.game_over then
+            if G.GAME.chips >= (G.GAME.blind.chips * 0.85) then
+                return true
+            end
         end
     elseif context.ante_mod then
-        if skill == "sk_grm_chime_1" and (G.GAME.blind_on_deck == "Boss") and ((context.current_ante) % 8 == 0) and not G.GAME.reset_antes[G.GAME.round_resets.ante] then
-            G.GAME.reset_antes[G.GAME.round_resets.ante] = true
+        if skill == "sk_grm_chime_1" and ((context.current_ante) % 8 == 0) and not G.GAME.reset_antes[context.current_ante] then
+            G.GAME.reset_antes[context.current_ante] = true
             ease_ante(-1, true)
-        elseif skill == "sk_grm_chime_2" and (G.GAME.blind_on_deck == "Boss") and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
-            G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
+            if G.GAME.skills["sk_grm_stake_3"] then
+                G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+            end
+        elseif skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
+            G.GAME.reset_antes2[context.current_ante] = true
             ease_ante(-1, true)
+            if G.GAME.skills["sk_grm_stake_3"] then
+                G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+            end
+        elseif skill == "sk_grm_stake_3" then
+            local mult = 1.3 ^ (context.current_ante - context.old_ante)
+            local new_scaling = 0.01 * math.max(1,math.floor(mult * 100))
+            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * new_scaling
         end
     elseif context.using_consumeable then
         if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.5) then
@@ -673,6 +700,24 @@ function SMODS.current_mod.process_loc_text()
             text = {
                 "{X:purple,C:white} X2 {} to all",
                 "XP sources",
+            }
+        },
+        sk_grm_stake_3 = {
+            name = "Stake III",
+            text = {
+                "{C:blue}x1.3{} Blind Size for ",
+                "each {C:attention}Ante{}.",
+                "{C:attention}+3{} joker slots",
+                "{C:inactive}(Currently {C:blue}#1#{C:inactive}){}",
+            }
+        },
+        sk_grm_ease_3 = {
+            name = "Ease III",
+            text = {
+                "Prevents Death",
+                "if chips scored",
+                "are at least {C:attention}85%",
+                "of required chips",
             }
         }
     }
