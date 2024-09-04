@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 0.9.2
+--- VERSION: 0.9.3
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -13,6 +13,12 @@ SMODS.current_mod.custom_collection_tabs = function()
         count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS['Skill']), --Returns nil outside of G.ACTIVE_MOD_UI but we don't use it anyways
         button = 'your_collection_skills', label = {"Skills"}, count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS['Skill']), minw = 5, id = 'your_collection_skills'
     }}
+end
+
+SMODS.current_mod.set_debuff = function(card)
+    if G.GAME.skills["sk_grm_motley_1"] and (card.ability.name == 'Wild Card') then
+        return 'prevent_debuff'
+    end
 end
 
 function create_UIBox_Skills()
@@ -404,7 +410,7 @@ function calculate_skill(skill, context)
         end
     elseif context.before then
         if skill == "sk_grm_skillful_2" then
-            local level = G.GAME.hands[context.scoring_name].played
+            local level = G.GAME.hands[context.scoring_name].level
             if level > 0 then
                 add_skill_xp(math.min(40, level), G.deck)
             end
@@ -718,6 +724,21 @@ function SMODS.current_mod.process_loc_text()
                 "if chips scored",
                 "are at least {C:attention}85%",
                 "of required chips",
+            }
+        },
+        sk_grm_motley_1 = {
+            name = "Motley I",
+            text = {
+                "{C:attention}Wild Cards{} cannot",
+                "be {C:attention}debuffed{}"
+            }
+        },
+        sk_grm_fortunate_1 = {
+            name = "Fortunate I",
+            text = {
+                "{C:attention}The Wheel of Fortune{}",
+                "can create the {C:dark_edition}Negative{}",
+                "edition"
             }
         }
     }
