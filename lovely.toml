@@ -12,6 +12,7 @@ payload = '''skills = {},
 skill_xp = 0,
 reset_antes = {},
 reset_antes2 = {},
+ghost_skill_xp = 0,
 '''
 match_indent = true
 
@@ -120,9 +121,16 @@ payload = '''self.P_SKILLS = {
     sk_grm_skillful_2 = {order = 19, key = 'sk_grm_skillful_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful II", xp_req = 600, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}},
     sk_grm_skillful_3 = {order = 20, key = 'sk_grm_skillful_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful III", xp_req = 800, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_2'}},
     sk_grm_motley_1 = {order = 21, key = 'sk_grm_motley_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley I", xp_req = 400, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
-    sk_grm_fortunate_1 = {order = 22, key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 100, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
-    sk_grm_motley_2 = {order = 23, key = 'sk_grm_motley_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley II", xp_req = 400, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}},
-    sk_grm_motley_3 = {order = 24, key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 800, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
+    sk_grm_motley_2 = {order = 22, key = 'sk_grm_motley_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley II", xp_req = 400, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}},
+    sk_grm_motley_3 = {order = 23, key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 800, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
+    sk_grm_fortunate_1 = {order = 24, key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 100, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
+    sk_grm_scarce_1 = {order = 25, key = 'sk_grm_scarce_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Scarce I", xp_req = 100, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2', 'sk_grm_stake_2'}},
+    sk_grm_gravity_1 = {order = 26, key = 'sk_grm_gravity_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity I", xp_req = 250, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
+    sk_grm_gravity_2 = {order = 27, key = 'sk_grm_gravity_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity II", xp_req = 500, pos = {x=3,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_1'}},
+    sk_grm_gravity_3 = {order = 28, key = 'sk_grm_gravity_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity III", xp_req = 850, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_2'}},
+    sk_grm_ghost_1 = {order = 29, key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 200, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}},
+    sk_grm_ghost_2 = {order = 30, key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 400, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}},
+    sk_grm_ghost_3 = {order = 31, key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 200, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}},
 }'''
 match_indent = true
 
@@ -228,6 +236,11 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_CENTERS["c_lovers"]
     elseif _c.name == "Motley III" then
         info_queue[#info_queue+1] = G.P_CENTERS["m_wild"]
+    elseif _c.name == "Fortunate I" then
+        info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
+        info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
+    elseif _c.name == "Ghost II" then
+        info_queue[#info_queue+1] = G.P_TAGS["tag_ethereal"]
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -327,16 +340,7 @@ match_indent = true
 target = 'functions/state_events.lua'
 pattern = '''G.RESET_JIGGLES = true'''
 position = 'after'
-payload = '''if (G.GAME.blind_on_deck == "Boss") and ((G.GAME.chips - G.GAME.blind.chips) >= (to_big and to_big(0) or 0))then
-    local add_skill_table = {0, 50, 100, 150, 200, 250, 300, 350}
-    local plus_xp = add_skill_table[G.GAME.stake] or 400
-    if G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
-        plus_xp = plus_xp * 1.5
-    end
-    if plus_xp and (plus_xp > 0) then
-        add_skill_xp(plus_xp, G.deck)
-    end
-end
+payload = '''
 local skill_saved = false
 for i, j in pairs(G.GAME.skills) do
     local saved = calculate_skill(i, {end_of_round = true, game_over = game_over})
@@ -356,6 +360,9 @@ pattern = '''G.GAME.pack_choices = self.config.center.config.choose or 1'''
 position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_1"] and self.ability.name:find('Arcana') then
     G.GAME.pack_choices = G.GAME.pack_choices + 1
+end
+if G.GAME.skills["sk_grm_ghost_3"] and self.ability.name:find('Spectral') then
+    G.GAME.pack_choices = G.GAME.pack_choices + 2
 end'''
 match_indent = true
 
@@ -366,6 +373,12 @@ pattern = '''local _size = self.ability.extra'''
 position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_1"] and self.ability.name:find('Arcana') then
     _size = _size + 1
+end
+if G.GAME.skills["sk_grm_gravity_1"] and self.ability.name:find('Celestial') then
+    _size = _size + 2
+end
+if G.GAME.skills["sk_grm_ghost_3"] and self.ability.name:find('Spectral') then
+    _size = _size + 4
 end
 local lovers_indexes = nil
 if G.GAME.skills["sk_grm_motley_2"] and self.ability.name:find('Arcana') then
@@ -407,11 +420,11 @@ pattern = '''mult, hand_chips, modded = G.GAME.blind:modify_hand(G.play.cards, p
 position = 'after'
 payload = '''mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
 for i, j in pairs(G.GAME.skills) do
-    hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult})
+    hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult, scoring_name = text})
     if modded then
         mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
         update_hand_text({sound = 'chips2'}, {chips = hand_chips, mult = mult})
-        end
+    end
 end'''
 match_indent = true
 
@@ -566,4 +579,82 @@ target = 'card.lua'
 pattern = '''if self.ability.name == 'Wild Card' or self.config.center.any_suit then'''
 position = 'at'
 payload = '''if self.ability.name == 'Wild Card' or self.config.center.any_suit or (G.GAME.skills["sk_grm_motley_3"] and (self.config.center ~= G.P_CENTERS.c_base)) then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''function create_card_for_shop(area)'''
+position = 'after'
+payload = '''   if G.GAME.skills["sk_grm_scarce_1"] then
+        G.GAME.joker_rate = 0
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'tag.lua'
+pattern = '''if not self.triggered and self.config.type == _context.type then'''
+position = 'after'
+payload = '''   if (_context.type == 'store_joker_create') and G.GAME.skills["sk_grm_scarce_1"] then
+        return
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.consumeable.hand_type then'''
+position = 'before'
+payload = '''if self.ability.consumeable.hand_type and G.GAME.skills["sk_grm_gravity_3"] then
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(self.ability.consumeable.hand_type, 'poker_hands'),chips = G.GAME.hands[self.ability.consumeable.hand_type].chips, mult = G.GAME.hands[self.ability.consumeable.hand_type].mult, level=G.GAME.hands[self.ability.consumeable.hand_type].level})
+    level_up_hand(used_tarot, self.ability.consumeable.hand_type)
+    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
+    card_eval_status_text(self, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_again_ex')})
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''add_round_eval_row({name = 'bottom', dollars = dollars})'''
+position = 'before'
+payload = '''cash_out_xp = 0
+if (G.GAME.blind_on_deck == "Boss") then
+    local add_skill_table = {0, 50, 100, 150, 200, 250, 300, 350}
+    local plus_xp = add_skill_table[G.GAME.stake] or 400
+    if G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
+        plus_xp = math.floor(plus_xp * 1.5)
+    end
+    local stake_name = localize {type = 'name_text', key = G.P_CENTER_POOLS.Stake[G.GAME.stake].key, set = 'Stake'}
+    if plus_xp and (plus_xp > 0) then
+        add_custom_round_eval_row(stake_name , tostring(get_modded_xp(plus_xp)) .. " XP")
+        cash_out_xp = cash_out_xp + get_modded_xp(plus_xp)
+    end
+end
+if G.GAME.skills["sk_grm_skillful_1"] then
+    add_custom_round_eval_row("Skillful I" , tostring(get_modded_xp(30)) .. " XP")
+        cash_out_xp = cash_out_xp + get_modded_xp(30)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
+position = 'after'
+payload = '''add_skill_xp(cash_out_xp, nil, nil, true)
+cash_out_xp = 0'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.CONTROLLER.locks.toggle_shop = true'''
+position = 'after'
+payload = '''if G.shop then
+    for i, j in pairs(G.GAME.skills) do
+        calculate_skill(i, {ending_shop = true})
+    end
+end'''
 match_indent = true

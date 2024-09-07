@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 0.9.3
+--- VERSION: 0.9.4
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -282,6 +282,15 @@ function learn_skill(card)
                 G.jokers.config.card_limit = G.jokers.config.card_limit + 3
             end
         return true end }))
+    elseif key == "sk_grm_scarce_1" then
+        G.GAME.banned_keys['p_buffoon_normal_1'] = true
+        G.GAME.banned_keys['p_buffoon_normal_2'] = true
+        G.GAME.banned_keys['p_buffoon_jumbo_1'] = true
+        G.GAME.banned_keys['p_buffoon_mega_1'] = true
+    elseif key == "sk_grm_ghost_1" then
+        G.hand:change_size(-1)
+    elseif key == "sk_grm_ghost_2" then
+        G.hand:change_size(-2)
     end
 end
 
@@ -297,6 +306,12 @@ end
 
 G.FUNCS.learn_skill = function(e)
     learn_skill(e.config.ref_table)
+    if G.OVERLAY_MENU then
+        local tab_but = G.OVERLAY_MENU:get_UIE_by_ID("tab_but_" .. localize('b_skills'))
+        use_page = true
+        G.FUNCS.change_tab(tab_but)
+        use_page = nil
+    end
 end
 
 G.FUNCS.do_nothing = function(e)
@@ -304,12 +319,16 @@ end
 
 function G.UIDEF.learned_skills()
     local shown_skills = get_skils()
+    if not use_page then
+        skills_page = nil
+    end
+    local adding = 15  * ((skills_page or 1) - 1)
     local rows = {}
     for i = 1, 3 do
         table.insert(rows, {})
         for j = 0, 4 do
-            if shown_skills[j*5+i] then
-                table.insert(rows[i], shown_skills[j*5+i][1])
+            if shown_skills[j*5+i+adding] then
+                table.insert(rows[i], shown_skills[j*5+i+adding][1])
             end
         end
     end
@@ -335,8 +354,8 @@ function G.UIDEF.learned_skills()
 
     for j = 1, #G.areas do
         for i = 1, 5 do
-            if (i+(j-1)*(5)) <= #shown_skills then
-                local center = shown_skills[i+(j-1)*(5)][1]
+            if (i+(j-1)*(5)+adding) <= #shown_skills then
+                local center = shown_skills[i+(j-1)*(5)+adding][1]
                 local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, nil, center)
                 card:start_materialize(nil, i>1 or j>1)
                 G.areas[j]:emplace(card)
@@ -352,7 +371,7 @@ function G.UIDEF.learned_skills()
         }},
         {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=area_table},
             {n=G.UIT.R, config={align = "cm"}, nodes={
-                create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = 1, colour = G.C.ORANGE, no_pips = true})
+                create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true})
         }}
       }}
     return t
@@ -360,9 +379,7 @@ end
 
 function calculate_skill(skill, context)
     if context.end_of_round then
-        if skill == "sk_grm_skillful_1" then
-            add_skill_xp(30, G.deck)
-        elseif skill == "sk_grm_ease_3" and context.game_over then
+        if skill == "sk_grm_ease_3" and context.game_over then
             if G.GAME.chips >= (G.GAME.blind.chips * 0.85) then
                 return true
             end
@@ -396,7 +413,20 @@ function calculate_skill(skill, context)
         if skill == "sk_grm_strike_1" then
             return context.chips, (context.mult + 2), true
         elseif skill == "sk_grm_strike_2" then
-            return (context.chips + 50), context.mult, false
+            return (context.chips + 50), context.mult, true
+        elseif skill == "sk_grm_gravity_2" then
+            local _handname, _played, _order = 'High Card', -1, 100
+            for k, v in pairs(G.GAME.hands) do
+                if v.played > _played or (v.played == _played and _order > v.order) then 
+                    _played = v.played
+                    _handname = k
+                end
+            end
+            if context.scoring_name == _handname then
+                return context.chips, (context.mult * 2), true
+            else
+                return context.chips, context.mult, false
+            end
         else
             return context.chips, context.mult, false
         end
@@ -415,26 +445,63 @@ function calculate_skill(skill, context)
                 add_skill_xp(math.min(40, level), G.deck)
             end
         end
+    elseif context.ending_shop then
+        if skill == "sk_grm_ghost_2" then
+            add_tag(Tag("tag_ethereal"))
+        end
     end
 end
 
-function add_skill_xp(amount, card, message_)
+function add_skill_xp(amount, card, message_, no_mod)
     local message = true
     if message_ ~= nil then
         message = message_
     end
-    if G.GAME.skills["sk_grm_skillful_3"] and (amount > 0) then
-        amount = amount * 2
+    if not no_mod then
+        amount = get_modded_xp(amount)
     end
     G.GAME.skill_xp = G.GAME.skill_xp + amount
-    if card and message then
+    if G.GAME.skills["sk_grm_ghost_1"] then
+        G.GAME.ghost_skill_xp = G.GAME.ghost_skill_xp + amount
+        if G.GAME.ghost_skill_xp > 200 then
+            local spectrals = math.floor(G.GAME.ghost_skill_xp / 200)
+            G.GAME.ghost_skill_xp = G.GAME.ghost_skill_xp - (200 * spectrals)
+            spectrals = math.min(spectrals, G.consumeables.config.card_limit - #G.consumeables.cards)
+            if spectrals > 0 then
+                G.E_MANAGER:add_event(Event({
+                    trigger = 'before',
+                    delay = 0.0,
+                    func = (function()
+                            for i = 1, spectrals do
+                                local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'ghost')
+                                card:add_to_deck()
+                                G.consumeables:emplace(card)
+                            end
+                            return true
+                    end)}))
+            end
+        end
+    end
+    if card and message and (amount ~= 0) then
         card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize{type='variable',key='gain_xp',vars={amount}},colour = G.C.PURPLE, delay = 0.45})
     end
+end
+
+function get_modded_xp(amount)
+    local new_amount = amount
+    if G.GAME.skills["sk_grm_skillful_3"] and (new_amount > 0) then
+        new_amount = new_amount * 2
+    end
+    if G.GAME.skills["sk_grm_ghost_3"] and (new_amount > 0) then
+        new_amount = math.max(1 , math.floor(new_amount * 0.5))
+    end
+    return new_amount
 end
 
 G.FUNCS.your_game_skill_page = function(args)
     local shown_skills = get_skils()
     if not args or not args.cycle_config then return end
+    skills_page = args.cycle_config.current_option
     for j = 1, #G.areas do
         for i = #G.areas[j].cards,1, -1 do
             local c = G.areas[j]:remove_card(G.areas[j].cards[i])
@@ -454,6 +521,8 @@ G.FUNCS.your_game_skill_page = function(args)
 end
 
 SMODS.Atlas({ key = "skills", atlas_table = "ASSET_ATLAS", path = "skills.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "skills2", atlas_table = "ASSET_ATLAS", path = "skills2.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "enhance", atlas_table = "ASSET_ATLAS", path = "enhance.png", px = 71, py = 95})
 
@@ -503,7 +572,7 @@ SMODS.Joker {
     pos = {x = 0, y = 0},
     cost = 6,
     blueprint_compat = true,
-    config = {extra = {xp = 20, xp_mod = 1}},
+    config = {extra = {xp = 30, xp_mod = 1}},
     loc_vars = function(self, info_queue, card)
         return { vars = {card.ability.extra.xp ,card.ability.extra.xp_mod}}
     end,
@@ -541,7 +610,7 @@ SMODS.Joker {
         if context.end_of_round and not context.individual and not context.repetition and (card.ability.extra.xp > 0) then
             add_skill_xp(card.ability.extra.xp, card, false)
             return {
-                message = localize{type='variable',key='gain_xp',vars={card.ability.extra.xp}}
+                message = localize{type='variable',key='gain_xp',vars={get_modded_xp(card.ability.extra.xp)}}
             }
         end
     end
@@ -755,6 +824,59 @@ function SMODS.current_mod.process_loc_text()
                 "considered {C:attention}Wild Cards{}"
             }
         },
+        sk_grm_scarce_1 = {
+            name = "Scarce I",
+            text = {
+                "{C:attention}Jokers{} and {C:attention}Buffoon Packs{}",
+                "do not appear in {C:attention}shop{}"
+            }
+        },
+        sk_grm_gravity_1 = {
+            name = "Gravity I",
+            text = {
+                "All {C:planet}Celestial Packs{} have",
+                "{C:attention}+2{} options",
+            }
+        },
+        sk_grm_gravity_2 = {
+            name = "Gravity II",
+            text = {
+                "{X:red,C:white} X2 {} base mult when",
+                "playing your {C:attention}most played{}",
+                "{C:attention}poker hand{}"
+            }
+        },
+        sk_grm_gravity_3 = {
+            name = "Gravity III",
+            text = {
+                "{C:attention}Retrigger{} used",
+                "{C:planet}Planet{} cards"
+            }
+        },
+        sk_grm_ghost_1 = {
+            name = "Ghost I",
+            text = {
+                "Create a {C:spectral}Spectral{} card",
+                "every {C:purple}200{} gained XP",
+                "{C:red}-1{} hand size"
+            }
+        },
+        sk_grm_ghost_2 = {
+            name = "Ghost II",
+            text = {
+                "Gain an {C:attention}Ethereal Tag",
+                "at the end of each {C:attention}shop",
+                "{C:red}-2{} hand size"
+            }
+        },
+        sk_grm_ghost_3 = {
+            name = "Ghost III",
+            text = {
+                "All {C:spectral}Spectral Packs{} have",
+                "{C:attention}+4{} options and {C:attention}+2{} choices",
+                "{X:purple,C:white} X0.5 {} to all XP sources",
+            }
+        },
     }
     G.localization.descriptions.Other["undiscovered_skill"] = {
         name = "Not Discovered",
@@ -777,6 +899,43 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['k_skill'] = "Skill"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
+end
+
+function add_custom_round_eval_row(name, foot)
+    local width = G.round_eval.T.w - 0.51
+    local scale = 0.9
+    total_cashout_rows = (total_cashout_rows or 0) + 1
+    delay(0.4)
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'before',delay = 0.5,
+        func = function()
+            --Add the far left text and context first:
+            local left_text = {}
+            table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.6*scale, silent = true})}})
+            local full_row = {n=G.UIT.R, config={align = "cm", minw = 5}, nodes={
+                {n=G.UIT.C, config={padding = 0.05, minw = width*0.55, minh = 0.61, align = "cl"}, nodes=left_text},
+                {n=G.UIT.C, config={padding = 0.05,minw = width*0.45, align = "cr"}, nodes={{n=G.UIT.C, config={align = "cm", id = 'dollar_grm_'..name},nodes={}}}}
+            }}
+            G.round_eval:add_child(full_row,G.round_eval:get_UIE_by_ID('bonus_round_eval'))
+            play_sound('cancel', 1)
+            play_sound('highlight1', 1, 0.2)
+            return true
+        end
+    }))
+    G.E_MANAGER:add_event(Event({
+        trigger = 'before',delay = 0.38,
+        func = function()
+                G.round_eval:add_child(
+                        {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name}, nodes={
+                            {n=G.UIT.O, config={object = DynaText({string = {foot}, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.65, float = true})}}
+                        }},
+                        G.round_eval:get_UIE_by_ID('dollar_grm_'..name))
+            play_sound('coin3', 0.9+0.2*math.random(), 0.7)
+            play_sound('coin6', 1.3, 0.8)
+            return true
+        end
+    }))
 end
 
 ----------------------------------------------
