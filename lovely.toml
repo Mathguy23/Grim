@@ -733,3 +733,12 @@ pattern = '''if G.GAME.current_round.reroll_cost > 0 then'''
 position = 'before'
 payload = '''local old_cost = G.GAME.current_round.reroll_cost'''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
+position = 'before'
+payload = '''add_skill_xp(cash_out_xp, nil, nil, true)
+cash_out_xp = 0'''
+match_indent = true
