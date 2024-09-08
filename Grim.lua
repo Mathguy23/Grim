@@ -170,13 +170,16 @@ function SMODS.SAVE_UNLOCKS()
 	for k, v in pairs(G.P_SKILLS) do
         v.key = k
         if not v.wip and not v.demo then 
-            if TESTHELPER_unlocks then v.discovered = true; v.alerted = true  end --REMOVE THIS
-            if not v.discovered and meta.discovered[k] then 
+            if TESTHELPER_unlocks then
+                v.unlocked = true; v.discovered = true; v.alerted = true
+            end --REMOVE THIS
+            if not v.unlocked and meta.unlocked[k] then
+                v.unlocked = true
+            end
+            if not v.discovered and meta.discovered[k] then
                 v.discovered = true
             end
-            if v.discovered and meta.alerted[k] then 
-                v.alerted = true
-            elseif v.discovered then
+            if v.discovered then
                 v.alerted = false
             end
         end
@@ -213,7 +216,7 @@ end
 local function get_skils()
     local shown_skills = {}
     for i, j in pairs(G.P_CENTER_POOLS['Skill']) do
-        if j.prereq then
+        if j.prereq and j.unlocked then
             local valid = true
             for i2, j2 in pairs(j.prereq) do
                 if not G.GAME.skills[j2] then
@@ -397,6 +400,12 @@ function calculate_skill(skill, context)
             if G.GAME.skills["sk_grm_stake_3"] then
                 G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
             end
+        elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
+            G.GAME.reset_antes3[context.current_ante] = true
+            ease_ante(-1, true)
+            if G.GAME.skills["sk_grm_stake_3"] then
+                G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+            end
         elseif skill == "sk_grm_stake_3" then
             local mult = 1.3 ^ (context.current_ante - context.old_ante)
             local new_scaling = 0.01 * math.max(1,math.floor(mult * 100))
@@ -427,6 +436,9 @@ function calculate_skill(skill, context)
             else
                 return context.chips, context.mult, false
             end
+        elseif skill == "sk_grm_strike_3" then
+            local balance = math.floor((context.chips + context.mult) / 2)
+            return balance, balance, true
         else
             return context.chips, context.mult, false
         end
@@ -444,6 +456,8 @@ function calculate_skill(skill, context)
             if level > 0 then
                 add_skill_xp(math.min(40, level), G.deck)
             end
+        elseif skill == "sk_grm_ocean_3" and (G.GAME.current_round.hands_played == 0) then
+            ease_discard(2)
         end
     elseif context.ending_shop then
         if skill == "sk_grm_ghost_2" then
@@ -472,10 +486,13 @@ function add_skill_xp(amount, card, message_, no_mod)
                     trigger = 'before',
                     delay = 0.0,
                     func = (function()
-                            for i = 1, spectrals do
-                                local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'ghost')
-                                card:add_to_deck()
-                                G.consumeables:emplace(card)
+                            spectrals = math.min(spectrals, G.consumeables.config.card_limit - #G.consumeables.cards)
+                            if spectrals > 0 then
+                                for i = 1, spectrals do
+                                    local card = create_card('Spectral',G.consumeables, nil, nil, nil, nil, nil, 'ghost')
+                                    card:add_to_deck()
+                                    G.consumeables:emplace(card)
+                                end
                             end
                             return true
                     end)}))
@@ -496,6 +513,26 @@ function get_modded_xp(amount)
         new_amount = math.max(1 , math.floor(new_amount * 0.5))
     end
     return new_amount
+end
+
+function skill_unlock_check(card, args)
+    if card.key == "sk_grm_hexahedron_3" then
+        if G.GAME and G.GAME.grm_unlocks and G.GAME.grm_unlocks.shop_rerolls and (G.GAME.grm_unlocks.shop_rerolls >= 15) then
+            return true
+        end
+    elseif card.key == "sk_grm_ocean_3" then
+        if G.GAME and G.GAME.current_round and G.GAME.current_round.discards_left and (G.GAME.current_round.discards_left >= 10) then
+            return true
+        end
+    elseif card.key == "sk_grm_strike_3" then
+        if (args.type == 'upgrade_hand') and (args.level >= 40) then
+            return true
+        end
+    elseif card.key == "sk_grm_chime_3" then
+        if (args.type == 'ante_up') and (args.ante >= 17) then
+            return true
+        end
+    end
 end
 
 G.FUNCS.your_game_skill_page = function(args)
@@ -607,12 +644,9 @@ SMODS.Joker {
                 }
             end
         end
-        if context.end_of_round and not context.individual and not context.repetition and (card.ability.extra.xp > 0) then
-            add_skill_xp(card.ability.extra.xp, card, false)
-            return {
-                message = localize{type='variable',key='gain_xp',vars={get_modded_xp(card.ability.extra.xp)}}
-            }
-        end
+    end,
+    calc_xp_bonus = function(self, card)
+        return card.ability.extra.xp
     end
 }
 
@@ -641,6 +675,16 @@ function Card:get_chip_xp(context)
     return self.ability.xp or 0
 end
 
+function Card:calculate_xp_bonus()
+    if self.debuff then return end
+    if self.ability.set == "Joker" then
+        local obj = self.config.center
+        if obj.calc_xp_bonus and type(obj.calc_xp_bonus) == 'function' then
+            return obj:calc_xp_bonus(self)
+        end
+    end
+end
+
 local unknown = SMODS.UndiscoveredSprite {
     key = 'Skill',
     atlas = 'skills',
@@ -664,6 +708,18 @@ function SMODS.current_mod.process_loc_text()
                 "{C:attention}-1{} Ante every {C:attention}4th{}",
                 "Ante",
                 "{C:inactive}(once per ante){}"
+            }
+        },
+        sk_grm_chime_3 = {
+            name = "Chime III",
+            text = {
+                "{C:attention}-1{} Ante every {C:attention}3rd{}",
+                "Ante",
+                "{C:inactive}(once per ante){}"
+            },
+            unlock = {
+                "Reach Ante",
+                "level {E:1,C:attention}17"
             }
         },
         sk_grm_ease_1 = {
@@ -726,6 +782,17 @@ function SMODS.current_mod.process_loc_text()
                 "{C:blue}+50{} base chips",
             }
         },
+        sk_grm_strike_3 = {
+            name = "Strike III",
+            text = {
+                "Balance base {C:blue}Chips{} and",
+                "base {C:red}Mult{}",
+            },
+            unlock = {
+                "Level a {C:attention}poker hand{} to",
+                "level {C:attention}40{} or more"
+            }
+        },
         sk_grm_hexahedron_2 = {
             name = "Hexahedron II",
             text = {
@@ -733,11 +800,34 @@ function SMODS.current_mod.process_loc_text()
                 "in the shop",
             }
         },
+        sk_grm_hexahedron_3 = {
+            name = "Hexahedron III",
+            text = {
+                "+{C:attention}1{} free {C:green}reroll",
+                "in the shop per {C:money}$5{} spent",
+                "on {C:green}reroll"
+            },
+            unlock = {
+                "{C:green}Reroll{} {C:attention}15{} or more",
+                "times in the {C:attention}shop{}"
+            }
+        },
         sk_grm_ocean_2 = {
             name = "Ocean II",
             text = {
                 "{C:blue}+1{} hand on",
                 "{C:attention}final discard{}"
+            }
+        },
+        sk_grm_ocean_3 = {
+            name = "Ocean III",
+            text = {
+                "{C:red}+2{} discards on",
+                "{C:attention}first hand{}"
+            },
+            unlock = {
+                "Have {C:red}10{} or more",
+                "discards"
             }
         },
         sk_grm_stake_1 = {
@@ -858,7 +948,8 @@ function SMODS.current_mod.process_loc_text()
             text = {
                 "Create a {C:spectral}Spectral{} card",
                 "every {C:purple}200{} gained XP",
-                "{C:red}-1{} hand size"
+                "{C:red}-1{} hand size",
+                "{C:inactive}(Must have room)"
             }
         },
         sk_grm_ghost_2 = {
@@ -915,7 +1006,7 @@ function add_custom_round_eval_row(name, foot)
             table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.6*scale, silent = true})}})
             local full_row = {n=G.UIT.R, config={align = "cm", minw = 5}, nodes={
                 {n=G.UIT.C, config={padding = 0.05, minw = width*0.55, minh = 0.61, align = "cl"}, nodes=left_text},
-                {n=G.UIT.C, config={padding = 0.05,minw = width*0.45, align = "cr"}, nodes={{n=G.UIT.C, config={align = "cm", id = 'dollar_grm_'..name},nodes={}}}}
+                {n=G.UIT.C, config={padding = 0.05,minw = width*0.45, align = "cr"}, nodes={{n=G.UIT.C, config={align = "cm", id = 'dollar_grm_'..name .. tostring(total_cashout_rows)},nodes={}}}}
             }}
             G.round_eval:add_child(full_row,G.round_eval:get_UIE_by_ID('bonus_round_eval'))
             play_sound('cancel', 1)
@@ -930,7 +1021,7 @@ function add_custom_round_eval_row(name, foot)
                         {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name}, nodes={
                             {n=G.UIT.O, config={object = DynaText({string = {foot}, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.65, float = true})}}
                         }},
-                        G.round_eval:get_UIE_by_ID('dollar_grm_'..name))
+                        G.round_eval:get_UIE_by_ID('dollar_grm_'..name .. tostring(total_cashout_rows)))
             play_sound('coin3', 0.9+0.2*math.random(), 0.7)
             play_sound('coin6', 1.3, 0.8)
             return true

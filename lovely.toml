@@ -12,7 +12,11 @@ payload = '''skills = {},
 skill_xp = 0,
 reset_antes = {},
 reset_antes2 = {},
+reset_antes3 = {},
 ghost_skill_xp = 0,
+grm_unlocks = {
+    shop_rerolls = 0,
+},
 '''
 match_indent = true
 
@@ -55,7 +59,9 @@ match_indent = true
 target = 'card.lua'
 pattern = '''elseif not self.params.bypass_discovery_center and (_center.set == 'Edition' or _center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher' or _center.set == 'Booster') and not _center.discovered then'''
 position = 'before'
-payload = '''elseif not self.params.bypass_discovery_center and (_center.set == 'Skill') and not _center.discovered then
+payload = '''elseif _center.set == 'Skill' and not _center.unlocked and not self.params.bypass_discovery_center then 
+    self.children.center = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS["grm_skills2"], {x = 3, y = 0})
+elseif not self.params.bypass_discovery_center and (_center.set == 'Skill') and not _center.discovered then
     self.children.center = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS[SMODS.UndiscoveredSprites["Skill"].atlas], SMODS.UndiscoveredSprites["Skill"].pos)
 '''
 match_indent = true
@@ -100,37 +106,41 @@ target = 'game.lua'
 pattern = '''self.P_LOCKED = {}'''
 position = 'after'
 payload = '''self.P_SKILLS = {
-    sk_grm_chime_1 = {order = 1, key = 'sk_grm_chime_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime I", xp_req = 100, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {}},
-    sk_grm_chime_2 = {order = 2, key = 'sk_grm_chime_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime II", xp_req = 200, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}},
-    sk_grm_hexahedron_1 = {order = 3, key = 'sk_grm_hexahedron_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron I", xp_req = 300, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {}},
-    sk_grm_hexahedron_2 = {order = 4, key = 'sk_grm_hexahedron_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron II", xp_req = 300, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}},
-    sk_grm_strike_1 = {order = 5, key = 'sk_grm_strike_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike I", xp_req = 200, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {}},
-    sk_grm_strike_2 = {order = 6, key = 'sk_grm_strike_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike II", xp_req = 400, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}},
-    sk_grm_ease_1 = {order = 7, key = 'sk_grm_ease_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease I", xp_req = 200, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}},
-    sk_grm_ease_2 = {order = 8, key = 'sk_grm_ease_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease II", xp_req = 400, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_1'}},
-    sk_grm_ease_3 = {order = 9, key = 'sk_grm_ease_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease III", xp_req = 500, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_2'}},
-    sk_grm_mystical_1 = {order = 10, key = 'sk_grm_mystical_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical I", xp_req = 200, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}},
-    sk_grm_mystical_2 = {order = 11, key = 'sk_grm_mystical_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical II", xp_req = 400, pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
-    sk_grm_mystical_3 = {order = 12, key = 'sk_grm_mystical_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical III", xp_req = 600, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_2'}},
-    sk_grm_ocean_1 = {order = 13, key = 'sk_grm_ocean_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ocean I", xp_req = 300, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {}},
-    sk_grm_ocean_2 = {order = 14, key = 'sk_grm_ocean_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ocean II", xp_req = 250, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_1'}},
-    sk_grm_stake_1 = {order = 15, key = 'sk_grm_stake_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake I", xp_req = 150, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_1'}},
-    sk_grm_stake_2 = {order = 16, key = 'sk_grm_stake_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake II", xp_req = 350, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}},
-    sk_grm_stake_3 = {order = 17, key = 'sk_grm_stake_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake III", xp_req = 500, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_2'}},
-    sk_grm_skillful_1 = {order = 18, key = 'sk_grm_skillful_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}},
-    sk_grm_skillful_2 = {order = 19, key = 'sk_grm_skillful_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful II", xp_req = 600, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}},
-    sk_grm_skillful_3 = {order = 20, key = 'sk_grm_skillful_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful III", xp_req = 800, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_2'}},
-    sk_grm_motley_1 = {order = 21, key = 'sk_grm_motley_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley I", xp_req = 400, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
-    sk_grm_motley_2 = {order = 22, key = 'sk_grm_motley_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley II", xp_req = 400, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}},
-    sk_grm_motley_3 = {order = 23, key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 800, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
-    sk_grm_fortunate_1 = {order = 24, key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 100, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
-    sk_grm_scarce_1 = {order = 25, key = 'sk_grm_scarce_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Scarce I", xp_req = 100, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2', 'sk_grm_stake_2'}},
-    sk_grm_gravity_1 = {order = 26, key = 'sk_grm_gravity_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity I", xp_req = 250, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
-    sk_grm_gravity_2 = {order = 27, key = 'sk_grm_gravity_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity II", xp_req = 500, pos = {x=3,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_1'}},
-    sk_grm_gravity_3 = {order = 28, key = 'sk_grm_gravity_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity III", xp_req = 850, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_2'}},
-    sk_grm_ghost_1 = {order = 29, key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 200, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}},
-    sk_grm_ghost_2 = {order = 30, key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 400, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}},
-    sk_grm_ghost_3 = {order = 31, key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 200, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}},
+    sk_grm_chime_1 = {order = 1, key = 'sk_grm_chime_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime I", xp_req = 150, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {}},
+    sk_grm_chime_2 = {order = 2, key = 'sk_grm_chime_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime II", xp_req = 350, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}},
+    sk_grm_chime_3 = {order = 3, key = 'sk_grm_chime_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Chime III", xp_req = 800, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_2'}, unlock_condition = {type = 'ante_up', ante = 17}},
+    sk_grm_hexahedron_1 = {order = 4, key = 'sk_grm_hexahedron_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron I", xp_req = 300, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {}},
+    sk_grm_hexahedron_2 = {order = 5, key = 'sk_grm_hexahedron_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron II", xp_req = 400, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}},
+    sk_grm_hexahedron_3 = {order = 6, key = 'sk_grm_hexahedron_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hexahedron III", xp_req = 650, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}},
+    sk_grm_strike_1 = {order = 7, key = 'sk_grm_strike_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike I", xp_req = 200, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {}},
+    sk_grm_strike_2 = {order = 8, key = 'sk_grm_strike_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike II", xp_req = 500, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}},
+    sk_grm_strike_3 = {order = 9, key = 'sk_grm_strike_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Strike III", xp_req = 800, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
+    sk_grm_ease_1 = {order = 10, key = 'sk_grm_ease_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease I", xp_req = 250, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}},
+    sk_grm_ease_2 = {order = 11, key = 'sk_grm_ease_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease II", xp_req = 400, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_1'}},
+    sk_grm_ease_3 = {order = 12, key = 'sk_grm_ease_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease III", xp_req = 500, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_2'}},
+    sk_grm_mystical_1 = {order = 13, key = 'sk_grm_mystical_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical I", xp_req = 300, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}},
+    sk_grm_mystical_2 = {order = 14, key = 'sk_grm_mystical_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical II", xp_req = 500, pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
+    sk_grm_mystical_3 = {order = 15, key = 'sk_grm_mystical_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical III", xp_req = 600, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_2'}},
+    sk_grm_ocean_1 = {order = 16, key = 'sk_grm_ocean_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ocean I", xp_req = 300, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {}},
+    sk_grm_ocean_2 = {order = 17, key = 'sk_grm_ocean_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ocean II", xp_req = 300, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_1'}},
+    sk_grm_ocean_3 = {order = 18, key = 'sk_grm_ocean_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ocean III", xp_req = 600, pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}},
+    sk_grm_stake_1 = {order = 19, key = 'sk_grm_stake_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake I", xp_req = 200, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_1'}},
+    sk_grm_stake_2 = {order = 20, key = 'sk_grm_stake_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake II", xp_req = 450, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}},
+    sk_grm_stake_3 = {order = 21, key = 'sk_grm_stake_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake III", xp_req = 700, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_2'}},
+    sk_grm_skillful_1 = {order = 22, key = 'sk_grm_skillful_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}},
+    sk_grm_skillful_2 = {order = 23, key = 'sk_grm_skillful_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful II", xp_req = 600, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}},
+    sk_grm_skillful_3 = {order = 24, key = 'sk_grm_skillful_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful III", xp_req = 1000, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_2'}},
+    sk_grm_motley_1 = {order = 25, key = 'sk_grm_motley_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley I", xp_req = 400, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
+    sk_grm_motley_2 = {order = 26, key = 'sk_grm_motley_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley II", xp_req = 600, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}},
+    sk_grm_motley_3 = {order = 27, key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 800, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
+    sk_grm_fortunate_1 = {order = 28, key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 100, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}},
+    sk_grm_scarce_1 = {order = 29, key = 'sk_grm_scarce_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Scarce I", xp_req = 200, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2', 'sk_grm_stake_2'}},
+    sk_grm_gravity_1 = {order = 30, key = 'sk_grm_gravity_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity I", xp_req = 250, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}},
+    sk_grm_gravity_2 = {order = 31, key = 'sk_grm_gravity_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity II", xp_req = 500, pos = {x=3,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_1'}},
+    sk_grm_gravity_3 = {order = 32, key = 'sk_grm_gravity_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity III", xp_req = 850, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_2'}},
+    sk_grm_ghost_1 = {order = 33, key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 300, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}},
+    sk_grm_ghost_2 = {order = 34, key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 400, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}},
+    sk_grm_ghost_3 = {order = 35, key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 700, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}},
 }'''
 match_indent = true
 
@@ -183,6 +193,9 @@ payload = '''for k, v in pairs(self.P_SKILLS) do
     v.key = k
     if not v.wip and not v.demo then 
         if TESTHELPER_unlocks then v.discovered = true; v.alerted = true  end --REMOVE THIS
+        if not v.unlocked and meta.unlocked[k] then 
+            v.unlocked = true
+        end
         if not v.discovered and meta.discovered[k] then 
             v.discovered = true
         end
@@ -244,7 +257,7 @@ payload = '''elseif _c.set == 'Skill' then
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
-        localize{type = 'descriptions', key = 'unlearned_skill', set = 'Other', nodes = desc_nodes, vars = {card.config.center.xp_req}}
+        localize{type = 'descriptions', key = 'unlearned_skill', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.xp_req)}}
     else
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
     end'''
@@ -621,10 +634,10 @@ pattern = '''add_round_eval_row({name = 'bottom', dollars = dollars})'''
 position = 'before'
 payload = '''cash_out_xp = 0
 if (G.GAME.blind_on_deck == "Boss") then
-    local add_skill_table = {0, 50, 100, 150, 200, 250, 300, 350}
-    local plus_xp = add_skill_table[G.GAME.stake] or 400
+    local add_skill_table = {0, 50, 90, 120, 150, 180, 220, 250}
+    local plus_xp = add_skill_table[G.GAME.stake] or 300
     if G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
-        plus_xp = math.floor(plus_xp * 1.5)
+        plus_xp = math.floor(plus_xp * 2)
     end
     local stake_name = localize {type = 'name_text', key = G.P_CENTER_POOLS.Stake[G.GAME.stake].key, set = 'Stake'}
     if plus_xp and (plus_xp > 0) then
@@ -635,16 +648,16 @@ end
 if G.GAME.skills["sk_grm_skillful_1"] then
     add_custom_round_eval_row("Skillful I" , tostring(get_modded_xp(30)) .. " XP")
         cash_out_xp = cash_out_xp + get_modded_xp(30)
+end
+for i0 = 1, #G.jokers.cards do
+    local ret0 = G.jokers.cards[i0]:calculate_xp_bonus()
+    if ret0 then
+        local joker_name = localize {type = 'name_text', key = G.jokers.cards[i0].config.center.key, set = 'Joker'}
+        G.jokers.cards[i0]:juice_up(0.7, 0.46)
+        add_custom_round_eval_row(joker_name , tostring(get_modded_xp(ret0)) .. " XP")
+        cash_out_xp = cash_out_xp + get_modded_xp(ret0)
+    end
 end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/button_callbacks.lua'
-pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
-position = 'after'
-payload = '''add_skill_xp(cash_out_xp, nil, nil, true)
-cash_out_xp = 0'''
 match_indent = true
 
 [[patches]]
@@ -657,4 +670,66 @@ payload = '''if G.shop then
         calculate_skill(i, {ending_shop = true})
     end
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''while i <= #G.P_LOCKED do'''
+position = 'before'
+payload = '''for i, card in pairs(G.P_SKILLS) do
+    if not card.unlocked then
+        if skill_unlock_check(card, args) then
+            unlock_card(card)
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''calculate_reroll_cost(final_free)'''
+position = 'after'
+payload = '''G.GAME.grm_unlocks.shop_rerolls = G.GAME.grm_unlocks.shop_rerolls + 1
+check_for_unlock({type = 'skill_check'})
+if G.GAME.skills["sk_grm_hexahedron_3"] then
+    local more_reroll = math.floor(old_cost / 5)
+    if more_reroll > 0 then
+        G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + more_reroll
+        calculate_reroll_cost(true)
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.GAME.current_round.discards_left = G.GAME.current_round.discards_left + mod'''
+position = 'after'
+payload = '''check_for_unlock({type = 'skill_check'})'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local _c, _atlas = G.P_CENTERS[_achievement],'''
+position = 'at'
+payload = '''local _c, _atlas = (_type == "Skill") and G.P_SKILLS[_achievement] or G.P_CENTERS[_achievement],'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''_type == 'Voucher' and localize('k_voucher') or'''
+position = 'after'
+payload = '''_type == 'Skill' and localize('k_skill') or'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''if G.GAME.current_round.reroll_cost > 0 then'''
+position = 'before'
+payload = '''local old_cost = G.GAME.current_round.reroll_cost'''
 match_indent = true
