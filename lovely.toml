@@ -754,3 +754,11 @@ position = 'before'
 payload = '''add_skill_xp(cash_out_xp, nil, nil, true)
 cash_out_xp = 0'''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''rental = self.ability and self.ability.rental'''
+position = 'before'
+payload = '''xp = center.config.xp or 0,'''
+match_indent = true
