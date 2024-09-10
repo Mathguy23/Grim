@@ -294,6 +294,15 @@ function learn_skill(card)
         G.hand:change_size(-1)
     elseif key == "sk_grm_ghost_2" then
         G.hand:change_size(-2)
+    elseif key == "sk_grm_chime_3" then
+        G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
+        ease_hands_played(-1)
+    elseif key == "sk_grm_strike_3" then
+        G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 1.2
+        if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
+            G.GAME.blind.chips = math.floor(G.GAME.blind.chips * 1.2)
+            G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
+        end
     end
 end
 
@@ -412,7 +421,7 @@ function calculate_skill(skill, context)
             G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * new_scaling
         end
     elseif context.using_consumeable then
-        if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.5) then
+        if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.3) then
             local fool = SMODS.create_card {key = "c_fool", no_edition = true}
             fool:set_edition('e_negative')
             fool:add_to_deck()
@@ -567,6 +576,8 @@ SMODS.Atlas({ key = "tarots", atlas_table = "ASSET_ATLAS", path = "tarots.png", 
 
 SMODS.Atlas({ key = "jokers", atlas_table = "ASSET_ATLAS", path = "joker.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "vouchers", atlas_table = "ASSET_ATLAS", path = "vouchers.png", px = 71, py = 95})
+
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
 SMODS.Shader {
@@ -669,6 +680,61 @@ SMODS.Enhancement {
     end
 }
 
+SMODS.Voucher {
+    key = 'progress',
+    loc_txt = {
+        name = "Progression",
+        text = {
+            "{C:purple}+#1#{} XP for every {C:purple}#2#{} XP you",
+            "have at end of round",
+            "{C:inactive}(Max of {C:purple}#3#{C:inactive} XP)"
+        }
+    },
+    config = {extra = {xp = 1, interest = 15}, max = 30},
+    atlas = 'vouchers',
+    pos = {x = 0, y = 0},
+    loc_vars = function(self, info_queue, card)
+        if not card or not card.ability then
+            return {1, 15, 30}
+        end
+        return {vars = {card.ability.extra.xp, card.ability.extra.interest, card.ability.max}}
+    end,
+    redeem = function(self, card)
+        G.E_MANAGER:add_event(Event({func = function()
+            G.GAME.xp_interest = card.ability.extra.xp
+            G.GAME.xp_interest_rate = card.ability.extra.interest
+            G.GAME.xp_interest_max = card.ability.max
+        return true end }))
+    end
+}
+
+SMODS.Voucher {
+    key = 'complete',
+    loc_txt = {
+        name = "Completion",
+        text = {
+            "Raise the cap on",
+            "{C:purple}XP{} interest earned in",
+            "each round to {C:purple}#1#{}"
+        }
+    },
+    config = {max = 75},
+    atlas = 'vouchers',
+    pos = {x = 1, y = 0},
+    loc_vars = function(self, info_queue, card)
+        if not card or not card.ability then
+            return {75}
+        end
+        return {vars = {card.ability.max}}
+    end,
+    requires = {'v_grm_progress'},
+    redeem = function(self, card)
+        G.E_MANAGER:add_event(Event({func = function()
+            G.GAME.xp_interest_max = card.ability.max
+        return true end }))
+    end
+}
+
 function Card:get_chip_xp(context)
     if self.debuff then return 0 end
     if self.ability.set == 'Joker' then return 0 end
@@ -715,6 +781,7 @@ function SMODS.current_mod.process_loc_text()
             text = {
                 "{C:attention}-1{} Ante every {C:attention}3rd{}",
                 "Ante",
+                "{C:blue}-1{} hand",
                 "{C:inactive}(once per ante){}"
             },
             unlock = {
@@ -751,7 +818,7 @@ function SMODS.current_mod.process_loc_text()
         sk_grm_mystical_3 = {
             name = "Mystical III",
             text = {
-                "{C:green}50%{} chance to create a",
+                "{C:green}30%{} chance to create a",
                 "{C:dark_edition}Negative{} {C:tarot}The Fool{} when",
                 "a {C:tarot}Tarot{} is used",
                 "{C:inactive}({C:tarot}The Fool{C:inactive} excluded)"
@@ -787,6 +854,7 @@ function SMODS.current_mod.process_loc_text()
             text = {
                 "Balance base {C:blue}Chips{} and",
                 "base {C:red}Mult{}",
+                "{C:red}X1.2{} Blind Size",
             },
             unlock = {
                 "Level a {C:attention}poker hand{} to",
@@ -804,7 +872,7 @@ function SMODS.current_mod.process_loc_text()
             name = "Hexahedron III",
             text = {
                 "+{C:attention}1{} free {C:green}reroll",
-                "in the shop per {C:money}$5{} spent",
+                "in the shop per {C:money}$11{} spent",
                 "on {C:green}reroll"
             },
             unlock = {
@@ -911,7 +979,9 @@ function SMODS.current_mod.process_loc_text()
             name = "Motley III",
             text = {
                 "{C:attention}Enhanced Cards{} are",
-                "considered {C:attention}Wild Cards{}"
+                "considered {C:attention}Wild Cards{}",
+                "All {C:tarot}Arcana Packs{} have",
+                "{C:attention}-1{} option",
             }
         },
         sk_grm_scarce_1 = {
@@ -990,9 +1060,10 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['k_skill'] = "Skill"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
+    G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
 end
 
-function add_custom_round_eval_row(name, foot)
+function add_custom_round_eval_row(name, foot, intrest)
     local width = G.round_eval.T.w - 0.51
     local scale = 0.9
     total_cashout_rows = (total_cashout_rows or 0) + 1
@@ -1003,7 +1074,14 @@ function add_custom_round_eval_row(name, foot)
         func = function()
             --Add the far left text and context first:
             local left_text = {}
-            table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.6*scale, silent = true})}})
+            if intrest then
+                table.insert(left_text, {n=G.UIT.T, config={text = intrest, scale = 0.8*scale, colour = G.C.PURPLE, shadow = true, juice = true}})
+            end
+            if intrest then
+                table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4*scale, silent = true})}})
+            else
+                table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.6*scale, silent = true})}})
+            end
             local full_row = {n=G.UIT.R, config={align = "cm", minw = 5}, nodes={
                 {n=G.UIT.C, config={padding = 0.05, minw = width*0.55, minh = 0.61, align = "cl"}, nodes=left_text},
                 {n=G.UIT.C, config={padding = 0.05,minw = width*0.45, align = "cr"}, nodes={{n=G.UIT.C, config={align = "cm", id = 'dollar_grm_'..name .. tostring(total_cashout_rows)},nodes={}}}}
