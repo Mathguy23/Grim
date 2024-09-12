@@ -690,12 +690,12 @@ SMODS.Voucher {
             "{C:inactive}(Max of {C:purple}#3#{C:inactive} XP)"
         }
     },
-    config = {extra = {xp = 1, interest = 15}, max = 30},
+    config = {extra = {xp = 1, interest = 12}, max = 30},
     atlas = 'vouchers',
     pos = {x = 0, y = 0},
     loc_vars = function(self, info_queue, card)
         if not card or not card.ability then
-            return {1, 15, 30}
+            return {1, 12, 30}
         end
         return {vars = {card.ability.extra.xp, card.ability.extra.interest, card.ability.max}}
     end,
@@ -1096,7 +1096,7 @@ function add_custom_round_eval_row(name, foot, intrest)
         trigger = 'before',delay = 0.38,
         func = function()
                 G.round_eval:add_child(
-                        {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name}, nodes={
+                        {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name .. tostring(total_cashout_rows)}, nodes={
                             {n=G.UIT.O, config={object = DynaText({string = {foot}, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.65, float = true})}}
                         }},
                         G.round_eval:get_UIE_by_ID('dollar_grm_'..name .. tostring(total_cashout_rows)))
