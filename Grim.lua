@@ -541,7 +541,7 @@ function skill_unlock_check(card, args)
         if (args.type == 'ante_up') and (args.ante >= 17) then
             return true
         end
-    elseif card,key == "sk_grm_fortunate_2" then
+    elseif card.key == "sk_grm_fortunate_2" then
         if args.fortune_check then
             return true
         end
