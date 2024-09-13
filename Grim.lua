@@ -541,6 +541,10 @@ function skill_unlock_check(card, args)
         if (args.type == 'ante_up') and (args.ante >= 17) then
             return true
         end
+    elseif card,key == "sk_grm_fortunate_2" then
+        if args.fortune_check then
+            return true
+        end
     end
 end
 
@@ -999,6 +1003,19 @@ function SMODS.current_mod.process_loc_text()
                 "{C:attention}The Wheel of Fortune{}",
                 "can create the {C:dark_edition}Negative{}",
                 "edition"
+            }
+        },
+        sk_grm_fortunate_2 = {
+            name = "Fortunate II",
+            text = {
+                "{C:attention}The Wheel of Fortune{}",
+                "can't create the {C:dark_edition}Foil{}",
+                "edition"
+            },
+            unlock = {
+                "Add the {C:dark_edition}Negative{} edition",
+                "to a {C:attention}joker{} using",
+                "{C:attention}The Wheel of Fortune{}",
             }
         },
         sk_grm_motley_2 = {
