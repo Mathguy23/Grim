@@ -578,6 +578,10 @@ SMODS.Atlas({ key = "jokers", atlas_table = "ASSET_ATLAS", path = "joker.png", p
 
 SMODS.Atlas({ key = "vouchers", atlas_table = "ASSET_ATLAS", path = "vouchers.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "stakes", atlas_table = "ASSET_ATLAS", path = "stakes.png", px = 29, py = 29})
+
+SMODS.Atlas({ key = "stickers", atlas_table = "ASSET_ATLAS", path = "stickers.png", px = 71, py = 95})
+
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
 SMODS.Shader {
@@ -733,6 +737,35 @@ SMODS.Voucher {
             G.GAME.xp_interest_max = card.ability.max
         return true end }))
     end
+}
+
+SMODS.Stake {
+    key = 'turbo',
+    name = "Turbo Stake",
+    atlas = "stakes",
+    pos = {x = 0, y = 0},
+    applied_stakes = {},
+	loc_txt = {
+        name = "Turbo Stake",
+        text = {
+            "After defeating each",
+            "{C:attention}Boss Blind{}, {C:purple}+150{} XP"
+        },
+        sticker = {
+            name = "Turbo Sticker",
+            text = {
+                "Used this Joker",
+                "to win on {C:attention}Turbo",
+                "{C:attention}Stake{} difficulty"
+            }
+        }
+    },
+    modifiers = function()
+        G.GAME.modifiers.force_stake_xp = 150
+    end,
+    colour = HEX("9260B9"),
+    sticker_pos = {x = 0, y = 0},
+    sticker_atlas = "stickers"
 }
 
 function Card:get_chip_xp(context)
