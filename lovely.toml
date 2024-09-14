@@ -145,6 +145,9 @@ payload = '''self.P_SKILLS = {
     sk_grm_ghost_1 = {order = 34, key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 300, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}},
     sk_grm_ghost_2 = {order = 35, key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 400, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}},
     sk_grm_ghost_3 = {order = 36, key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 700, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}},
+    sk_grm_receipt_1 = {order = 37, key = 'sk_grm_receipt_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt I", xp_req = 250, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_2'}},
+    sk_grm_receipt_2 = {order = 38, key = 'sk_grm_receipt_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt II", xp_req = 300, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_1'}},
+    sk_grm_receipt_3 = {order = 39, key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 500, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}},
 }'''
 match_indent = true
 
@@ -256,6 +259,8 @@ payload = '''elseif _c.set == 'Skill' then
     elseif _c.name == "Fortunate I" then
         info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
         info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
+    elseif _c.name == "Fortunate II" then
+        info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
     elseif _c.name == "Ghost II" then
         info_queue[#info_queue+1] = G.P_TAGS["tag_ethereal"]
     end
@@ -420,6 +425,9 @@ pattern = '''if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' 
 position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_2"] and (self.ability.set == 'Tarot' or (self.ability.set == 'Booster' and self.ability.name:find('Arcana'))) then
     self.cost = 0
+end
+if G.GAME.skills["sk_grm_receipt_2"] and ((self.ability.set == 'Voucher') or (self.ability.set == 'Booster')) and (self.cost > 0) then
+    self.cost = math.max(1, math.floor(self.cost * 0.7))
 end'''
 match_indent = true
 
@@ -762,7 +770,10 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
 position = 'before'
-payload = '''add_skill_xp(cash_out_xp, nil, nil, true)
+payload = '''if G.GAME.skills["sk_grm_receipt_1"] and (G.GAME.current_round.dollars >= 7) then
+    ease_dollars(math.floor(G.GAME.current_round.dollars/7))
+end
+add_skill_xp(cash_out_xp, nil, nil, true)
 cash_out_xp = 0'''
 match_indent = true
 
@@ -773,3 +784,4 @@ pattern = '''rental = self.ability and self.ability.rental'''
 position = 'before'
 payload = '''xp = center.config.xp or 0,'''
 match_indent = true
+

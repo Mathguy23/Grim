@@ -303,6 +303,20 @@ function learn_skill(card)
             G.GAME.blind.chips = math.floor(G.GAME.blind.chips * 1.2)
             G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
         end
+    elseif key == "sk_grm_receipt_3" then
+        G.GAME.bankrupt_at = G.GAME.bankrupt_at - 25
+    elseif key == "sk_grm_mystical_2" then
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+            return true end }))
+    elseif key == "sk_grm_receipt_2" then
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+            return true end }))
     end
 end
 
@@ -1086,6 +1100,27 @@ function SMODS.current_mod.process_loc_text()
                 "All {C:spectral}Spectral Packs{} have",
                 "{C:attention}+4{} options and {C:attention}+2{} choices",
                 "{X:purple,C:white} X0.5 {} to all XP sources",
+            }
+        },
+        sk_grm_receipt_1 = {
+            name = "Receipt I",
+            text = {
+                "Earn {C:money}$7{} for every",
+                "{C:money}$7{} earned at {C:attention}cash out{}",
+            }
+        },
+        sk_grm_receipt_2 = {
+            name = "Receipt II",
+            text = {
+                "{C:attention}Vouchers{} and {C:attention}Booster Packs{}",
+                "in shop are {C:attention}30%{} off"
+            }
+        },
+        sk_grm_receipt_3 = {
+            name = "Receipt III",
+            text = {
+                "Go up to",
+                "{C:red}-$25{} in debt"
             }
         },
     }
