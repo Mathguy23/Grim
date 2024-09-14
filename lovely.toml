@@ -778,7 +778,7 @@ position = 'before'
 payload = '''if G.GAME.skills["sk_grm_receipt_1"] and (G.GAME.current_round.dollars >= 7) then
     ease_dollars(math.floor(G.GAME.current_round.dollars/7))
 end
-add_skill_xp(cash_out_xp, nil, nil, true)
+add_skill_xp(cash_out_xp or 0, nil, nil, true)
 cash_out_xp = 0'''
 match_indent = true
 
