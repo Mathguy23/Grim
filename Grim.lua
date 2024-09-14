@@ -1123,6 +1123,20 @@ function SMODS.current_mod.process_loc_text()
                 "{C:red}-$25{} in debt"
             }
         },
+        sk_grm_dash_1 = {
+            name = "Dash I",
+            text = {
+                "Each shop has",
+                "a {C:attention}Standard Pack{}"
+            }
+        },
+        sk_grm_dash_2 = {
+            name = "Dash II",
+            text = {
+                "All {C:attention}Standard Packs{} have",
+                "{X:attention,C:white} X2 {} options",
+            }
+        },
     }
     G.localization.descriptions.Other["undiscovered_skill"] = {
         name = "Not Discovered",
