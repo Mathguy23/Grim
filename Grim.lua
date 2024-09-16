@@ -1288,7 +1288,7 @@ end
 
 function grm_valid_mods()
     for i, j in pairs(SMODS.Mods) do
-        if j.can_load and not j.disabled and (i ~= "GRM") and (i ~= "Talisman") and (i ~= "Steamodded") and (i ~= "nopeus") then
+        if j.can_load and not j.disabled and (i ~= "GRM") and (i ~= "Talisman") and (i ~= "Steamodded") and (i ~= "nopeus") and (i ~= "Handy") then
             return false
         end
     end
