@@ -20,6 +20,7 @@ xp_interest_max = 50,
 grm_unlocks = {
     shop_rerolls = 0,
 },
+ante_banners = {},
 '''
 match_indent = true
 
@@ -271,7 +272,8 @@ payload = '''elseif _c.set == 'Skill' then
         localize{type = 'descriptions', key = 'unlearned_skill', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.xp_req)}}
     else
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
-    end'''
+    end
+    if specific_vars and specific_vars.sticker then info_queue[#info_queue+1] = {key = string.lower(specific_vars.sticker)..'_sticker', set = 'Other'} end'''
 match_indent = true
 
 [[patches]]
@@ -797,5 +799,31 @@ pattern = '''if not G.GAME.current_round.used_packs[i] then'''
 position = 'before'
 payload = '''if not G.GAME.current_round.used_packs[i] and G.GAME.skills["sk_grm_dash_1"] and (i == 1) then
     G.GAME.current_round.used_packs[i] = get_pack('shop_pack', 'Standard').key
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''set_deck_win()'''
+position = 'after'
+payload = '''set_skill_win()'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''deck_usage = {},'''
+position = 'after'
+payload = '''skill_banners = {},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)'''
+position = 'at'
+payload = '''if not self.no_shader then
+    G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
 end'''
 match_indent = true

@@ -49,6 +49,10 @@ function create_UIBox_Skills()
             if (i+(j-1)*(5)) <= #G.P_CENTER_POOLS['Skill'] then
                 local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, nil, center)
                 card:start_materialize(nil, i>1 or j>1)
+                card.sticker = get_skill_win_banner(center)
+                if card.sticker then
+                    card.no_shader = true
+                end
                 G.your_collection[j]:emplace(card)
             end
         end
@@ -86,6 +90,10 @@ G.FUNCS.your_collection_skill_page = function(args)
             local center = G.P_CENTER_POOLS['Skill'][i+(j-1)*5 + (5*#G.your_collection*(args.cycle_config.current_option - 1))]
             if not center then break end
             local card = Card(G.your_collection[j].T.x + G.your_collection[j].T.w/2, G.your_collection[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center)
+            card.sticker = get_skill_win_banner(center)
+            if card.sticker then
+                card.no_shader = true
+            end
             G.your_collection[j]:emplace(card)
         end
     end
@@ -240,6 +248,9 @@ function learn_skill(card)
     local obj = card.config.center
     local key = obj.key
     G.GAME.skills[key] = true
+    if G.GAME.ante_banners then
+        G.GAME.ante_banners[key] = G.GAME.round_resets.ante
+    end
     G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
     discover_card(obj)
     card:set_sprites(obj)
@@ -317,6 +328,24 @@ function learn_skill(card)
                 if v.set_cost then v:set_cost() end
             end
             return true end }))
+    elseif key == "sk_grm_chime_1" and ((G.GAME.round_resets.ante) % 8 == 0) and not G.GAME.reset_antes[G.GAME.round_resets.ante] then
+        G.GAME.reset_antes[G.GAME.round_resets.ante] = true
+        ease_ante(-1, true)
+        if G.GAME.skills["sk_grm_stake_3"] then
+            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+        end
+    elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
+        G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
+        ease_ante(-1, true)
+        if G.GAME.skills["sk_grm_stake_3"] then
+            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+        end
+    elseif key == "sk_grm_chime_3" and ((G.GAME.round_resets.ante) % 3 == 0) and not G.GAME.reset_antes3[G.GAME.round_resets.ante] then
+        G.GAME.reset_antes3[G.GAME.round_resets.ante] = true
+        ease_ante(-1, true)
+        if G.GAME.skills["sk_grm_stake_3"] then
+            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+        end
     end
 end
 
@@ -599,6 +628,37 @@ SMODS.Atlas({ key = "vouchers", atlas_table = "ASSET_ATLAS", path = "vouchers.pn
 SMODS.Atlas({ key = "stakes", atlas_table = "ASSET_ATLAS", path = "stakes.png", px = 29, py = 29})
 
 SMODS.Atlas({ key = "stickers", atlas_table = "ASSET_ATLAS", path = "stickers.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "banners", atlas_table = "ASSET_ATLAS", path = "banners.png", px = 71, py = 95,
+    inject = function(self)
+        local file_path = type(self.path) == 'table' and
+            (self.path[G.SETTINGS.language] or self.path['default'] or self.path['en-us']) or self.path
+        if file_path == 'DEFAULT' then return end
+        -- language specific sprites override fully defined sprites only if that language is set
+        if self.language and not (G.SETTINGS.language == self.language) then return end
+        if not self.language and self.obj_table[('%s_%s'):format(self.key, G.SETTINGS.language)] then return end
+        self.full_path = (self.mod and self.mod.path or SMODS.path) ..
+            'assets/' .. G.SETTINGS.GRAPHICS.texture_scaling .. 'x/' .. file_path
+        local file_data = assert(NFS.newFileData(self.full_path),
+            ('Failed to collect file data for Atlas %s'):format(self.key))
+        self.image_data = assert(love.image.newImageData(file_data),
+            ('Failed to initialize image data for Atlas %s'):format(self.key))
+        self.image = love.graphics.newImage(self.image_data,
+            { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
+        G[self.atlas_table][self.key_noloc or self.key] = self
+        G.shared_stickers['ante_0'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 0,y = 0})
+        G.shared_stickers['ante_1'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 0})
+        G.shared_stickers['ante_2'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 2,y = 0})
+        G.shared_stickers['ante_3'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 3,y = 0})
+        G.shared_stickers['ante_4'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 0,y = 1})
+        G.shared_stickers['ante_5'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 1})
+        G.shared_stickers['ante_6'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 2,y = 1})
+        G.shared_stickers['ante_7'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 3,y = 1})
+        G.shared_stickers['ante_8'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 0,y = 2})
+        G.shared_stickers['ante_9'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 2})
+        G.shared_stickers['ante_-1'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 2,y = 2})
+    end
+})
 
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
@@ -1153,6 +1213,31 @@ function SMODS.current_mod.process_loc_text()
             "{C:purple}#1#{} XP",
         }
     }
+    for i = 0, 8 do
+        G.localization.descriptions.Other["ante_" .. tostring(i) .. "_sticker"] = {
+            name = "Ante " .. tostring(i) .. " Banner",
+            text = {
+                "Learned this Skill",
+                "on {C:attention}Ante " .. tostring(i) .. "{}",
+                "then won"
+            }
+        }
+    end
+    G.localization.descriptions.Other["ante_9_sticker"] = {
+        name = "Banner",
+        text = {
+            "Learned this Skill",
+            "then won"
+        }
+    }
+    G.localization.descriptions.Other["ante_-1_sticker"] = {
+        name = "Negative Banner",
+        text = {
+            "Learned this Skill",
+            "on a {C:attention}negative{}",
+            "{C:attention}Ante{} then won"
+        }
+    }
     G.localization.misc.v_dictionary["skill_xp"] = "XP: #1#"
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
@@ -1160,6 +1245,54 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
+end
+
+function set_skill_win()
+    if not grm_valid_mods() then
+        return
+    end
+    if not G.PROFILES[G.SETTINGS.profile].skill_banners then
+        G.PROFILES[G.SETTINGS.profile].skill_banners = {}
+    end
+    for k, v in pairs(G.GAME.skills) do
+        if G.GAME.ante_banners[k] then
+            if G.PROFILES[G.SETTINGS.profile].skill_banners[k] and (G.PROFILES[G.SETTINGS.profile].skill_banners[k] > G.GAME.ante_banners[k]) then
+                G.PROFILES[G.SETTINGS.profile].skill_banners[k] = G.PROFILES[G.SETTINGS.profile].skill_banners[k] or {ante = G.GAME.ante_banners[k]}
+            elseif not G.PROFILES[G.SETTINGS.profile].skill_banners[k] then
+                G.PROFILES[G.SETTINGS.profile].skill_banners[k] = {ante = G.GAME.ante_banners[k]}
+            end
+        end
+    end
+    G:save_settings()
+end
+
+function get_skill_win_banner(_center, ante)
+    if G.PROFILES[G.SETTINGS.profile].skill_banners[_center.key] and
+    G.PROFILES[G.SETTINGS.profile].skill_banners[_center.key].ante then 
+        local _w = G.PROFILES[G.SETTINGS.profile].skill_banners[_center.key].ante
+        if type(_w) ~= "number" then
+            return
+        end
+        if (_w <= -1) then
+            _w = -1
+        end
+        if (_w > 8) then
+            _w = 9
+        end
+        _w = math.floor(_w)
+        if ante then return _w end
+        return "ante_" .. tostring(_w)
+    end
+    if ante then return -2 end
+end
+
+function grm_valid_mods()
+    for i, j in pairs(SMODS.Mods) do
+        if j.can_load and not j.disabled and (i ~= "GRM") and (i ~= "Talisman") and (i ~= "Steamodded") and (i ~= "nopeus") then
+            return false
+        end
+    end
+    return true
 end
 
 function add_custom_round_eval_row(name, foot, intrest)
