@@ -8,6 +8,47 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+local ban_regions = {
+    held_in_hand = {
+        centers = {
+            "j_mime",
+            "j_raised_fist",
+            "j_baron",
+            "j_reserved_parking",
+            "j_shoot_the_moon",
+            "c_chariot",
+            "c_devil",
+            "c_trance",
+            "blue_seal",
+            "m_steel",
+            "m_gold",
+        }
+    },
+    packed = {
+        centers = {
+            "c_grm_tape",
+            "m_grm_package",
+            "j_grm_showdown",
+        }
+    }
+}
+
+function wipe_grim_group(group)
+    if G.GAME.grim_banned then
+        for i, j in ipairs(ban_regions[group].centers) do
+            G.GAME.grim_banned[j] = true
+        end
+    end
+end
+
+function unwipe_grim_group(group)
+    if G.GAME.grim_banned then
+        for i, j in ipairs(ban_regions[group].centers) do
+            G.GAME.grim_banned[j] = nil
+        end
+    end
+end
+
 SMODS.current_mod.custom_collection_tabs = function()
 	return { UIBox_button {
         count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS['Skill']), --Returns nil outside of G.ACTIVE_MOD_UI but we don't use it anyways
@@ -346,6 +387,11 @@ function learn_skill(card)
         if G.GAME.skills["sk_grm_stake_3"] then
             G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
         end
+    elseif key == "sk_grm_cl_hoarder" then
+        unwipe_grim_group("packed")
+        wipe_grim_group("held_in_hand")
+        G.hand:change_size(-1)
+        G.GAME.grim_class.hoarder = true
     end
 end
 
@@ -588,6 +634,16 @@ function skill_unlock_check(card, args)
         if args.fortune_check then
             return true
         end
+    elseif card.key == "sk_grm_cl_hoarder" then
+        if G.PROFILES[G.SETTINGS.profile].skill_banners then
+            local count = 0
+            for i, j in pairs(G.PROFILES[G.SETTINGS.profile].skill_banners) do
+                count = count + 1
+                if count >= 20 then
+                    return true
+                end
+            end
+        end
     end
 end
 
@@ -611,6 +667,68 @@ G.FUNCS.your_game_skill_page = function(args)
             G.areas[j]:emplace(card)
         end
     end
+end
+
+G.FUNCS.grm_discard_card = function(e)
+    local card = e.config.ref_table
+    draw_card(G.consumeables, G.deck, nil, nil, nil, card)
+end
+
+G.FUNCS.grm_can_discard_card = function(e)
+    if false then 
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.RED
+        e.config.button = 'grm_discard_card'
+    end
+end
+
+G.FUNCS.grm_draw_card = function(e)
+    local card = e.config.ref_table
+    draw_card(G.consumeables, G.hand, nil, nil, nil, card)
+end
+
+G.FUNCS.grm_can_draw_card = function(e)
+    if not G.hand or not (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) then 
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.BLUE
+        e.config.button = 'grm_draw_card'
+    end
+end
+
+G.FUNCS.grm_pack_card = function(e)
+    local card = e.config.ref_table
+    draw_card(card.area, G.consumeables, nil, nil, nil, card)
+end
+
+G.FUNCS.grm_can_pack_card = function(e)
+    local card = e.config.ref_table
+    if not G.consumeables or (#G.consumeables.cards >= G.consumeables.config.card_limit) or (card.area ~= G.hand) then 
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.GREEN
+        e.config.button = 'grm_pack_card'
+    end
+end
+
+local old_func = Back.apply_to_run
+function Back:apply_to_run()
+    wipe_grim_group("packed")
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            local card = create_playing_card({center = G.P_CENTERS.m_glass}, G.consumeables)
+            card:set_seal("Red")
+            -- local card = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_grm_showdown', 'deck')
+            -- card:add_to_deck()
+            -- G.jokers:emplace(card)
+            return true
+        end
+    }))
+    old_func(self)
 end
 
 SMODS.Atlas({ key = "skills", atlas_table = "ASSET_ATLAS", path = "skills.png", px = 71, py = 95})
@@ -686,6 +804,25 @@ SMODS.Tarot {
     end,
 }
 
+SMODS.Tarot {
+    key = 'tape',
+    loc_txt = {
+        name = "The Tape",
+        text = {
+            "Enhances {C:attention}#1#",
+            "selected cards to",
+            "{C:attention}#2#s"
+        }
+    },
+    atlas = "tarots",
+    pos = {x = 1, y = 0},
+    config = {mod_conv = 'm_grm_package', max_highlighted = 2},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_package']
+        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_package')}}}
+    end,
+}
+
 SMODS.Joker {
     key = 'energy_bar',
     name = "Energy Bar",
@@ -701,7 +838,7 @@ SMODS.Joker {
     atlas = 'jokers',
     pos = {x = 0, y = 0},
     cost = 6,
-    blueprint_compat = true,
+    blueprint_compat = false,
     config = {extra = {xp = 30, xp_mod = 1}},
     loc_vars = function(self, info_queue, card)
         return { vars = {card.ability.extra.xp ,card.ability.extra.xp_mod}}
@@ -743,6 +880,24 @@ SMODS.Joker {
     end
 }
 
+SMODS.Joker {
+    key = 'showdown',
+    name = "Showdown",
+    loc_txt = {
+        name = "Showdown",
+        text = {
+            "{C:green}Packed cards{} count towards",
+            "played {C:attention}poker hand{}"
+        }
+    },
+    rarity = 3,
+    atlas = 'jokers',
+    pos = {x = 1, y = 0},
+    cost = 8,
+    blueprint_compat = false,
+    config = {},
+}
+
 SMODS.Enhancement {
     key = 'rpg',
     loc_txt = {
@@ -760,6 +915,21 @@ SMODS.Enhancement {
     set_ability = function(self, card, initial, delay_sprites)
         card.ability.xp = self.config.xp
     end
+}
+
+SMODS.Enhancement {
+    key = 'package',
+    loc_txt = {
+        name = 'Package Card',
+        text = {
+            "When selected,",
+            "You may {C:green}pack{}",
+            "this {C:attention}card"
+        }
+    },
+    atlas = 'enhance',
+    config = {},
+    pos = {x = 1, y = 0}
 }
 
 SMODS.Voucher {
@@ -1197,6 +1367,19 @@ function SMODS.current_mod.process_loc_text()
                 "{X:attention,C:white} X2 {} options",
             }
         },
+        sk_grm_cl_hoarder = {
+            name = "Hoarder",
+            text = {
+                "{C:red}-1{} hand size,",
+                "{C:attention}Held in hand{} effects",
+                "{C:red}disabled{}, {C:green}packed cards{}",
+                "enabled"
+            },
+            unlock = {
+                "Get {C:attention}20{}",
+                "{C:attention}Ante Banners{}",
+            }
+        }
     }
     G.localization.descriptions.Other["undiscovered_skill"] = {
         name = "Not Discovered",
@@ -1244,15 +1427,18 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['k_skill'] = "Skill"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
+    G.localization.misc.dictionary['b_draw'] = "Draw"
+    G.localization.misc.dictionary['b_pack'] = "Pack"
     G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
 end
 
 function set_skill_win()
-    if not grm_valid_mods() then
-        return
-    end
     if not G.PROFILES[G.SETTINGS.profile].skill_banners then
         G.PROFILES[G.SETTINGS.profile].skill_banners = {}
+    end
+    if not grm_valid_mods() then
+        check_for_unlock({type = 'skill_check'})
+        return
     end
     for k, v in pairs(G.GAME.skills) do
         if G.GAME.ante_banners[k] then
@@ -1263,6 +1449,7 @@ function set_skill_win()
             end
         end
     end
+    check_for_unlock({type = 'skill_check'})
     G:save_settings()
 end
 
@@ -1337,6 +1524,72 @@ function add_custom_round_eval_row(name, foot, intrest)
             return true
         end
     }))
+end
+
+function upgrade_poker_hand_showdown(text, scoring_hand, j_card)
+    local new_hand = {}
+    for i, j in ipairs(G.play.cards) do
+        new_hand[#new_hand+1] = j
+    end
+    for i, j in ipairs(G.consumeables.cards) do
+        if j.playing_card then
+            new_hand[#new_hand+1] = j
+        end
+    end
+    local new_text,new_disp_text,new_poker_hands,new_scoring_hand,new_non_loc_disp_text = G.FUNCS.get_poker_hand_info(new_hand)
+    for i=#new_scoring_hand, 1,-1 do
+        if new_scoring_hand[i].area == G.consumeables then
+            table.remove(new_scoring_hand, i)
+        end
+    end
+    local splash = next(find_joker('Splash'))
+    if not splash then
+        local pures = {}
+        for i=1, #G.play.cards do
+            if G.play.cards[i].ability.effect == 'Stone Card' or G.play.cards[i].config.center.always_scores then
+                local inside = false
+                for j=1, #scoring_hand do
+                    if new_scoring_hand[j] == G.play.cards[i] then
+                        inside = true
+                    end
+                end
+                if not inside then table.insert(pures, G.play.cards[i]) end
+            end
+        end
+        for i=1, #pures do
+            table.insert(new_scoring_hand, pures[i])
+        end
+        table.sort(new_scoring_hand, function (a, b) return a.T.x < b.T.x end )
+    end
+    for i=1, #scoring_hand do
+        local card = scoring_hand[i]
+        card.prev_scored = true
+    end
+    for i=1, #new_scoring_hand do
+        local card = new_scoring_hand[i]
+        card.grm_scored = true
+        if not card.prev_scored then
+            highlight_card(card,(i-0.999)/5,'up')
+        end
+    end
+    for i=1, #G.play.cards do
+        local card = G.play.cards[i]
+        if not card.grm_scored and card.prev_scored then
+            highlight_card(card,(i-0.999)/5,'down')
+        end
+    end
+    if text ~= new_text then
+        card_eval_status_text(j_card, 'jokers', nil, nil, nil, {colour = G.C.RED, message = localize('k_upgrade_ex')})
+        delay(0.4)
+        G.GAME.hands[text].played = G.GAME.hands[text].played - 1
+        G.GAME.hands[text].played_this_round = G.GAME.hands[text].played_this_round - 1
+        G.GAME.hands[new_text].played = G.GAME.hands[new_text].played + 1
+        G.GAME.hands[new_text].played_this_round = G.GAME.hands[new_text].played_this_round + 1
+        G.GAME.last_hand_played = new_text
+        G.GAME.hands[new_text].visible = true
+        update_hand_text({sound = 'button', volume = 0.4, nopulse = nil, delay = 0.4}, {handname=new_disp_text, level=G.GAME.hands[new_text].level, mult = G.GAME.hands[new_text].mult, chips = G.GAME.hands[new_text].chips})
+    end
+    return new_text,new_disp_text,new_poker_hands,new_scoring_hand,new_non_loc_disp_text
 end
 
 ----------------------------------------------

@@ -21,6 +21,8 @@ grm_unlocks = {
     shop_rerolls = 0,
 },
 ante_banners = {},
+grim_banned = {},
+grim_class = {},
 '''
 match_indent = true
 
@@ -151,6 +153,7 @@ payload = '''self.P_SKILLS = {
     sk_grm_receipt_3 = {order = 39, key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 500, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}},
     sk_grm_dash_1 = {order = 40, key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 250, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
     sk_grm_dash_2 = {order = 41, key = 'sk_grm_dash_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash II", xp_req = 400, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_dash_1'}},
+    sk_grm_cl_hoarder = {order = 42, key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}},
 }'''
 match_indent = true
 
@@ -334,7 +337,37 @@ target = 'card.lua'
 pattern = '''self.highlighted = is_higlighted'''
 position = 'after'
 payload = '''if self.ability.set == "Skill" then
-        if self.highlighted and self.area and self.area.config.type ~= 'shop' then
+    if self.highlighted and self.area and self.area.config.type ~= 'shop' then
+        local x_off = (self.ability.consumeable and -0.1 or 0)
+        self.children.use_button = UIBox{
+            definition = G.UIDEF.use_and_sell_buttons(self), 
+            config = {align=
+                    ((self.area == G.jokers) or (self.area == G.consumeables)) and "cr" or
+                    "bmi"
+                , offset = 
+                    ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=x_off - 0.4,y=0} or
+                    {x=0,y=0.65},
+                parent =self}
+        }
+    elseif self.children.use_button then
+        self.children.use_button:remove()
+        self.children.use_button = nil
+    end
+end
+if self.playing_card then
+        if self.highlighted and self.area and self.area == G.consumeables then
+            local x_off = (self.ability.consumeable and -0.1 or 0)
+            self.children.use_button = UIBox{
+                definition = G.UIDEF.use_and_sell_buttons(self), 
+                config = {align=
+                        ((self.area == G.jokers) or (self.area == G.consumeables)) and "cr" or
+                        "bmi"
+                    , offset = 
+                        ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=x_off - 0.4,y=0} or
+                        {x=0,y=0.65},
+                    parent =self}
+            }
+        elseif self.highlighted and (self.ability.name == "m_grm_package") and (self.area ~= G.pack_cards) then
             local x_off = (self.ability.consumeable and -0.1 or 0)
             self.children.use_button = UIBox{
                 definition = G.UIDEF.use_and_sell_buttons(self), 
@@ -526,6 +559,12 @@ pattern = '''local hand_text_set = false'''
 position = 'before'
 payload = '''for i, j in pairs(G.GAME.skills) do
     calculate_skill(i, {before = true, scoring_name = text})
+end
+if next(SMODS.find_card("j_grm_showdown")) then
+    local card = SMODS.find_card("j_grm_showdown")[1]
+    text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = upgrade_poker_hand_showdown(text, scoring_hand, card)
+    mult = mod_mult(G.GAME.hands[text].mult)
+    hand_chips = mod_chips(G.GAME.hands[text].chips)
 end'''
 match_indent = true
 
@@ -825,5 +864,240 @@ pattern = '''G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.AR
 position = 'at'
 payload = '''if not self.no_shader then
     G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if context.cardarea == G.play then'''
+position = 'before'
+payload = '''if (card.area == G.consumeables) and card.playing_card then
+    ret.playing_card = true
+    local chips = card:get_chip_bonus()
+    if chips > 0 then 
+        ret.chips = chips
+    end
+
+    local mult = card:get_chip_mult()
+    if mult > 0 then 
+        ret.mult = mult
+    end
+
+    local xp = card:get_chip_xp(context)
+    if xp > 0 then 
+        ret.xp = xp
+    end
+
+    local x_mult = card:get_chip_x_mult(context)
+    if x_mult > 0 then 
+        ret.x_mult = x_mult
+    end
+
+    local p_dollars = card:get_p_dollars()
+    if p_dollars > 0 then 
+        ret.p_dollars = p_dollars
+    end
+
+    local edition = card:get_edition(context)
+    if edition then 
+        ret.edition = edition
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''if card.area and card.area.config.type == 'joker' then'''
+position = 'before'
+payload = '''if card.area and (card.area == G.consumeables) and card.playing_card then
+    use = 
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+      {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_discard_card', func = 'grm_can_discard_card'}, nodes={
+        {n=G.UIT.B, config = {w=0.1,h=0.6}},
+        {n=G.UIT.T, config={text = localize('b_discard'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+      }}
+    }}
+    sell = 
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+      {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_draw_card', func = 'grm_can_draw_card'}, nodes={
+        {n=G.UIT.B, config = {w=0.1,h=0.6}},
+        {n=G.UIT.T, config={text = localize('b_draw'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+      }}
+    }}
+    local t = {
+      n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+          {n=G.UIT.R, config={align = 'cl'}, nodes={
+            sell
+          }},
+          {n=G.UIT.R, config={align = 'cl'}, nodes={
+            use
+          }},
+        }},
+    }}
+    return t
+elseif card.playing_card and (card.ability.name == "m_grm_package") and (card.area ~= G.pack_cards) then
+    return {
+        n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+          {n=G.UIT.R, config={mid = true}, nodes={
+          }},
+          {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, minh = 0.8*card.T.h, maxw = 0.7*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_pack_card', func = 'grm_can_pack_card'}, nodes={
+            {n=G.UIT.T, config={text = localize('b_pack'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+          }},
+      }}
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''local effects = eval_card(_card, {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true})'''
+position = 'after'
+payload = '''if effects.playing_card then
+    local reps = {1}
+    local j = 1
+    while j <= #reps do
+        if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
+
+        if reps[j] == 1 then 
+            --Check for hand doubling
+            --From Red seal
+            local eval = eval_card(_card, {end_of_round = true,cardarea = G.consumeables, repetition = true, repetition_only = true})
+            if next(eval) then 
+                for h = 1, eval.seals.repetitions do
+                    reps[#reps+1] = eval
+                end
+            end
+
+            --from Jokers
+            for j=1, #G.jokers.cards do
+                --calculate the joker effects
+                local eval = eval_card(G.jokers.cards[j], {cardarea = G.consumeables, other_card = _card, repetition = true})
+                if next(eval) then 
+                    for h  = 1, eval.jokers.repetitions do
+                        reps[#reps+1] = eval
+                    end
+                end
+            end
+        end
+        if effects.chips then 
+            juice_card(_card)
+            hand_chips = mod_chips(hand_chips + effects.chips)
+            update_hand_text({delay = 0}, {chips = hand_chips})
+            card_eval_status_text(_card, 'chips', effects.chips, percent)
+        end
+
+        if effects.mult then 
+            juice_card(_card)
+            mult = mod_mult(mult + effects.mult)
+            update_hand_text({delay = 0}, {mult = mult})
+            card_eval_status_text(_card, 'mult', effects.mult, percent)
+        end
+
+        if effects.p_dollars then 
+            juice_card(_card)
+            ease_dollars(effects.p_dollars)
+            card_eval_status_text(_card, 'dollars', effects.p_dollars, percent)
+        end
+
+        if effects.dollars then 
+            juice_card(_card)
+            ease_dollars(effects.dollars)
+            card_eval_status_text(_card, 'dollars', effects.dollars, percent)
+        end
+
+        if effects.extra then
+            juice_card(_card)
+            local extras = {mult = false, hand_chips = false}
+            if effects.extra.mult_mod then mult =mod_mult( mult + effects.extra.mult_mod);extras.mult = true end
+            if effects.extra.chip_mod then hand_chips = mod_chips(hand_chips + effects.extra.chip_mod);extras.hand_chips = true end
+            if effects.extra.swap then 
+                local old_mult = mult
+                mult = mod_mult(hand_chips)
+                hand_chips = mod_chips(old_mult)
+                extras.hand_chips = true; extras.mult = true
+            end
+            if effects.extra.func then effects.extra.func() end
+            update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
+            card_eval_status_text(_card, 'extra', nil, percent, nil, effects.extra)
+        end
+
+        --If x_mult added, do mult add event and mult the mult to the total
+        if effects.x_mult then
+            juice_card(_card)
+            mult = mod_mult(mult*effects.x_mult)
+            update_hand_text({delay = 0}, {mult = mult})
+            card_eval_status_text(_card, 'x_mult', effects.x_mult, percent)
+        end
+
+        --calculate the card edition effects
+        if effects.edition then
+            juice_card(_card)
+            hand_chips = mod_chips(hand_chips + (effects.edition.chip_mod or 0))
+            mult = mult + (effects.edition.mult_mod or 0)
+            mult = mod_mult(mult*(effects.edition.x_mult_mod or 1))
+            update_hand_text({delay = 0}, {
+                chips = effects.edition.chip_mod and hand_chips or nil,
+                mult = (effects.edition.mult_mod or effects.edition.x_mult_mod) and mult or nil,
+            })
+            card_eval_status_text(_card, 'extra', nil, percent, nil, {
+                message = (effects.edition.chip_mod and localize{type='variable',key='a_chips',vars={effects.edition.chip_mod}}) or
+                        (effects.edition.mult_mod and localize{type='variable',key='a_mult',vars={effects.edition.mult_mod}}) or
+                        (effects.edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects.edition.x_mult_mod}}),
+                chip_mod =  effects.edition.chip_mod,
+                mult_mod =  effects.edition.mult_mod,
+                x_mult_mod =  effects.edition.x_mult_mod,
+                colour = G.C.DARK_EDITION,
+                edition = true})
+        end
+        j = j + 1
+    end
+end'''
+match_indent = true
+
+
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if _pool_size == 0 then'''
+position = 'before'
+payload = '''
+local i0 = 1
+while i0 <= _pool_size do
+    local key = _pool[i0]
+    if G.GAME.grim_banned and G.GAME.grim_banned[key] then
+        table.remove(_pool, i0)
+        _pool_size = _pool_size - 1
+    else
+        i0 = i0 + 1
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''for i=1, #G.hand.cards do'''
+position = 'after'
+payload = '''   if G.GAME.grim_class and G.GAME.grim_class.hoarder then
+        break
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''for k, v in ipairs(cards_destroyed) do'''
+position = 'before'
+payload = '''for i=1, #G.consumeables.cards do
+    local destroyed = nil
+    local card = G.consumeables.cards[i]
+    if card.playing_card and (card.ability.name == 'Glass Card') and not card.debuff and pseudorandom('glass') < G.GAME.probabilities.normal/card.ability.extra then 
+        card.shattered = true
+        cards_destroyed[#cards_destroyed+1] = card
+    end
 end'''
 match_indent = true
