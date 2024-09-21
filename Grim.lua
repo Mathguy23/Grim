@@ -718,16 +718,16 @@ end
 local old_func = Back.apply_to_run
 function Back:apply_to_run()
     wipe_grim_group("packed")
-    G.E_MANAGER:add_event(Event({
-        func = function()
-            local card = create_playing_card({center = G.P_CENTERS.m_glass}, G.consumeables)
-            card:set_seal("Red")
-            -- local card = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_grm_showdown', 'deck')
-            -- card:add_to_deck()
-            -- G.jokers:emplace(card)
-            return true
-        end
-    }))
+    -- G.E_MANAGER:add_event(Event({
+    --     func = function()
+    --         local card = create_playing_card({center = G.P_CENTERS.m_glass}, G.consumeables)
+    --         card:set_seal("Red")
+    --         local card = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_grm_showdown', 'deck')
+    --         card:add_to_deck()
+    --         G.jokers:emplace(card)
+    --         return true
+    --     end
+    -- }))
     old_func(self)
 end
 
