@@ -974,9 +974,9 @@ payload = '''if effects.playing_card then
             --from Jokers
             for j=1, #G.jokers.cards do
                 --calculate the joker effects
-                local eval = eval_card(G.jokers.cards[j], {cardarea = G.consumeables, other_card = _card, repetition = true})
-                if next(eval) then 
-                    for h  = 1, eval.jokers.repetitions do
+                local eval0 = eval_card(G.jokers.cards[j], {cardarea = G.consumeables, other_card = _card, repetition = true})
+                if next(eval0) then 
+                    for h = 1, eval0.jokers.repetitions do
                         reps[#reps+1] = eval
                     end
                 end
