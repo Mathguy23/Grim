@@ -1151,9 +1151,11 @@ position = 'before'
 payload = '''if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
     localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
 end
-for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
-    if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
-        info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+if card then
+    for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
+        if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
+            info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+        end
     end
 end'''
 match_indent = true
