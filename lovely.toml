@@ -20,9 +20,27 @@ xp_interest_max = 50,
 grm_unlocks = {
     shop_rerolls = 0,
 },
+grim_boss_dollars = 0,
 ante_banners = {},
-grim_banned = {},
 grim_class = {},
+special_levels = {
+    heart = 0,
+    club = 0,
+    spade = 0,
+    diamond = 0,
+    debuff = 0,
+    face_down = 0,
+    not_allowed = 0,
+    overshoot = 0,
+    money = 0,
+},
+stellar_levels = {
+    hearts = {chips = 0, mult = 0},
+    diamonds = {chips = 0, mult = 0},
+    clubs = {chips = 0, mult = 0},
+    spades = {chips = 0, mult = 0},
+},
+nullified_blinds = {},
 '''
 match_indent = true
 
@@ -153,7 +171,8 @@ payload = '''self.P_SKILLS = {
     sk_grm_receipt_3 = {order = 39, key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 500, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}},
     sk_grm_dash_1 = {order = 40, key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 250, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
     sk_grm_dash_2 = {order = 41, key = 'sk_grm_dash_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash II", xp_req = 400, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_dash_1'}},
-    sk_grm_cl_hoarder = {order = 42, key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}},
+    sk_grm_cl_hoarder = {order = 42, key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_cl_astronomer = {order = 43, key = 'sk_grm_cl_astronomer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Astronomer", xp_req = 0, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
 }'''
 match_indent = true
 
@@ -409,6 +428,15 @@ for i, j in pairs(G.GAME.skills) do
 end
 if game_over and skill_saved then
     game_over = false
+end
+if (G.GAME.special_levels) and (G.GAME.special_levels["money"] > 0) and G.GAME.dollars < G.GAME.grim_boss_dollars then
+    ease_dollars(math.ceil(0.1 * G.GAME.special_levels["money"] * (G.GAME.grim_boss_dollars - G.GAME.dollars)))
+end
+if (G.GAME.blind_on_deck == "Boss") and G.GAME.special_levels and (G.GAME.special_levels["overshoot"] > 0) then
+    local big_func = to_big or (function(x) return x end)
+    if big_func(math.abs((G.GAME.blind.chips - G.GAME.chips) / G.GAME.blind.chips)) <= big_func(.015 * G.GAME.special_levels["overshoot"]) then
+        add_tag(Tag("tag_negative"))
+    end
 end'''
 match_indent = true
 
@@ -627,6 +655,41 @@ payload = '''if lovers_indexes and (((lovers_indexes[1] == i) and not G.GAME.use
     card.T.y = self.T.y
     pack_cards[i] = card
     goto continue
+end
+if self.ability.name:find('Celestial') and G.GAME.used_vouchers.v_telescope and (i ~= 1) then
+    local rng = pseudorandom('astro')
+    if G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.35) then
+        card = create_card("Lunar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x
+        card.T.y = self.T.y
+        pack_cards[i] = card
+        goto continue
+    elseif G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.59) then
+        card = create_card("Stellar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x
+        card.T.y = self.T.y
+        pack_cards[i] = card
+        goto continue
+    end
+elseif self.ability.name:find('Celestial') then
+    local rng = pseudorandom('astro')
+    if G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.34) then
+        card = create_card("Lunar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x
+        card.T.y = self.T.y
+        pack_cards[i] = card
+        goto continue
+    elseif G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.56) then
+        card = create_card("Stellar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x
+        card.T.y = self.T.y
+        pack_cards[i] = card
+        goto continue
+    end
 end'''
 match_indent = true
 
@@ -953,8 +1016,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'
-pattern = '''local effects = eval_card(_card, {cardarea = G.jokers, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true})'''
-position = 'after'
+pattern = '''--Joker on Joker effects'''
+position = 'before'
 payload = '''if effects.playing_card then
     local reps = {1}
     local j = 1
@@ -1057,36 +1120,6 @@ payload = '''if effects.playing_card then
 end'''
 match_indent = true
 
-
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''if _pool_size == 0 then'''
-position = 'before'
-payload = '''
-local i0 = 1
-while i0 <= _pool_size do
-    local key = _pool[i0]
-    if G.GAME.grim_banned and G.GAME.grim_banned[key] then
-        table.remove(_pool, i0)
-        _pool_size = _pool_size - 1
-    else
-        i0 = i0 + 1
-    end
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''for i=1, #G.hand.cards do'''
-position = 'after'
-payload = '''   if G.GAME.grim_class and G.GAME.grim_class.hoarder then
-        break
-    end'''
-match_indent = true
-
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'
@@ -1100,4 +1133,145 @@ payload = '''for i=1, #G.consumeables.cards do
         cards_destroyed[#cards_destroyed+1] = card
     end
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''return self.ability.mult'''
+position = 'at'
+payload = '''return self.ability.mult + (self.ability.perma_bonus_mult or 0)'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''elseif _c.set == 'Enhanced' then'''
+position = 'before'
+payload = '''if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
+    localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
+end
+for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
+    if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
+        info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''elseif _c.set == 'Booster' then'''
+position = 'before'
+payload = '''if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
+    localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
+end
+for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
+    if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
+        info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''bonus_chips = (self.ability.bonus + (self.ability.perma_bonus or 0)) > 0 and (self.ability.bonus + (self.ability.perma_bonus or 0)) or nil,'''
+position = 'after'
+payload = '''grim_bonus_mult = ((self.ability.perma_bonus_mult or 0) > 0) and self.ability.perma_bonus_mult or nil,'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if context.cardarea == G.hand then'''
+position = 'after'
+payload = '''   if card.debuff and G.GAME.special_levels and (G.GAME.special_levels["debuff"] > 0) then
+        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
+        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + G.GAME.special_levels["debuff"] * 0.2
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.2}}})
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''scoring_hand[i].lucky_trigger = nil'''
+position = 'after'
+payload = '''   if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
+        effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.05)}
+    end
+    if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}
+    end
+    if scoring_hand[i]:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}
+    end
+    if scoring_hand[i]:is_suit("Spades") and G.GAME.special_levels and (G.GAME.special_levels["spade"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}
+    end
+    if scoring_hand[i]:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.round_scores.cards_played.amt = G.GAME.round_scores.cards_played.amt + 1'''
+position = 'after'
+payload = '''if G.hand.highlighted[i].facing == 'back' then G.hand.highlighted[i].grim_facing_down = true end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''check_for_unlock({type = 'play_all_hearts'})'''
+position = 'after'
+payload = '''for i = 1, #G.play.cards do
+    G.play.cards[i].grim_facing_down = nil
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''play_area_status_text("Not Allowed!")--localize('k_not_allowed_ex'), true)'''
+position = 'after'
+payload = '''if G.GAME.special_levels and (G.GAME.special_levels["not_allowed"] > 0) then
+    if pseudorandom('rhea') < G.GAME.probabilities.normal * ((G.GAME.special_levels["not_allowed"] + 1) % 5) / 5 then
+        level_up_hand(used_tarot, text, nil, math.ceil((G.GAME.special_levels["not_allowed"] + 1) / 5))
+    elseif G.GAME.special_levels["not_allowed"] >= 4 then
+        level_up_hand(used_tarot, text, nil, math.floor((G.GAME.special_levels["not_allowed"] + 1) / 5))
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.blind:set_blind(G.GAME.round_resets.blind)'''
+position = 'after'
+payload = '''G.E_MANAGER:add_event(Event({trigger = 'immediate',func = function()
+    if G.GAME.nullified_blinds[G.GAME.blind.config.blind.key] then G.GAME.blind:disable() end
+    return true
+end}))'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.R, config={align = "cm",r = 0.1, padding = 0.05, minw = 3.1, colour = G.C.BLACK, emboss = 0.05}, nodes={'''
+position = 'after'
+payload = '''  ((type == "Boss") and G.GAME.nullified_blinds[G.GAME.round_resets.blind_choices["Boss"]]) and {n=G.UIT.R, config={align = "cm", maxw = 3}, nodes={
+      {n=G.UIT.T, config={text = localize('nullified'), scale = 0.3, colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.WHITE, shadow = not disabled}}
+  }} or {n=G.UIT.R, config={align = "cm", maxw = 3}, nodes={}},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.round_bonus.discards = 0'''
+position = 'after'
+payload = '''G.GAME.grim_boss_dollars = G.GAME.dollars'''
 match_indent = true

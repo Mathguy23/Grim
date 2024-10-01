@@ -4,50 +4,101 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 0.9.4
+--- VERSION: 0.9.6
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
-local ban_regions = {
-    held_in_hand = {
-        centers = {
-            "j_mime",
-            "j_raised_fist",
-            "j_baron",
-            "j_reserved_parking",
-            "j_shoot_the_moon",
-            "c_chariot",
-            "c_devil",
-            "c_trance",
-            "blue_seal",
-            "m_steel",
-            "m_gold",
+local lunarType = SMODS.ConsumableType {
+    key = 'Lunar',
+    primary_colour = HEX('505A8D'),
+    secondary_colour = HEX('7F82C4'),
+    loc_txt = {
+        name = 'Lunar',
+        collection = 'Lunar Cards',
+        undiscovered = {
+            name = "Not Discovered",
+            text = {
+                "Purchase or use",
+                "this card in an",
+                "unseeded run to",
+                "learn what it does"
+            }
         }
     },
-    packed = {
-        centers = {
-            "c_grm_tape",
-            "m_grm_package",
-            "j_grm_showdown",
-        }
-    }
+    collection_rows = { 3, 3 },
+    shop_rate = 0,
+    default = "c_grm_moon"
 }
 
-function wipe_grim_group(group)
-    if G.GAME.grim_banned then
-        for i, j in ipairs(ban_regions[group].centers) do
-            G.GAME.grim_banned[j] = true
-        end
-    end
-end
+local stellarType = SMODS.ConsumableType {
+    key = 'Stellar',
+    primary_colour = HEX('AAA65B'),
+    secondary_colour = HEX('D2CE84'),
+    loc_txt = {
+        name = 'Stellar',
+        collection = 'Stellar Cards',
+        undiscovered = {
+            name = "Not Discovered",
+            text = {
+                "Purchase or use",
+                "this card in an",
+                "unseeded run to",
+                "learn what it does"
+            }
+        }
+    },
+    collection_rows = { 2, 2 },
+    shop_rate = 0,
+    default = "c_grm_sun"
+}
 
-function unwipe_grim_group(group)
-    if G.GAME.grim_banned then
-        for i, j in ipairs(ban_regions[group].centers) do
-            G.GAME.grim_banned[j] = nil
-        end
+SMODS.Lunar = SMODS.Consumable:extend {
+    set = 'Lunar',
+    use = function(self, card, area, copier)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + 1
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
+    can_use = function(self, card)
+        return true
+    end,
+    cost = 3
+}
+
+SMODS.Stellar = SMODS.Consumable:extend {
+    set = 'Stellar',
+    use = function(self, card, area, copier)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + 1
+        G.GAME.stellar_levels[self.special_level .. "s"].chips = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.chips
+        G.GAME.stellar_levels[self.special_level .. "s"].mult = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.mult
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
+    can_use = function(self, card)
+        return true
+    end,
+    cost = 3,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            localize(card.ability.suit, 'suits_plural'),
+            G.GAME.special_levels[self.special_level] + 1,
+            string.format("%.2f", card.ability.mult),
+            string.format("%.1f", card.ability.chips),
+            string.format("%.2f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.mult),
+            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.chips),
+        }}
     end
-end
+}
+
+SMODS.UndiscoveredSprite {
+    key = 'Lunar',
+    atlas = 'lunar',
+    pos = {x = 2, y = 1}
+}
+
+SMODS.UndiscoveredSprite {
+    key = 'Stellar',
+    atlas = 'stellar',
+    pos = {x = 0, y = 1}
+}
 
 SMODS.current_mod.custom_collection_tabs = function()
 	return { UIBox_button {
@@ -273,6 +324,12 @@ local function get_skils()
                     break
                 end
             end
+            if j.class and G.GAME.grim_class.class then
+                valid = false
+            end
+            if G.GAME.skills[j.key] then
+                valid = true
+            end
             if valid then
                 if G.GAME.skills[j] then
                     shown_skills[#shown_skills + 1] = {j, true}
@@ -293,6 +350,7 @@ function learn_skill(card)
         G.GAME.ante_banners[key] = G.GAME.round_resets.ante
     end
     G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
+    check_for_unlock({type = 'skill_check', learned_skill = key})
     discover_card(obj)
     card:set_sprites(obj)
     if key == "sk_grm_ease_1" then
@@ -388,10 +446,12 @@ function learn_skill(card)
             G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
         end
     elseif key == "sk_grm_cl_hoarder" then
-        unwipe_grim_group("packed")
-        wipe_grim_group("held_in_hand")
         G.hand:change_size(-1)
         G.GAME.grim_class.hoarder = true
+        G.GAME.grim_class.class = true
+    elseif key == "sk_grm_cl_astronomer" then
+        G.GAME.grim_class.astronomer = true
+        G.GAME.grim_class.class = true
     end
 end
 
@@ -644,6 +704,10 @@ function skill_unlock_check(card, args)
                 end
             end
         end
+    elseif (card.key == "sk_grm_cl_astronomer") and args.learned_skill then
+        if args.learned_skill == "sk_grm_gravity_3" then
+            return true
+        end
     end
 end
 
@@ -715,22 +779,6 @@ G.FUNCS.grm_can_pack_card = function(e)
     end
 end
 
-local old_func = Back.apply_to_run
-function Back:apply_to_run()
-    wipe_grim_group("packed")
-    -- G.E_MANAGER:add_event(Event({
-    --     func = function()
-    --         local card = create_playing_card({center = G.P_CENTERS.m_glass}, G.consumeables)
-    --         card:set_seal("Red")
-    --         local card = create_card('Joker', G.jokers, nil, nil, nil, nil, 'j_grm_showdown', 'deck')
-    --         card:add_to_deck()
-    --         G.jokers:emplace(card)
-    --         return true
-    --     end
-    -- }))
-    old_func(self)
-end
-
 SMODS.Atlas({ key = "skills", atlas_table = "ASSET_ATLAS", path = "skills.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "skills2", atlas_table = "ASSET_ATLAS", path = "skills2.png", px = 71, py = 95})
@@ -778,6 +826,10 @@ SMODS.Atlas({ key = "banners", atlas_table = "ASSET_ATLAS", path = "banners.png"
     end
 })
 
+SMODS.Atlas({ key = "stellar", atlas_table = "ASSET_ATLAS", path = "Stellar.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "lunar", atlas_table = "ASSET_ATLAS", path = "Lunar.png", px = 71, py = 95})
+
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
 SMODS.Shader {
@@ -821,6 +873,228 @@ SMODS.Tarot {
         info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_package']
         return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_package')}}}
     end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Lunar {
+    key = 'moon',
+    loc_txt = {
+        name = "Moon",
+        text = {
+            "Level {C:attention}#1#{}",
+            "{C:attention}Debuffed{} cards gain",
+            "{C:red}+#2#{} Mult when {C:attention}held{}",
+            "{C:attention}in hand{}"
+        }
+    },
+    atlas = "lunar",
+    special_level = "debuff",
+    pos = {x = 0, y = 0},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1, 
+            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level] + 1) or 1) * 0.2)
+        }}
+    end
+}
+
+SMODS.Lunar {
+    key = 'callisto',
+    loc_txt = {
+        name = "Callisto",
+        text = {
+            "Level {C:attention}#1#{}",
+            "{C:attention}Face down{} cards",
+            "give {X:red,C:white} X#2# {} Mult when",
+            "{C:attention}scored{}"
+        }
+    },
+    atlas = "lunar",
+    special_level = "face_down",
+    pos = {x = 1, y = 0},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1,
+            string.format("%.2f",1 + 0.05 * (G.GAME.special_levels[self.special_level] + 1)),
+        }}
+    end
+}
+
+SMODS.Lunar {
+    key = 'rhea',
+    loc_txt = {
+        name = "Rhea",
+        text = {
+            "Level {C:attention}#1#{}",
+            "{C:attention}Disallowed{} hands have a",
+            "{C:green}#2# in #3#{} chance to",
+            "upgrade {C:attention}#4#{} levels,",
+            "otherwise upgrades {C:attention}#5#{} levels"
+        }
+    },
+    atlas = "lunar",
+    special_level = "not_allowed",
+    pos = {x = 2, y = 0},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1, 
+            G.GAME.probabilities.normal * ((G.GAME.special_levels[self.special_level] + 1) % 5),
+            5,
+            math.ceil((G.GAME.special_levels[self.special_level] + 1) / 5),
+            math.floor((G.GAME.special_levels[self.special_level] + 1) / 5),
+        }}
+    end
+}
+
+SMODS.Lunar {
+    key = 'oberon',
+    loc_txt = {
+        name = "Oberon",
+        text = {
+            "Level {C:attention}#1#{}",
+            "Create a {C:attention}#2#{}",
+            "when defeating a {C:attention}Boss{}",
+            "{C:attention}Blind{}, scoring chips within",
+            "{C:attention}#3#%{} of the {C:attention}requirement{}"
+        }
+    },
+    atlas = "lunar",
+    special_level = "overshoot",
+    pos = {x = 3, y = 0},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {key = 'tag_negative', set = 'Tag'}
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1, 
+            localize{type ='name_text', key = 'tag_negative', set = 'Tag'},
+            1.5 * (G.GAME.special_levels[self.special_level] + 1),
+        }}
+    end
+}
+
+SMODS.Lunar {
+    key = 'proteus',
+    loc_txt = {
+        name = "Proteus",
+        text = {
+            "Level {C:attention}#1#{}",
+            "Refund {C:money}#2#%{} of lost",
+            "{C:money}dollars{} during {C:attention}Boss Blinds{}",
+            "{C:inactive}(rounds up){}",
+        }
+    },
+    atlas = "lunar",
+    special_level = "money",
+    pos = {x = 0, y = 1},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1,
+            10 * (G.GAME.special_levels[self.special_level] + 1),
+        }}
+    end
+}
+
+SMODS.Lunar {
+    key = 'nix',
+    loc_txt = {
+        name = "Nix",
+        text = {
+            "{C:red}Nullify{} a random",
+            "{C:attention}Boss Blind{}",
+        }
+    },
+    atlas = "lunar",
+    pos = {x = 1, y = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {key = 'nullified', set = 'Other'}
+        return {vars = {}}
+    end,
+    use = function(self, card, area, copier)
+        local rngpick = {}
+        for i, j in pairs(G.P_BLINDS) do
+            if j.boss and not G.GAME.nullified_blinds[i] and not G.GAME.banned_keys[i] then
+                table.insert(rngpick, i)
+            end
+        end
+        local blind = "bl_small"
+        if #rngpick > 0 then
+            blind = pseudorandom_element(rngpick, pseudoseed('bonus'))
+        end
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize{type ='name_text', key = blind, set = 'Blind'},})
+    end,
+}
+
+SMODS.Stellar {
+    key = 'sun',
+    loc_txt = {
+        name = "Sun",
+        text = {
+            "{C:attention}Upgrade{} {C:hearts}#1#{}",
+            "{C:mult}+#3#{} Mult and",
+            "{C:chips}+#4#{} chips",
+            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+        }
+    },
+    atlas = "stellar",
+    special_level = "heart",
+    pos = {x = 0, y = 0},
+    config = {suit = "Hearts", mult = 0.2, chips = 1.8},
+}
+
+SMODS.Stellar {
+    key = 'sirius',
+    loc_txt = {
+        name = "Sirius",
+        text = {
+            "{C:attention}Upgrade{} {C:diamonds}#1#{}",
+            "{C:mult}+#3#{} Mult and",
+            "{C:chips}+#4#{} chips",
+            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+        }
+    },
+    atlas = "stellar",
+    special_level = "diamond",
+    pos = {x = 1, y = 0},
+    config = {suit = "Diamonds", mult = 0.3, chips = 0.9},
+}
+
+SMODS.Stellar {
+    key = 'canopus',
+    loc_txt = {
+        name = "Canopus",
+        text = {
+            "{C:attention}Upgrade{} {C:spades}#1#{}",
+            "{C:mult}+#3#{} Mult and",
+            "{C:chips}+#4#{} chips",
+            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+        }
+    },
+    atlas = "stellar",
+    special_level = "spade",
+    pos = {x = 2, y = 0},
+    config = {suit = "Spades", mult = 0.28, chips = 4},
+}
+
+SMODS.Stellar {
+    key = 'alpha',
+    loc_txt = {
+        name = "Alpha Centauri",
+        text = {
+            "{C:attention}Upgrade{} {C:spades}#1#{}",
+            "{C:mult}+#3#{} Mult and",
+            "{C:chips}+#4#{} chips",
+            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+        }
+    },
+    atlas = "stellar",
+    special_level = "club",
+    pos = {x = 3, y = 0},
+    config = {suit = "Clubs", mult = 0.45, chips = 1.2},
 }
 
 SMODS.Joker {
@@ -896,6 +1170,9 @@ SMODS.Joker {
     cost = 8,
     blueprint_compat = false,
     config = {},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
+    end,
 }
 
 SMODS.Enhancement {
@@ -929,7 +1206,10 @@ SMODS.Enhancement {
     },
     atlas = 'enhance',
     config = {},
-    pos = {x = 1, y = 0}
+    pos = {x = 1, y = 0},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
+    end,
 }
 
 SMODS.Voucher {
@@ -1258,7 +1538,7 @@ function SMODS.current_mod.process_loc_text()
             },
             unlock = {
                 "Add the {C:dark_edition}Negative{} edition",
-                "to a {C:attention}joker{} using",
+                "to a {C:attention}Joker{} using",
                 "{C:attention}The Wheel of Fortune{}",
             }
         },
@@ -1371,13 +1651,23 @@ function SMODS.current_mod.process_loc_text()
             name = "Hoarder",
             text = {
                 "{C:red}-1{} hand size,",
-                "{C:attention}Held in hand{} effects",
-                "{C:red}disabled{}, {C:green}packed cards{}",
-                "enabled"
+                "{C:green}packed cards{} enabled",
             },
             unlock = {
                 "Get {C:attention}20{}",
                 "{C:attention}Ante Banners{}",
+            }
+        },
+        sk_grm_cl_astronomer = {
+            name = "Astronomer",
+            text = {
+                "{C:money}Stellar{} cards and {C:blue}Lunar{}",
+                "cards can appear in",
+                "{C:planet}Celestial{} packs",
+            },
+            unlock = {
+                "Learn",
+                "{C:planet}Gravity III{}",
             }
         }
     }
@@ -1390,10 +1680,36 @@ function SMODS.current_mod.process_loc_text()
             "what it does"
         }
     }
+    G.localization.descriptions.Other["nullified"] = {
+        name = "Nullified",
+        text = {
+            "Instantly disables",
+        }
+    }
     G.localization.descriptions.Other["unlearned_skill"] = {
         text = {
             "XP Needed:",
             "{C:purple}#1#{} XP",
+        }
+    }
+    
+    G.localization.descriptions.Other["star_tooltip"] = {
+        name = "Stellar Bonus",
+        text = {
+            "{C:mult}+#2#{} Mult and",
+            "{C:chips}+#1#{} Chips",
+        }
+    }
+    G.localization.descriptions.Other["unlearned_skill"] = {
+        text = {
+            "XP Needed:",
+            "{C:purple}#1#{} XP",
+        }
+    }
+    G.localization.descriptions.Other["card_extra_mult"] = 
+    {
+        text = {
+            "{C:red}+#1#{} extra mult"
         }
     }
     for i = 0, 8 do
@@ -1425,6 +1741,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
     G.localization.misc.dictionary['k_skill'] = "Skill"
+    G.localization.misc.dictionary['nullified'] = "Nullified!"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.dictionary['b_draw'] = "Draw"
