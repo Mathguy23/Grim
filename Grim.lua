@@ -533,7 +533,8 @@ function G.UIDEF.learned_skills()
         {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=area_table},
             {n=G.UIT.R, config={align = "cm"}, nodes={
                 create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true})
-        }}
+        }},
+        UIBox_button{id = 'lunar_button', label = {"Lunar Stats"}, button = "your_lunar_stats", minw = 5}
       }}
     return t
 end
@@ -1021,6 +1022,7 @@ SMODS.Lunar {
         if #rngpick > 0 then
             blind = pseudorandom_element(rngpick, pseudoseed('bonus'))
         end
+        G.GAME.nullified_blinds[blind] = true
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize{type ='name_text', key = blind, set = 'Blind'},})
     end,
 }
@@ -1692,7 +1694,6 @@ function SMODS.current_mod.process_loc_text()
             "{C:purple}#1#{} XP",
         }
     }
-    
     G.localization.descriptions.Other["star_tooltip"] = {
         name = "Stellar Bonus",
         text = {
@@ -1707,7 +1708,7 @@ function SMODS.current_mod.process_loc_text()
         }
     }
     G.localization.descriptions.Other["card_extra_mult"] = 
-    {
+        {
         text = {
             "{C:red}+#1#{} extra mult"
         }
@@ -1735,6 +1736,40 @@ function SMODS.current_mod.process_loc_text()
             "Learned this Skill",
             "on a {C:attention}negative{}",
             "{C:attention}Ante{} then won"
+        }
+    }
+    G.localization.descriptions.Other["moon_level_desc"] = {
+        text = {
+            "Debuffed cards gain",
+            "+#1# Mult when held",
+            "in hand",
+        }
+    }
+    G.localization.descriptions.Other["callisto_level_desc"] = {
+        text = {
+            "Face down cards",
+            "give X#1# Mult when",
+            "scored"
+        }
+    }
+    G.localization.descriptions.Other["rhea_level_desc"] = {
+        text = {
+            "Disallowed hands upgrade",
+            "#1# times on average",
+        }
+    }
+    G.localization.descriptions.Other["oberon_level_desc"] = {
+        text = {
+            "Create a #1#",
+            "when defeating a Boss",
+            "Blind, scoring chips within",
+            "#2#% of the requirement"
+        }
+    }
+    G.localization.descriptions.Other["proteus_level_desc"] = {
+        text = {
+            "Refund #1#% of lost",
+            "dollars during Boss Blinds",
         }
     }
     G.localization.misc.v_dictionary["skill_xp"] = "XP: #1#"
@@ -1907,6 +1942,215 @@ function upgrade_poker_hand_showdown(text, scoring_hand, j_card)
         update_hand_text({sound = 'button', volume = 0.4, nopulse = nil, delay = 0.4}, {handname=new_disp_text, level=G.GAME.hands[new_text].level, mult = G.GAME.hands[new_text].mult, chips = G.GAME.hands[new_text].chips})
     end
     return new_text,new_disp_text,new_poker_hands,new_scoring_hand,new_non_loc_disp_text
+end
+
+function moon_row(moon)
+    local desc_nodes = {}
+    local loc_vars = {}
+    local moon_name = ""
+    local stat_text = ""
+    local stat_color = G.C.FILTER
+    local level = 0
+    if moon == 'c_grm_moon' then
+        loc_vars = {
+            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels["debuff"]) or 0) * 0.2)
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'moon_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = "+" .. loc_vars[1]
+        stat_color = G.C.RED
+        level = G.GAME.special_levels["debuff"] + 1
+    elseif moon == 'c_grm_callisto' then
+        loc_vars = {
+            string.format("%.2f",1 + 0.05 * (G.GAME.special_levels and G.GAME.special_levels["face_down"] or 0))
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'callisto_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = "X" .. loc_vars[1]
+        stat_color = G.C.RED
+        level = G.GAME.special_levels["face_down"] + 1
+    elseif moon == 'c_grm_rhea' then
+        loc_vars = {
+            string.format("%.1f",0.2 * (G.GAME.special_levels and G.GAME.special_levels["not_allowed"] or 0))
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'rhea_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = loc_vars[1]
+        stat_color = G.C.GREEN
+        level = G.GAME.special_levels["not_allowed"] + 1
+    elseif moon == 'c_grm_oberon' then
+        loc_vars = {
+            localize{type ='name_text', key = 'tag_negative', set = 'Tag'},
+            1.5 * (G.GAME.special_levels and G.GAME.special_levels["overshoot"] or 0),
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'oberon_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = loc_vars[2] .. "%"
+        stat_color = G.C.IMPORTANT
+        level = G.GAME.special_levels["overshoot"] + 1
+    elseif moon == 'c_grm_proteus' then
+        loc_vars = {
+            10 * (G.GAME.special_levels and G.GAME.special_levels["money"] or 0),
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'proteus_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = loc_vars[1] .. "%"
+        stat_color = G.C.MONEY
+        level = G.GAME.special_levels["money"] + 1
+    end
+    return {n=G.UIT.R, config={align = "cm", padding = 0.05, r = 0.1, colour = darken(G.C.JOKER_GREY, 0.1), emboss = 0.05, hover = true, force_focus = true, on_demand_tooltip = {text = desc_nodes}}, nodes={
+        {n=G.UIT.C, config={align = "cl", padding = 0, minw = 5}, nodes={
+            {n=G.UIT.C, config={align = "cm", padding = 0.01, r = 0.1, colour = G.C.IMPORTANT, minw = 1.5, outline = 0.8, outline_colour = G.C.WHITE}, nodes={
+                {n=G.UIT.T, config={text = localize('k_level_prefix')..(level), scale = 0.5, colour = G.C.UI.TEXT_DARK}}
+            }},
+            {n=G.UIT.C, config={align = "cm", minw = 4.5, maxw = 4.5}, nodes={
+                {n=G.UIT.T, config={text = ' '..moon_name, scale = 0.45, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+            }}
+        }},
+        {n=G.UIT.C, config={align = "cm", padding = 0.05, colour = G.C.BLACK,r = 0.1}, nodes={
+            {n=G.UIT.C, config={align = "cr", padding = 0.01, r = 0.1, colour = stat_color, minw = 1.1}, nodes={
+                {n=G.UIT.T, config={text = stat_text, scale = 0.45, colour = G.C.UI.TEXT_LIGHT}},
+                {n=G.UIT.B, config={w = 0.08, h = 0.01}}
+            }},
+        }}
+    }}
+end
+
+function create_UIBox_current_lunar_stats()
+    local moons = {
+        moon_row("c_grm_moon"),
+        moon_row("c_grm_callisto"),
+        moon_row("c_grm_rhea"),
+        moon_row("c_grm_oberon"),
+        moon_row("c_grm_proteus"),
+    }
+  
+    local t = {n=G.UIT.ROOT, config={align = "cm", minw = 17, minh = 7, padding = 0.1, r = 0.1, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.C, config={align = "cm", padding = 0.04}, nodes=
+            moons
+        },
+        nullified_blinds_sect()
+    }}
+  
+    return create_UIBox_generic_options({ back_func = 'skills_page_direct', contents = {t}})
+end
+
+function nullified_blinds_sect()
+    if not use_page then
+        skills_page = nil
+    end
+    local blind_matrix = {
+        {},{},{}
+    }
+    local blind_tab = {}
+    for k, v in pairs(G.GAME.nullified_blinds) do
+        blind_tab[#blind_tab+1] = G.P_BLINDS[k]
+    end
+
+
+    table.sort(blind_tab, function (a, b) return a.order < b.order end)
+    local blind_tab2 = {}
+    for i = ((skills_page or 1) - 1) * 12 + 1, (skills_page or 1) * 12 do
+        blind_tab2[#blind_tab2+1] = blind_tab[i]
+    end
+
+    local blinds_to_be_alerted = {}
+    for k, v in ipairs(blind_tab2) do
+        local discovered = true
+        local temp_blind = AnimatedSprite(0,0,1.3,1.3, G.ANIMATION_ATLAS[v.atlas or 'blind_chips'], discovered and v.pos or G.b_undiscovered.pos)
+        temp_blind:define_draw_steps({
+            {shader = 'dissolve', shadow_height = 0.05},
+            {shader = 'dissolve'}
+        })
+        if k == 1 then 
+            G.E_MANAGER:add_event(Event({
+            trigger = 'immediate',
+            func = (function()
+                G.CONTROLLER:snap_to{node = temp_blind}
+                return true
+            end)
+            }))
+        end
+        temp_blind.float = true
+        temp_blind.states.hover.can = true
+        temp_blind.states.drag.can = false
+        temp_blind.states.collide.can = true
+        temp_blind.config = {blind = v, force_focus = true}
+        if discovered and not v.alerted then 
+            blinds_to_be_alerted[#blinds_to_be_alerted+1] = temp_blind
+        end
+        temp_blind.hover = function()
+            if not G.CONTROLLER.dragging.target or G.CONTROLLER.using_touch then 
+                if not temp_blind.hovering and temp_blind.states.visible then
+                    temp_blind.hovering = true
+                    temp_blind.hover_tilt = 3
+                    temp_blind:juice_up(0.05, 0.02)
+                    play_sound('chips1', math.random()*0.1 + 0.55, 0.12)
+                    temp_blind.config.h_popup = create_UIBox_blind_popup(v, discovered)
+                    temp_blind.config.h_popup_config ={align = 'cl', offset = {x=-0.1,y=0},parent = temp_blind}
+                    Node.hover(temp_blind)
+                    if temp_blind.children.alert then 
+                        temp_blind.children.alert:remove()
+                        temp_blind.children.alert = nil
+                        temp_blind.config.blind.alerted = true
+                        G:save_progress()
+                    end
+                end
+            end
+            temp_blind.stop_hover = function() temp_blind.hovering = false; Node.stop_hover(temp_blind); temp_blind.hover_tilt = 0 end
+        end
+        blind_matrix[math.ceil((k-1)/4+0.001)][1+((k-1)%4)] = {n=G.UIT.C, config={align = "cm", padding = 0.1}, nodes={
+            (k==5) and {n=G.UIT.B, config={h=0.2,w=0.5}} or nil,
+            {n=G.UIT.O, config={object = temp_blind, focus_with_object = true}},
+            (k==4 or k == 12) and {n=G.UIT.B, config={h=0.2,w=0.5}} or nil,
+        }} 
+    end
+
+    local blind_options = {}
+    for i = 1, math.ceil(#blind_tab/12) do
+      table.insert(blind_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#blind_tab/20)))
+    end
+
+    local t = 
+    {n=G.UIT.C, config={align = "cm"}, nodes={
+        {n=G.UIT.R, config={align = "cm", minh = 0.4}, nodes={
+            {n=G.UIT.T, config={scale = 0.8,text = "Nullified Blinds", colour = G.C.UI.TEXT_LIGHT, padding = 0.1}}
+        }},
+        {n=G.UIT.R, config={align = "cm", minw = 3, minh = 4.5, padding = 0.1, colour = G.C.BLACK, emboss = 0.05,r = 0.1}, nodes={
+          {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[1]},
+          {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[2]},
+          {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[3]},
+        }},
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+            create_option_cycle({options = blind_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_nullified_blinds_page', focus_args = {snap_to = true, nav = 'wide'},current_option = skills_page or 1, colour = G.C.RED, no_pips = true})
+        }}
+    }}
+    return t
+end
+
+G.FUNCS.your_lunar_stats = function(e)
+    G.SETTINGS.paused = true
+    G.FUNCS.overlay_menu{
+        definition = create_UIBox_current_lunar_stats(),
+    }
+end
+
+G.FUNCS.skills_page_direct = function(e)
+    G.SETTINGS.paused = true
+    G.FUNCS.overlay_menu{
+        definition = G.UIDEF.run_info(),
+    }
+end
+
+G.FUNCS.your_nullified_blinds_page = function(args)
+    if not args or not args.cycle_config then return end
+    skills_page = args.cycle_config.current_option
+    G.SETTINGS.paused = true
+    use_page = true
+    G.FUNCS.overlay_menu{
+      definition = create_UIBox_current_lunar_stats(),
+    }
+    use_page = nil
 end
 
 ----------------------------------------------
