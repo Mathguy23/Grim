@@ -1618,7 +1618,7 @@ function SMODS.current_mod.process_loc_text()
         sk_grm_receipt_1 = {
             name = "Receipt I",
             text = {
-                "Earn {C:money}$7{} for every",
+                "Earn {C:money}$1{} for every",
                 "{C:money}$7{} earned at {C:attention}cash out{}",
             }
         },
