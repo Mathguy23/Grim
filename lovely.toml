@@ -712,17 +712,11 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'card.lua'
-pattern = '''if (self.ability.name == 'Wild Card' or self.config.center.any_suit) and not self.debuff then'''
-position = 'at'
-payload = '''if (self.ability.name == 'Wild Card' or self.config.center.any_suit or (G.GAME.skills["sk_grm_motley_3"] and (self.config.center ~= G.P_CENTERS.c_base))) and not self.debuff then'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''if self.ability.name == 'Wild Card' or self.config.center.any_suit then'''
-position = 'at'
-payload = '''if self.ability.name == 'Wild Card' or self.config.center.any_suit or (G.GAME.skills["sk_grm_motley_3"] and (self.config.center ~= G.P_CENTERS.c_base)) then'''
+pattern = '''if flush_calc then'''
+position = 'before'
+payload = '''if (G.GAME.skills["sk_grm_motley_3"] and (self.config.center ~= G.P_CENTERS.c_base)) and (not self.debuff or (bypass_debuff and not flush_calc)) then
+    return true
+end'''
 match_indent = true
 
 [[patches]]
