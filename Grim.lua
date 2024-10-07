@@ -453,6 +453,12 @@ function learn_skill(card)
     elseif key == "sk_grm_cl_astronomer" then
         G.GAME.grim_class.astronomer = true
         G.GAME.grim_class.class = true
+    elseif key == "sk_grm_cl_alchemist" then
+        G.GAME.grim_class.alchemist = true
+        G.GAME.grim_class.class = true
+    elseif key == "sk_grm_orbit_1" then
+        G.GAME.lunar_rate = 4
+        G.GAME.stellar_rate = 4
     end
 end
 
@@ -532,11 +538,13 @@ function G.UIDEF.learned_skills()
             {n=G.UIT.O, config={object = DynaText({string = text, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
         }},
         {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=area_table},
-            {n=G.UIT.R, config={align = "cm"}, nodes={
-                create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true})
+        {n=G.UIT.R, config={align = "cm"}, nodes={
+            create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true})
         }},
-        UIBox_button{id = 'lunar_button', label = {"Lunar Stats"}, button = "your_lunar_stats", minw = 5}
       }}
+    if G.GAME.skills["sk_grm_cl_astronomer"] then
+        t.nodes[4] = UIBox_button{id = 'lunar_button', label = {"Lunar Stats"}, button = "your_lunar_stats", minw = 5}
+    end
     return t
 end
 
@@ -710,6 +718,16 @@ function skill_unlock_check(card, args)
         if args.learned_skill == "sk_grm_gravity_3" then
             return true
         end
+    elseif card.key == "sk_grm_cl_alchemist" then
+        if args.type == 'modify_deck' then
+            local count = 0
+            for _, v in pairs(G.playing_cards) do
+                if (v.ability.name == "Wild Card") or (G.GAME.skills and G.GAME.skills["sk_grm_motley_3"] and (v.config.center ~= G.P_CENTERS.c_base)) then count = count + 1 end
+            end
+            if count >= 52 then
+                return true
+            end
+        end
     end
 end
 
@@ -831,6 +849,30 @@ SMODS.Atlas({ key = "banners", atlas_table = "ASSET_ATLAS", path = "banners.png"
 SMODS.Atlas({ key = "stellar", atlas_table = "ASSET_ATLAS", path = "Stellar.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "lunar", atlas_table = "ASSET_ATLAS", path = "Lunar.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "status", atlas_table = "ASSET_ATLAS", path = "Status.png", px = 71, py = 95,
+    inject = function(self)
+        local file_path = type(self.path) == 'table' and
+            (self.path[G.SETTINGS.language] or self.path['default'] or self.path['en-us']) or self.path
+        if file_path == 'DEFAULT' then return end
+        -- language specific sprites override fully defined sprites only if that language is set
+        if self.language and not (G.SETTINGS.language == self.language) then return end
+        if not self.language and self.obj_table[('%s_%s'):format(self.key, G.SETTINGS.language)] then return end
+        self.full_path = (self.mod and self.mod.path or SMODS.path) ..
+            'assets/' .. G.SETTINGS.GRAPHICS.texture_scaling .. 'x/' .. file_path
+        local file_data = assert(NFS.newFileData(self.full_path),
+            ('Failed to collect file data for Atlas %s'):format(self.key))
+        self.image_data = assert(love.image.newImageData(file_data),
+            ('Failed to initialize image data for Atlas %s'):format(self.key))
+        self.image = love.graphics.newImage(self.image_data,
+            { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
+        G[self.atlas_table][self.key_noloc or self.key] = self
+        G.shared_stickers['sa_flint'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 0,y = 0})
+        G.shared_stickers['sa_subzero'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 0})
+        G.shared_stickers['sa_rocky'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 0,y = 1})
+        G.shared_stickers['sa_aether'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 1})
+    end
+})
 
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
@@ -1028,6 +1070,33 @@ SMODS.Lunar {
     end,
 }
 
+SMODS.Lunar {
+    key = 'dysnomia',
+    loc_txt = {
+        name = "Dysnomia",
+        text = {
+            "Level {C:attention}#1#{}",
+            "After defeating each",
+            "{C:attention}Boss Blind{}, create {C:attention}#2#{}",
+            "{C:dark_edition}Negative{} {C:blue}Lunar{}, {C:money}Stellar{},",
+            "or {C:planet}Planet{} cards with",
+            "{C:money}$1{} {C:attention}sell value{}"
+        }
+    },
+    atlas = "lunar",
+    special_level = "grind",
+    pos = {x = 3, y = 1},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1,
+            G.GAME.special_levels[self.special_level] + 1,
+        }}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
+    end
+}
+
 SMODS.Stellar {
     key = 'sun',
     loc_txt = {
@@ -1043,7 +1112,7 @@ SMODS.Stellar {
     atlas = "stellar",
     special_level = "heart",
     pos = {x = 0, y = 0},
-    config = {suit = "Hearts", mult = 0.2, chips = 1.8},
+    config = {suit = "Hearts", mult = 0.35, chips = 1.8},
 }
 
 SMODS.Stellar {
@@ -1061,7 +1130,7 @@ SMODS.Stellar {
     atlas = "stellar",
     special_level = "diamond",
     pos = {x = 1, y = 0},
-    config = {suit = "Diamonds", mult = 0.3, chips = 0.9},
+    config = {suit = "Diamonds", mult = 0.3, chips = 2.5},
 }
 
 SMODS.Stellar {
@@ -1079,7 +1148,7 @@ SMODS.Stellar {
     atlas = "stellar",
     special_level = "spade",
     pos = {x = 2, y = 0},
-    config = {suit = "Spades", mult = 0.28, chips = 4},
+    config = {suit = "Spades", mult = 0.22, chips = 4},
 }
 
 SMODS.Stellar {
@@ -1097,7 +1166,7 @@ SMODS.Stellar {
     atlas = "stellar",
     special_level = "club",
     pos = {x = 3, y = 0},
-    config = {suit = "Clubs", mult = 0.45, chips = 1.2},
+    config = {suit = "Clubs", mult = 0.45, chips = 1},
 }
 
 SMODS.Joker {
@@ -1672,6 +1741,73 @@ function SMODS.current_mod.process_loc_text()
                 "Learn",
                 "{C:planet}Gravity III{}",
             }
+        },
+        sk_grm_orbit_1 = {
+            name = "Orbit I",
+            text = {
+                "{C:money}Stellar{} cards and {C:blue}Lunar{}",
+                "cards can appear in",
+                "the {C:attention}shop{}",
+            }
+        },
+        sk_grm_orbit_1 = {
+            name = "Orbit I",
+            text = {
+                "{C:money}Stellar{} cards and {C:blue}Lunar{}",
+                "cards can appear in",
+                "the {C:attention}shop{}",
+            }
+        },
+        sk_grm_orbit_2 = {
+            name = "Orbit II",
+            text = {
+                "{C:attention}Dysnomia{} can",
+                "appear"
+            }
+        },
+        sk_grm_cl_alchemist = {
+            name = "Alchemist",
+            text = {
+                "{C:attention}Playing cards{} with {C:green}statuses{}",
+                "cards can appear in",
+                "{C:attention}Standard{} packs",
+            },
+            unlock = {
+                "Have at least {E:1,C:attention}52",
+                "{E:1,C:attention}Wild Cards{} in",
+                "your deck"
+            }
+        },
+    }
+    G.localization.descriptions.Other["flint"] = {
+        name = "Flint",
+        text = {
+            "{C:attention}Destroys{} a {C:attention}played{} card to",
+            "gain {C:red}+1{} Mult, when {C:attention}played{}",
+            "{C:red}Expires when discarded!{}"
+        }
+    }
+    G.localization.descriptions.Other["subzero"] = {
+        name = "Subzero",
+        text = {
+            "{C:attention}+1{} drawn card this ",
+            "{C:attention}hand{} when {C:attention}played{}",
+            "{C:red}Expires when scored!{}"
+        }
+    }
+    G.localization.descriptions.Other["rocky"] = {
+        name = "Rocky",
+        text = {
+            "{C:attention}Scored{} cards permanently",
+            "gain {C:blue}+3{} Chips",
+            "{C:red}Expires when held in hand!{}"
+        }
+    }
+    G.localization.descriptions.Other["gust"] = {
+        name = "Gust",
+        text = {
+            "{C:dark_edition}+1{} play size",
+            "{C:red}Expires when debuffed!{}"
         }
     }
     G.localization.descriptions.Other["undiscovered_skill"] = {
@@ -1773,11 +1909,21 @@ function SMODS.current_mod.process_loc_text()
             "dollars during Boss Blinds",
         }
     }
+    G.localization.descriptions.Other["dysnomia_level_desc"] = {
+        text = {
+            "After defeating each",
+            "Boss Blind, create {C:attention}#1#{}",
+            "Negative Lunar, Stellar,",
+            "or Planet cards with",
+            "{C:money}$1{} {C:attention}sell value{}"
+        }
+    }
     G.localization.misc.v_dictionary["skill_xp"] = "XP: #1#"
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
     G.localization.misc.dictionary['k_skill'] = "Skill"
     G.localization.misc.dictionary['nullified'] = "Nullified!"
+    G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.dictionary['b_draw'] = "Draw"
@@ -1998,6 +2144,15 @@ function moon_row(moon)
         stat_text = loc_vars[1] .. "%"
         stat_color = G.C.MONEY
         level = G.GAME.special_levels["money"] + 1
+    elseif moon == 'c_grm_dysnomia' then
+        loc_vars = {
+            (G.GAME.special_levels and G.GAME.special_levels["grind"] or 0),
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'dysnomia_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = loc_vars[1]
+        stat_color = G.C.PURPLE
+        level = G.GAME.special_levels["grind"] + 1
     end
     return {n=G.UIT.R, config={align = "cm", padding = 0.05, r = 0.1, colour = darken(G.C.JOKER_GREY, 0.1), emboss = 0.05, hover = true, force_focus = true, on_demand_tooltip = {text = desc_nodes}}, nodes={
         {n=G.UIT.C, config={align = "cl", padding = 0, minw = 5}, nodes={
@@ -2025,6 +2180,9 @@ function create_UIBox_current_lunar_stats()
         moon_row("c_grm_oberon"),
         moon_row("c_grm_proteus"),
     }
+    if G.GAME.special_levels and G.GAME.special_levels["grind"] > 0 then
+        table.insert(moons, moon_row("c_grm_dysnomia"))
+    end
   
     local t = {n=G.UIT.ROOT, config={align = "cm", minw = 17, minh = 7, padding = 0.1, r = 0.1, colour = G.C.CLEAR}, nodes={
         {n=G.UIT.C, config={align = "cm", padding = 0.04}, nodes=
