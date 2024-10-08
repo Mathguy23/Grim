@@ -70,7 +70,7 @@ SMODS.Stellar = SMODS.Consumable:extend {
         G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + 1
         G.GAME.stellar_levels[self.special_level .. "s"].chips = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.chips
         G.GAME.stellar_levels[self.special_level .. "s"].mult = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.mult
-        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.MONEY, message = localize('k_upgrade_ex')})
     end,
     can_use = function(self, card)
         return true
@@ -78,12 +78,12 @@ SMODS.Stellar = SMODS.Consumable:extend {
     cost = 3,
     loc_vars = function(self, info_queue, card)
         return {vars = {
-            localize(card.ability.suit, 'suits_plural'),
+            localize(self.config.suit, 'suits_plural'),
             G.GAME.special_levels[self.special_level] + 1,
-            string.format("%.2f", card.ability.mult),
-            string.format("%.1f", card.ability.chips),
-            string.format("%.2f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.mult),
-            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.chips),
+            string.format("%.2f", self.config.mult),
+            string.format("%.1f", self.config.chips),
+            string.format("%.2f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * self.config.mult),
+            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * self.config.chips),
         }}
     end
 }
@@ -1169,6 +1169,27 @@ SMODS.Stellar {
     config = {suit = "Clubs", mult = 0.45, chips = 1},
 }
 
+SMODS.Stellar {
+    key = 'lp_944_20',
+    loc_txt = {
+        name = "LP 944-20",
+        text = {
+            "{C:attention}Upgrade{} {C:inactive}Nothing?{}",
+            "{C:mult}+#3#{} Mult and",
+            "{C:chips}+#4#{} chips",
+            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+        }
+    },
+    atlas = "stellar",
+    special_level = "nothing",
+    pos = {x = 1, y = 1},
+    config = {suit = "Nothing", mult = 0.15, chips = 6},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
+    end
+}
+
 SMODS.Joker {
     key = 'energy_bar',
     name = "Energy Bar",
@@ -1750,26 +1771,18 @@ function SMODS.current_mod.process_loc_text()
                 "the {C:attention}shop{}",
             }
         },
-        sk_grm_orbit_1 = {
-            name = "Orbit I",
-            text = {
-                "{C:money}Stellar{} cards and {C:blue}Lunar{}",
-                "cards can appear in",
-                "the {C:attention}shop{}",
-            }
-        },
         sk_grm_orbit_2 = {
             name = "Orbit II",
             text = {
-                "{C:attention}Dysnomia{} can",
-                "appear"
+                "{C:attention}Dysnomia{} and {C:attention}LP 944-20{}",
+                "can appear"
             }
         },
         sk_grm_cl_alchemist = {
             name = "Alchemist",
             text = {
-                "{C:attention}Playing cards{} with {C:green}statuses{}",
-                "cards can appear in",
+                "{C:attention}Playing cards{} with",
+                "{C:green}statuses{} can appear in",
                 "{C:attention}Standard{} packs",
             },
             unlock = {

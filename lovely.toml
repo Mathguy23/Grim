@@ -29,6 +29,7 @@ special_levels = {
     club = 0,
     spade = 0,
     diamond = 0,
+    nothing = 0,
     debuff = 0,
     face_down = 0,
     not_allowed = 0,
@@ -41,6 +42,7 @@ stellar_levels = {
     diamonds = {chips = 0, mult = 0},
     clubs = {chips = 0, mult = 0},
     spades = {chips = 0, mult = 0},
+    nothing = {chips = 0, mult = 0},
 },
 nullified_blinds = {},
 '''
@@ -294,6 +296,9 @@ payload = '''elseif _c.set == 'Skill' then
     elseif _c.name == "Orbit II" then
         if G.P_CENTERS["c_grm_dysnomia"].discovered then
             info_queue[#info_queue+1] = G.P_CENTERS["c_grm_dysnomia"]
+        end
+        if G.P_CENTERS["c_grm_lp_944_20"].discovered then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_grm_lp_944_20"]
         end
     elseif _c.name == "Ghost II" then
         info_queue[#info_queue+1] = G.P_TAGS["tag_ethereal"]
@@ -1171,42 +1176,32 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/common_events.lua'
-pattern = '''elseif _c.set == 'Enhanced' then'''
+pattern = '''if _c.set == 'Other' then'''
 position = 'before'
-payload = '''if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
-    localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
-end
-if card then
-    for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
-        if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
-            info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
-        end
+payload = '''if ((_c.set == 'Enhanced') or (_c.set == 'Default')) then
+    if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
+        localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
     end
-    if card.ability and card.ability.grm_status and not card.debuff then
-        for i, j in pairs(card.ability.grm_status) do
-            info_queue[#info_queue+1] = {set = 'Other', key = i}
+    if card then
+        for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
+            if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
+                info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+            end
         end
-    end
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''elseif _c.set == 'Booster' then'''
-position = 'before'
-payload = '''if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
-    localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
-end
-if card then
-    for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
-        if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
-            info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+        local has_suit = false
+        for i, j in pairs(SMODS.Suits) do
+            if card:is_suit(j.key) then
+                has_suit = true
+                break
+            end
         end
-    end
-    if card.ability and card.ability.grm_status then
-        for i, j in pairs(card.ability.grm_status) do
-            info_queue[#info_queue+1] = {set = 'Other', key = i}
+        if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
+            info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels["nothing"].chips,G.GAME.stellar_levels["nothing"].mult}}
+        end
+        if card.ability and card.ability.grm_status and not card.debuff then
+            for i, j in pairs(card.ability.grm_status) do
+                info_queue[#info_queue+1] = {set = 'Other', key = i}
+            end
         end
     end
 end'''
@@ -1251,6 +1246,16 @@ payload = '''   if scoring_hand[i].grim_facing_down and G.GAME.special_levels an
     end
     if scoring_hand[i]:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
         effects[#effects + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
+    end
+    local has_suit = false
+    for i0, j in pairs(SMODS.Suits) do
+        if scoring_hand[i]:is_suit(j.key) then
+            has_suit = true
+            break
+        end
+    end
+    if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["nothing"].chips, mult = G.GAME.stellar_levels["nothing"].mult}
     end
     if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.rocky and not scoring_hand[i].debuff then
         effects[#effects + 1] = {extra = { func = function()
