@@ -8,6 +8,28 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+local areaType = SMODS.ConsumableType {
+    key = 'Area',
+    primary_colour = G.C.GREEN,
+    secondary_colour = G.C.GREEN,
+    loc_txt = {
+        name = 'Area',
+        collection = 'Area Cards',
+        undiscovered = {
+            name = "Not Discovered",
+            text = {
+                "use this card",
+                "in an unseeded",
+                "run to learn",
+                "what it does"
+            }
+        }
+    },
+    collection_rows = { 4, 4 },
+    shop_rate = 0,
+    default = "c_grm_classic"
+}
+
 local lunarType = SMODS.ConsumableType {
     key = 'Lunar',
     primary_colour = HEX('505A8D'),
@@ -75,7 +97,7 @@ SMODS.Stellar = SMODS.Consumable:extend {
     can_use = function(self, card)
         return true
     end,
-    cost = 3,
+    cost = 5,
     loc_vars = function(self, info_queue, card)
         return {vars = {
             localize(self.config.suit, 'suits_plural'),
@@ -88,6 +110,25 @@ SMODS.Stellar = SMODS.Consumable:extend {
     end
 }
 
+SMODS.Area = SMODS.Consumable:extend {
+    set = 'Area',
+    use = function(self, card, area, copier)
+        leave_area(G.GAME.area)
+        G.GAME.area = self.area
+        G.GAME.area_data.norm_color = self.norm_color
+        G.GAME.area_data.endless_color = self.endless_color
+        enter_area(self.area, card)
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.GREEN, message = localize('k_new_area')})
+    end,
+    can_use = function(self, card)
+        return true
+    end,
+    cost = 10,
+    in_pool = function(self, card)
+        return self.area ~= G.GAME.area
+    end,
+}
+
 SMODS.UndiscoveredSprite {
     key = 'Lunar',
     atlas = 'lunar',
@@ -97,6 +138,18 @@ SMODS.UndiscoveredSprite {
 SMODS.UndiscoveredSprite {
     key = 'Stellar',
     atlas = 'stellar',
+    pos = {x = 0, y = 1}
+}
+
+SMODS.UndiscoveredSprite {
+    key = 'Skill',
+    atlas = 'skills',
+    pos = {x = 0, y = 0}
+}
+
+SMODS.UndiscoveredSprite {
+    key = 'Area',
+    atlas = 'areas',
     pos = {x = 0, y = 1}
 }
 
@@ -447,7 +500,6 @@ function learn_skill(card)
             G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
         end
     elseif key == "sk_grm_cl_hoarder" then
-        G.hand:change_size(-1)
         G.GAME.grim_class.hoarder = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_astronomer" then
@@ -455,6 +507,9 @@ function learn_skill(card)
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_alchemist" then
         G.GAME.grim_class.alchemist = true
+        G.GAME.grim_class.class = true
+    elseif key == "sk_grm_cl_explorer" then
+        G.GAME.grim_class.explorer = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_orbit_1" then
         G.GAME.lunar_rate = 4
@@ -643,6 +698,7 @@ function add_skill_xp(amount, card, message_, no_mod)
         amount = get_modded_xp(amount)
     end
     G.GAME.skill_xp = G.GAME.skill_xp + amount
+    check_for_unlock({type = 'skill_check', total_xp = G.GAME.skill_xp})
     if G.GAME.skills["sk_grm_ghost_1"] then
         G.GAME.ghost_skill_xp = G.GAME.ghost_skill_xp + amount
         if G.GAME.ghost_skill_xp > 200 then
@@ -704,7 +760,7 @@ function skill_unlock_check(card, args)
         if args.fortune_check then
             return true
         end
-    elseif card.key == "sk_grm_cl_hoarder" then
+    elseif card.key == "sk_grm_cl_explorer" then
         if G.PROFILES[G.SETTINGS.profile].skill_banners then
             local count = 0
             for i, j in pairs(G.PROFILES[G.SETTINGS.profile].skill_banners) do
@@ -728,6 +784,83 @@ function skill_unlock_check(card, args)
                 return true
             end
         end
+    elseif card.key == "sk_grm_cl_hoarder" then
+        if args.total_xp and (args.total_xp >= 2000) then
+            return true
+        end
+    end
+end
+
+function leave_area(area)
+    if area == 'Graveyard' then
+        G.GAME.spectral_rate = (G.GAME.area_data.orig_spectral_rate or 0)
+    elseif area == 'Plains' then
+        if G.GAME.modifiers.no_extra_hand_money then
+            G.GAME.modifiers.money_per_hand = 0
+            G.GAME.modifiers.no_extra_hand_money = false
+        end
+        G.GAME.modifiers.money_per_hand = (G.GAME.modifiers.money_per_hand or 2) + (G.GAME.area_data.hand_dollars_mod or 1)
+        G.GAME.modifiers.money_per_discard = (G.GAME.modifiers.money_per_discard or 0) - (G.GAME.area_data.discard_dollars_mod or 1)
+        if G.GAME.modifiers.money_per_discard == 0 then
+            G.GAME.modifiers.money_per_discard = nil
+        end
+        if G.GAME.modifiers.money_per_hand == 0 then
+            G.GAME.modifiers.no_extra_hand_money = true
+        end
+    elseif area == 'Market' then
+        G.E_MANAGER:add_event(Event({func = function()
+            change_shop_size((G.GAME.area_data.slots_mod and (-1 * G.GAME.area_data.slots_mod)) or -2)
+        return true end }))
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+        return true end }))
+    elseif area == 'Landfill' then
+        G.GAME.round_resets.hands = G.GAME.round_resets.hands + (G.GAME.area_data.hands_mod or 1)
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards - (G.GAME.area_data.discards_mod or 2)
+        ease_hands_played(G.GAME.area_data.hands_mod)
+        ease_discard(-1 * G.GAME.area_data.discards_mod)
+    end
+end
+
+function enter_area(area, card)
+    if area == 'Graveyard' then
+        G.GAME.area_data.orig_spectral_rate = G.GAME.spectral_rate
+        G.GAME.spectral_rate = 2
+    elseif area == 'Plains' then
+        if G.GAME.modifiers.no_extra_hand_money then
+            G.GAME.modifiers.money_per_hand = 0
+            G.GAME.modifiers.no_extra_hand_money = false
+        end
+        G.GAME.modifiers.money_per_hand = (G.GAME.modifiers.money_per_hand or 1) - (card and card.ability and card.ability.hand_dollars or 1)
+        G.GAME.modifiers.money_per_discard = (G.GAME.modifiers.money_per_discard or 0) + (card and card.ability and card.ability.discard_dollars or 1)
+        G.GAME.area_data.hand_dollars_mod = card.ability.hand_dollars
+        G.GAME.area_data.discard_dollars_mod = card.ability.discard_dollars
+        if G.GAME.modifiers.money_per_discard == 0 then
+            G.GAME.modifiers.money_per_discard = nil
+        end
+        if G.GAME.modifiers.money_per_hand == 0 then
+            G.GAME.modifiers.no_extra_hand_money = true
+        end
+    elseif area == 'Market' then
+        G.GAME.area_data.market_upcount = 1 + (card.ability.upcount * 0.01)
+        G.GAME.area_data.slots_mod = card.ability.slots
+        G.E_MANAGER:add_event(Event({func = function()
+            change_shop_size(card and card.ability and card.ability.slots or 2)
+        return true end }))
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+        return true end }))
+    elseif area == 'Landfill' then
+        G.GAME.round_resets.hands = G.GAME.round_resets.hands - (card and card.ability and card.ability.hands or 1)
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards + (card and card.ability and card.ability.discards or 2)
+        G.GAME.area_data.hands_mod = card and card.ability and card.ability.hands or 1
+        G.GAME.area_data.discards_mod = card and card.ability and card.ability.discards or 2
+        ease_hands_played(-1 * (card and card.ability and card.ability.hands or 1))
+        ease_discard(card and card.ability and card.ability.discards or 2)
     end
 end
 
@@ -850,6 +983,12 @@ SMODS.Atlas({ key = "stellar", atlas_table = "ASSET_ATLAS", path = "Stellar.png"
 
 SMODS.Atlas({ key = "lunar", atlas_table = "ASSET_ATLAS", path = "Lunar.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "areas", atlas_table = "ASSET_ATLAS", path = "Areas.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "tags", atlas_table = "ASSET_ATLAS", path = "tags.png", px = 34, py = 34})
+
+SMODS.Atlas({ key = "boosters", atlas_table = "ASSET_ATLAS", path = "Boosters.png", px = 71, py = 95})
+
 SMODS.Atlas({ key = "status", atlas_table = "ASSET_ATLAS", path = "Status.png", px = 71, py = 95,
     inject = function(self)
         local file_path = type(self.path) == 'table' and
@@ -898,6 +1037,9 @@ SMODS.Tarot {
         info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_rpg']
         return {vars = {(card and card.ability.max_highlighted or 3), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_rpg')}}}
     end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
+    end,
 }
 
 SMODS.Tarot {
@@ -921,6 +1063,8 @@ SMODS.Tarot {
         return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
     end,
 }
+
+---- Astronomer Stuff ------
 
 SMODS.Lunar {
     key = 'moon',
@@ -1190,6 +1334,206 @@ SMODS.Stellar {
     end
 }
 
+-------Explorer Stuff--------
+
+SMODS.Area {
+    key = 'classic',
+    loc_txt = {
+        name = "Classic",
+        text = {
+            "Return to",
+            "normal gameplay",
+        }
+    },
+    area = "Classic",
+    atlas = "areas",
+    pos = {x = 0, y = 0},
+    norm_color = HEX("50846e"),
+    endless_color = HEX("4f6367"),
+}
+
+SMODS.Area {
+    key = 'graveyard',
+    loc_txt = {
+        name = "Graveyard",
+        text = {
+            "{C:spectral}Spectral{} cards may",
+            "appear in the shop,",
+        }
+    },
+    area = "Graveyard",
+    atlas = "areas",
+    pos = {x = 1, y = 0},
+    norm_color = HEX("6c8279"),
+    endless_color = HEX("5e6769"),
+}
+
+SMODS.Area {
+    key = 'plains',
+    loc_txt = {
+        name = "Plains",
+        text = {
+            "{C:money}-$#1#{} per remaining {C:blue}Hand{},",
+            "{C:money}+$#2#{} per remaining {C:red}Discard",
+            "at end of {C:attention}round{}"
+        }
+    },
+    area = "Plains",
+    atlas = "areas",
+    pos = {x = 2, y = 0},
+    norm_color = HEX("7e8450"),
+    endless_color = HEX("566353"),
+    config = {hand_dollars = 1, discard_dollars = 1},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.hand_dollars,
+            card.ability.discard_dollars,
+        }}
+    end,
+}
+
+SMODS.Area {
+    key = 'market',
+    loc_txt = {
+        name = "Market",
+        text = {
+            "{C:attention}+#1#{} shop slots",
+            "All cards and packs in",
+            "shop cost {C:attention}#2#%{} more"
+        }
+    },
+    area = "Market",
+    atlas = "areas",
+    pos = {x = 3, y = 0},
+    norm_color = HEX("41853d"),
+    endless_color = HEX("373c66"),
+    config = {slots = 2, upcount = 50},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.slots,
+            card.ability.upcount,
+        }}
+    end,
+}
+
+SMODS.Area {
+    key = 'landfill',
+    loc_txt = {
+        name = "Landfill",
+        text = {
+            "{C:red}+#1#{} discards per {C:attention}round{}",
+            "{C:blue}-#2#{} hands per {C:attention}round{}",
+        }
+    },
+    area = "Landfill",
+    atlas = "areas",
+    pos = {x = 4, y = 0},
+    norm_color = HEX("846d50"),
+    endless_color = HEX("696259"),
+    config = {hands = 1, discards = 2},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.discards,
+            card.ability.hands,
+        }}
+    end,
+}
+
+SMODS.Booster {
+    key = 'area_normal_1',
+    atlas = 'boosters',
+    group_key = 'k_area_pack',
+    loc_txt = {
+        name = "Area Pack",
+        text = {
+            "Enter {C:attention}#1#{} of up to",
+            "{C:attention}#2#{C:green} Areas{}"
+        }
+    },
+    weight = 0,
+    cost = 1,
+    name = "Area Pack",
+    pos = {x = 0, y = 0},
+    config = {extra = 2, choose = 1, name = "Area Pack"},
+    create_card = function(self, card)
+        return {set = "Area"}
+    end,
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Tag {
+    key = 'grid',
+    atlas = 'tags',
+    loc_txt = {
+        name = "Grid Tag",
+        text = {
+            "Gives a free",
+            "{C:red}Area Pack"
+        }
+    },
+    pos = {x = 1, y = 0},
+    apply = function(tag, context)
+        if context.type == 'new_blind_choice' then
+            local lock = tag.ID
+            G.CONTROLLER.locks[lock] = true
+            tag:yep('+', G.C.RED,function() 
+                local key = 'p_grm_area_normal_1'
+                local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+                G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[key], {bypass_discovery_center = true, bypass_discovery_ui = true})
+                card.cost = 0
+                card.from_tag = true
+                G.FUNCS.use_card({config = {ref_table = card}})
+                card:start_materialize()
+                G.CONTROLLER.locks[lock] = nil
+                return true
+            end)
+            tag.triggered = true
+            return true
+        end
+    end,
+    loc_vars = function(self, info_queue, tag)
+        info_queue[#info_queue+1] = {key = 'p_grm_area_normal_1', set = 'Other', vars = {1, 2}}
+        return {}
+    end,
+    in_pool = function(self)
+        return false
+    end,
+    config = {type = 'new_blind_choice'}
+}
+
+---------------------------------------
+
+SMODS.Tag {
+    key = 'xp',
+    atlas = 'tags',
+    loc_txt = {
+        name = "XP Tag",
+        text = {
+            "{C:purple}+#1#{} XP"
+        }
+    },
+    pos = {x = 0, y = 0},
+    config = {type = 'immediate', amount = 100},
+    apply = function(tag, context)
+        if context.type == 'immediate' then
+            local lock = tag.ID
+            G.CONTROLLER.locks[lock] = true
+            tag:yep('+', G.C.PURPLE,function()
+                add_skill_xp(100)
+                G.CONTROLLER.locks[lock] = nil
+                return true
+            end)
+            tag.triggered = true
+            return true
+        end
+    end,
+    loc_vars = function(self, info_queue, tag)
+        return {vars = {self.config.amount}}
+    end,
+}
+
 SMODS.Joker {
     key = 'energy_bar',
     name = "Energy Bar",
@@ -1405,11 +1749,6 @@ function Card:calculate_xp_bonus()
     end
 end
 
-local unknown = SMODS.UndiscoveredSprite {
-    key = 'Skill',
-    atlas = 'skills',
-    pos = {x = 0, y = 0}
-}
 
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary["b_learn"] = "LEARN"
@@ -1743,12 +2082,12 @@ function SMODS.current_mod.process_loc_text()
         sk_grm_cl_hoarder = {
             name = "Hoarder",
             text = {
-                "{C:red}-1{} hand size,",
-                "{C:green}packed cards{} enabled",
+                "{C:green}Packed cards{}",
+                "are enabled."
             },
             unlock = {
-                "Get {C:attention}20{}",
-                "{C:attention}Ante Banners{}",
+                "Have {C:purple}2,000{} or",
+                "more {C:attention}XP{}",
             }
         },
         sk_grm_cl_astronomer = {
@@ -1791,6 +2130,18 @@ function SMODS.current_mod.process_loc_text()
                 "your deck"
             }
         },
+        sk_grm_cl_explorer = {
+            name = "Explorer",
+            text = {
+                "After defeating each",
+                "{C:attention}Boss Blind{}, gain a",
+                "{C:attention}Grid Tag{}"
+            },
+            unlock = {
+                "Get {C:attention}20{}",
+                "{C:attention}Ante Banners{}",
+            }
+        }
     }
     G.localization.descriptions.Other["flint"] = {
         name = "Flint",
@@ -1941,6 +2292,8 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.dictionary['b_draw'] = "Draw"
     G.localization.misc.dictionary['b_pack'] = "Pack"
+    G.localization.misc.dictionary['k_new_area'] = "New Area!"
+    G.localization.misc.dictionary['k_area_pack'] = "Area Pack"
     G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
 end
 

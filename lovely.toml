@@ -24,6 +24,11 @@ grim_boss_dollars = 0,
 grim_hand_size_bonus = 0,
 ante_banners = {},
 grim_class = {},
+area = 'Classic',
+area_data = {
+    norm_color = HEX("50846e"),
+    endless_color = HEX("4f6367"),
+},
 special_levels = {
     heart = 0,
     club = 0,
@@ -180,6 +185,7 @@ payload = '''self.P_SKILLS = {
     sk_grm_orbit_1 = {order = 44, key = 'sk_grm_orbit_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_cl_astronomer'}},
     sk_grm_orbit_2 = {order = 45, key = 'sk_grm_orbit_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit II", xp_req = 500, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_orbit_1'}},
     sk_grm_cl_alchemist = {order = 46, key = 'sk_grm_cl_alchemist', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Alchemist", xp_req = 0, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_cl_explorer = {order = 47, key = 'sk_grm_cl_explorer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Explorer", xp_req = 0, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
 }'''
 match_indent = true
 
@@ -302,6 +308,8 @@ payload = '''elseif _c.set == 'Skill' then
         end
     elseif _c.name == "Ghost II" then
         info_queue[#info_queue+1] = G.P_TAGS["tag_ethereal"]
+    elseif _c.name == "Explorer" then
+        info_queue[#info_queue+1] = G.P_TAGS["tag_grm_grid"]
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -452,6 +460,9 @@ if (G.GAME.blind_on_deck == "Boss") and G.GAME.special_levels and (G.GAME.specia
         add_tag(Tag("tag_negative"))
     end
 end
+if G.GAME.skills["sk_grm_cl_explorer"] and (G.GAME.blind_on_deck == "Boss") then
+    add_tag(Tag("tag_grm_grid"))
+end
 if (G.GAME.blind_on_deck == "Boss") and (G.GAME.special_levels) and (G.GAME.special_levels["grind"] > 0) then
     for i = 1, G.GAME.special_levels["grind"] do
         local rng = pseudorandom('grind')
@@ -525,6 +536,9 @@ pattern = '''if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' 
 position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_2"] and (self.ability.set == 'Tarot' or (self.ability.set == 'Booster' and self.ability.name:find('Arcana'))) then
     self.cost = 0
+end
+if G.GAME.area == "Market" then
+    self.cost = math.floor(self.cost * (G.GAME.area_data.market_upcount or 1.5))
 end
 if self.ability.no_sell_value then
     self.cost = 0
@@ -1511,4 +1525,45 @@ position = 'after'
 payload = '''   if self.highlighted and (self.area == G.hand) and self.ability and self.ability.grm_status and self.ability.grm_status.gust then
         G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
     end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''ease_background_colour{new_colour = G.C.BLIND.won, contrast = 1}'''
+position = 'at'
+payload = '''ease_background_colour{new_colour = (G.GAME.area_data and G.GAME.area_data.endless_color) or G.C.BLIND.won, contrast = 1}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''ease_background_colour{new_colour = G.C.BLIND['Small'], contrast = 1}'''
+position = 'at'
+payload = '''ease_background_colour{new_colour = (G.GAME.area_data and G.GAME.area_data.norm_color) or G.C.BLIND['Small'], contrast = 1}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'back.lua'
+pattern = '''if self.name == 'Checkered Deck' then'''
+position = 'before'
+payload = '''if self.name == 'Ghost Deck' then
+    G.GAME.area = "Graveyard"
+    G.GAME.area_data = {
+        norm_color = HEX("6c8279"),
+        endless_color = HEX("5e6769"),
+    }
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.shop:recalculate()'''
+position = 'before'
+payload = '''if G.shop_jokers and G.shop_jokers.T then
+    G.shop_jokers.T.w = math.min(4.04 * G.CARD_W, G.GAME.shop.joker_max * 1.01 * G.CARD_W)
+end'''
 match_indent = true
