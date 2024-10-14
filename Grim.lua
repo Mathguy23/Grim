@@ -761,11 +761,11 @@ function skill_unlock_check(card, args)
             return true
         end
     elseif card.key == "sk_grm_cl_explorer" then
-        if G.PROFILES[G.SETTINGS.profile].skill_banners then
+        if args.grm_run_won then
             local count = 0
-            for i, j in pairs(G.PROFILES[G.SETTINGS.profile].skill_banners) do
+            for i, j in pairs(G.GAME.skills) do
                 count = count + 1
-                if count >= 20 then
+                if count >= 10 then
                     return true
                 end
             end
@@ -1749,7 +1749,6 @@ function Card:calculate_xp_bonus()
     end
 end
 
-
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary["b_learn"] = "LEARN"
     G.localization.descriptions.Skill = {
@@ -2138,8 +2137,8 @@ function SMODS.current_mod.process_loc_text()
                 "{C:attention}Grid Tag{}"
             },
             unlock = {
-                "Get {C:attention}20{}",
-                "{C:attention}Ante Banners{}",
+                "Win a run with",
+                "{C:attention}10 skills{} learned",
             }
         }
     }
@@ -2302,7 +2301,7 @@ function set_skill_win()
         G.PROFILES[G.SETTINGS.profile].skill_banners = {}
     end
     if not grm_valid_mods() then
-        check_for_unlock({type = 'skill_check'})
+        check_for_unlock({type = 'skill_check', grm_run_won = true})
         return
     end
     for k, v in pairs(G.GAME.skills) do
