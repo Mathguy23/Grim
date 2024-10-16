@@ -2429,7 +2429,7 @@ function set_skill_win()
     end
     for k, v in pairs(G.GAME.skills) do
         if G.GAME.ante_banners[k] then
-            if G.PROFILES[G.SETTINGS.profile].skill_banners[k] and (G.PROFILES[G.SETTINGS.profile].skill_banners[k] > G.GAME.ante_banners[k]) then
+            if G.PROFILES[G.SETTINGS.profile].skill_banners[k] and (G.PROFILES[G.SETTINGS.profile].skill_banners[k].ante > G.GAME.ante_banners[k]) then
                 G.PROFILES[G.SETTINGS.profile].skill_banners[k] = G.PROFILES[G.SETTINGS.profile].skill_banners[k] or {ante = G.GAME.ante_banners[k]}
             elseif not G.PROFILES[G.SETTINGS.profile].skill_banners[k] then
                 G.PROFILES[G.SETTINGS.profile].skill_banners[k] = {ante = G.GAME.ante_banners[k]}
