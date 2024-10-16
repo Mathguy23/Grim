@@ -115,18 +115,27 @@ SMODS.Area = SMODS.Consumable:extend {
     use = function(self, card, area, copier)
         leave_area(G.GAME.area)
         G.GAME.area = self.area
+        G.GAME.region = self.region or 'Classic'
         G.GAME.area_data.norm_color = self.norm_color
         G.GAME.area_data.endless_color = self.endless_color
+        G.GAME.area_data.adjacent = {}
+        if self.adjacent then
+            for i, j in pairs(self.adjacent) do
+                G.GAME.area_data.adjacent[i] = true
+            end
+        end
+        G.GAME.area_data.adjacent[G.GAME.region] = true
         enter_area(self.area, card)
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.GREEN, message = localize('k_new_area')})
     end,
+    region = "Classic",
     can_use = function(self, card)
         return true
     end,
     cost = 10,
     in_pool = function(self, card)
-        return self.area ~= G.GAME.area
-    end,
+        return (self.area ~= G.GAME.area) and (G.GAME.area_data and G.GAME.area_data.adjacent and G.GAME.area_data.adjacent[self.region or 'Classic'])
+    end
 }
 
 SMODS.UndiscoveredSprite {
@@ -729,6 +738,9 @@ function add_skill_xp(amount, card, message_, no_mod)
 end
 
 function get_modded_xp(amount)
+    if G.GAME.area == "Ghost Town" then
+        return 0
+    end
     local new_amount = amount
     if G.GAME.skills["sk_grm_skillful_3"] and (new_amount > 0) then
         new_amount = new_amount * 2
@@ -736,6 +748,10 @@ function get_modded_xp(amount)
     if G.GAME.skills["sk_grm_ghost_3"] and (new_amount > 0) then
         new_amount = math.max(1 , math.floor(new_amount * 0.5))
     end
+    if G.GAME.area == "Metro" then
+        new_amount = math.max(1 , math.floor(new_amount * (G.GAME.area_data.xp_buff or 1)))
+    end
+    new_amount = math.floor(new_amount)
     return new_amount
 end
 
@@ -861,6 +877,13 @@ function enter_area(area, card)
         G.GAME.area_data.discards_mod = card and card.ability and card.ability.discards or 2
         ease_hands_played(-1 * (card and card.ability and card.ability.hands or 1))
         ease_discard(card and card.ability and card.ability.discards or 2)
+    elseif area == 'Metro' then
+        G.GAME.area_data.xp_buff = 1 + (0.01 * (card and card.ability and card.ability.discards or 0))
+    elseif area == 'Ghost Town' then
+        G.GAME.area_data.ghost_odds = (card and card.ability and card.ability.odds or 3)
+        G.GAME.area_data.ghost_dollars = (card and card.ability and card.ability.money or 15)
+    elseif area == 'Midnight' then
+        G.GAME.area_data.midnight_mult = (card and card.ability and card.ability.grm_x_mult or 1.7)
     end
 end
 
@@ -1350,6 +1373,9 @@ SMODS.Area {
     pos = {x = 0, y = 0},
     norm_color = HEX("50846e"),
     endless_color = HEX("4f6367"),
+    adjacent = {
+        Metro = true,
+    }
 }
 
 SMODS.Area {
@@ -1362,10 +1388,14 @@ SMODS.Area {
         }
     },
     area = "Graveyard",
+    region = "Spooky",
     atlas = "areas",
     pos = {x = 1, y = 0},
     norm_color = HEX("6c8279"),
     endless_color = HEX("5e6769"),
+    adjacent = {
+        Metro = true
+    }
 }
 
 SMODS.Area {
@@ -1390,6 +1420,9 @@ SMODS.Area {
             card.ability.discard_dollars,
         }}
     end,
+    adjacent = {
+        Metro = true
+    }
 }
 
 SMODS.Area {
@@ -1414,6 +1447,9 @@ SMODS.Area {
             card.ability.upcount,
         }}
     end,
+    adjacent = {
+        Metro = true
+    }
 }
 
 SMODS.Area {
@@ -1435,6 +1471,93 @@ SMODS.Area {
         return {vars = {
             card.ability.discards,
             card.ability.hands,
+        }}
+    end,
+    adjacent = {
+        Metro = true
+    }
+}
+
+SMODS.Area {
+    key = 'metro',
+    loc_txt = {
+        name = "Metro",
+        text = {
+            "Earn {C:purple}#1#%{} more XP",
+            "No {C:attention}Shops{}"
+        }
+    },
+    area = "Metro",
+    region = "Metro",
+    atlas = "areas",
+    pos = {x = 1, y = 1},
+    norm_color = HEX("725084"),
+    endless_color = HEX("5f4f67"),
+    config = {xp_buff = 100},
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.xp_buff,
+        }}
+    end,
+    adjacent = {
+        Classic = true,
+        Spooky = true
+    }
+}
+
+SMODS.Area {
+    key = 'ghost_town',
+    loc_txt = {
+        name = "Ghost Town",
+        text = {
+            "{C:green}#1# in #2#{} chance to",
+            "earn {C:money}$#3#{} at cashout",
+            "Earn no XP",
+        }
+    },
+    area = "Ghost Town",
+    region = "Spooky",
+    atlas = "areas",
+    pos = {x = 2, y = 1},
+    config = {odds = 3, money = 15},
+    norm_color = HEX("405b6c"),
+    endless_color = HEX("434b68"),
+    adjacent = {
+        Metro = true
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            G.GAME.probabilities.normal,
+            card.ability.odds,
+            card.ability.money,
+        }}
+    end,
+}
+
+SMODS.Area {
+    key = 'midnight',
+    loc_txt = {
+        name = "Midnight",
+        text = {
+            "Cards {C:attention}may{} be drawn",
+            "{C:attention}face down{}, {C:attention}face down{}",
+            "cards give {X:red,C:white} X#1# {} Mult on",
+            "{C:attention}final hand{}",
+        }
+    },
+    area = "Midnight",
+    region = "Spooky",
+    atlas = "areas",
+    pos = {x = 3, y = 1},
+    config = {grm_x_mult = 2.5},
+    norm_color = HEX("5d5084"),
+    endless_color = HEX("3a3266"),
+    adjacent = {
+        Metro = true
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.grm_x_mult,
         }}
     end,
 }
@@ -2346,7 +2469,8 @@ function grm_valid_mods()
     return true
 end
 
-function add_custom_round_eval_row(name, foot, intrest)
+function add_custom_round_eval_row(name, foot, intrest, the_colour)
+    the_colour = the_colour or G.C.PURPLE
     local width = G.round_eval.T.w - 0.51
     local scale = 0.9
     total_cashout_rows = (total_cashout_rows or 0) + 1
@@ -2358,12 +2482,12 @@ function add_custom_round_eval_row(name, foot, intrest)
             --Add the far left text and context first:
             local left_text = {}
             if intrest then
-                table.insert(left_text, {n=G.UIT.T, config={text = intrest, scale = 0.8*scale, colour = G.C.PURPLE, shadow = true, juice = true}})
+                table.insert(left_text, {n=G.UIT.T, config={text = intrest, scale = 0.8*scale, colour = the_colour, shadow = true, juice = true}})
             end
             if intrest then
                 table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.UI.TEXT_LIGHT}, shadow = true, pop_in = 0, scale = 0.4*scale, silent = true})}})
             else
-                table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.6*scale, silent = true})}})
+                table.insert(left_text, {n=G.UIT.O, config={object = DynaText({string = name, colours = {the_colour}, shadow = true, pop_in = 0, scale = 0.6*scale, silent = true})}})
             end
             local full_row = {n=G.UIT.R, config={align = "cm", minw = 5}, nodes={
                 {n=G.UIT.C, config={padding = 0.05, minw = width*0.55, minh = 0.61, align = "cl"}, nodes=left_text},
@@ -2380,7 +2504,7 @@ function add_custom_round_eval_row(name, foot, intrest)
         func = function()
                 G.round_eval:add_child(
                         {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name .. tostring(total_cashout_rows)}, nodes={
-                            {n=G.UIT.O, config={object = DynaText({string = {foot}, colours = {G.C.PURPLE}, shadow = true, pop_in = 0, scale = 0.65, float = true})}}
+                            {n=G.UIT.O, config={object = DynaText({string = {foot}, colours = {the_colour}, shadow = true, pop_in = 0, scale = 0.65, float = true})}}
                         }},
                         G.round_eval:get_UIE_by_ID('dollar_grm_'..name .. tostring(total_cashout_rows)))
             play_sound('coin3', 0.9+0.2*math.random(), 0.7)

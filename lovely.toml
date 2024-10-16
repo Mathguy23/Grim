@@ -25,9 +25,14 @@ grim_hand_size_bonus = 0,
 ante_banners = {},
 grim_class = {},
 area = 'Classic',
+region = 'Classic',
 area_data = {
     norm_color = HEX("50846e"),
     endless_color = HEX("4f6367"),
+    adjacent = {
+        Metro = true,
+        Classic = true,
+    },
 },
 special_levels = {
     heart = 0,
@@ -808,6 +813,11 @@ target = 'functions/state_events.lua'
 pattern = '''add_round_eval_row({name = 'bottom', dollars = dollars})'''
 position = 'before'
 payload = '''cash_out_xp = 0
+if (G.GAME.area == "Ghost Town") and G.GAME.area_data and (pseudorandom('ghost') < G.GAME.probabilities.normal/(G.GAME.area_data.ghost_odds or 3)) then
+    add_custom_round_eval_row("Ghost Town" , "$".. G.GAME.area_data.ghost_dollars, nil, G.C.MONEY)
+    pitch = pitch + 0.06
+    dollars = dollars + G.GAME.area_data.ghost_dollars
+end
 if (G.GAME.blind_on_deck == "Boss") then
     local add_skill_table = {1, 50, 90, 120, 150, 180, 220, 250}
     local plus_xp = add_skill_table[G.GAME.stake] or 300
@@ -1246,10 +1256,7 @@ match_indent = true
 target = 'functions/state_events.lua'
 pattern = '''scoring_hand[i].lucky_trigger = nil'''
 position = 'after'
-payload = '''   if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
-        effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.05)}
-    end
-    if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
+payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
         effects[#effects + 1] = {chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}
     end
     if scoring_hand[i]:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
@@ -1260,6 +1267,12 @@ payload = '''   if scoring_hand[i].grim_facing_down and G.GAME.special_levels an
     end
     if scoring_hand[i]:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
         effects[#effects + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
+    end
+    if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
+        effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.05)}
+    end
+    if scoring_hand[i].grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
+        effects[#effects + 1] = {x_mult = G.GAME.area_data.midnight_mult}
     end
     local has_suit = false
     for i0, j in pairs(SMODS.Suits) do
@@ -1553,7 +1566,12 @@ payload = '''if self.name == 'Ghost Deck' then
     G.GAME.area_data = {
         norm_color = HEX("6c8279"),
         endless_color = HEX("5e6769"),
+        adjacent = {
+            Metro = true,
+            Spooky = true,
+        },
     }
+    G.GAME.region = "Spooky"
 end
 '''
 match_indent = true
@@ -1565,5 +1583,33 @@ pattern = '''G.shop:recalculate()'''
 position = 'before'
 payload = '''if G.shop_jokers and G.shop_jokers.T then
     G.shop_jokers.T.w = math.min(4.04 * G.CARD_W, G.GAME.shop.joker_max * 1.01 * G.CARD_W)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.STATE = G.STATES.SHOP'''
+position = 'before'
+payload = '''if G.GAME.area == "Metro" then
+    G.STATE = G.STATES.BLIND_SELECT
+else'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.STATE = G.STATES.SHOP'''
+position = 'after'
+payload = '''end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''self:emplace(card, nil, stay_flipped)'''
+position = 'before'
+payload = '''if (self == G.hand) and G.GAME and (G.GAME.area == "Midnight") and (pseudorandom('midnight') < 0.3) then
+    stay_flipped = true
 end'''
 match_indent = true
