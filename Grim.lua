@@ -412,7 +412,11 @@ function learn_skill(card)
     if G.GAME.ante_banners then
         G.GAME.ante_banners[key] = G.GAME.round_resets.ante
     end
-    G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
+    if not obj.class and (G.GAME.free_skills and (G.GAME.free_skills > 0)) then
+        G.GAME.free_skills = G.GAME.free_skills - 1
+    else
+        G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
+    end
     check_for_unlock({type = 'skill_check', learned_skill = key})
     discover_card(obj)
     card:set_sprites(obj)
@@ -527,7 +531,7 @@ function learn_skill(card)
 end
 
 G.FUNCS.can_learn = function(e)
-    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < e.config.ref_table.config.center.xp_req))) then
+    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < e.config.ref_table.config.center.xp_req))) and (not G.GAME.free_skills or (G.GAME.free_skills <= 0)) then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = 'do_nothing'
     else
@@ -1035,6 +1039,8 @@ SMODS.Atlas({ key = "status", atlas_table = "ASSET_ATLAS", path = "Status.png", 
         G.shared_stickers['sa_aether'] = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 1})
     end
 })
+
+SMODS.Atlas({ key = "decks", atlas_table = "ASSET_ATLAS", path = "Backs.png", px = 71, py = 95})
 
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
@@ -1856,6 +1862,23 @@ SMODS.Stake {
     sticker_atlas = "stickers"
 }
 
+SMODS.Back {
+    key = 'talent',
+    loc_txt = {
+        name = "Talented Deck",
+        text = {
+            "The {C:attention}first{} learned",
+            "skill requires {C:attention}0{} XP",
+        }
+    },
+    name = "Talented Deck",
+    pos = { x = 0, y = 0 },
+    atlas = 'decks',
+    apply = function(self)
+        G.GAME.free_skills = 1
+    end
+}
+
 function Card:get_chip_xp(context)
     if self.debuff then return 0 end
     if self.ability.set == 'Joker' then return 0 end
@@ -2317,17 +2340,17 @@ function SMODS.current_mod.process_loc_text()
             "{C:purple}#1#{} XP",
         }
     }
+    G.localization.descriptions.Other["unlearned_skill_free"] = {
+        text = {
+            "XP Needed:",
+            "{C:purple}0{} XP {C:inactive}(#1#){}",
+        }
+    }
     G.localization.descriptions.Other["star_tooltip"] = {
         name = "Stellar Bonus",
         text = {
             "{C:mult}+#2#{} Mult and",
             "{C:chips}+#1#{} Chips",
-        }
-    }
-    G.localization.descriptions.Other["unlearned_skill"] = {
-        text = {
-            "XP Needed:",
-            "{C:purple}#1#{} XP",
         }
     }
     G.localization.descriptions.Other["card_extra_mult"] = 
@@ -2408,6 +2431,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
     G.localization.misc.dictionary['k_skill'] = "Skill"
+    G.localization.misc.dictionary['k_class'] = "Class"
     G.localization.misc.dictionary['nullified'] = "Nullified!"
     G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
     G.localization.misc.labels['skill'] = "Skill"

@@ -75,7 +75,8 @@ match_indent = true
 target = 'functions/common_events.lua'
 pattern = '''(_c.set == 'Joker' and G.C.RARITY[_c.rarity]) or'''
 position = 'after'
-payload = '''(_c.set == 'Skill' and G.C.ORANGE) or'''
+payload = '''(_c.set == 'Skill' and _c.class and (G.C.BLUE)) or
+(_c.set == 'Skill' and (G.C.ORANGE)) or'''
 match_indent = true
 
 [[patches]]
@@ -318,7 +319,11 @@ payload = '''elseif _c.set == 'Skill' then
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
-        localize{type = 'descriptions', key = 'unlearned_skill', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.xp_req)}}
+        if G.GAME.free_skills and (G.GAME.free_skills > 0) and not card.config.center.class then
+            localize{type = 'descriptions', key = 'unlearned_skill_free', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.xp_req)}}
+        elseif not card.config.center.class then
+            localize{type = 'descriptions', key = 'unlearned_skill', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.xp_req)}}
+        end
     else
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
     end
@@ -1611,5 +1616,15 @@ pattern = '''self:emplace(card, nil, stay_flipped)'''
 position = 'before'
 payload = '''if (self == G.hand) and G.GAME and (G.GAME.area == "Midnight") and (pseudorandom('midnight') < 0.3) then
     stay_flipped = true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local card_type = localize('k_'..string.lower(AUT.card_type))'''
+position = 'after'
+payload = '''if (AUT.card_type == "Skill") and (card.config.center and card.config.center.class) then
+    card_type = localize('k_class')
 end'''
 match_indent = true
