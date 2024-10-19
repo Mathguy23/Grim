@@ -882,7 +882,7 @@ function enter_area(area, card)
         ease_hands_played(-1 * (card and card.ability and card.ability.hands or 1))
         ease_discard(card and card.ability and card.ability.discards or 2)
     elseif area == 'Metro' then
-        G.GAME.area_data.xp_buff = 1 + (0.01 * (card and card.ability and card.ability.discards or 0))
+        G.GAME.area_data.xp_buff = 1 + (0.01 * (card and card.ability and card.ability.xp_buff or 0))
     elseif area == 'Ghost Town' then
         G.GAME.area_data.ghost_odds = (card and card.ability and card.ability.odds or 3)
         G.GAME.area_data.ghost_dollars = (card and card.ability and card.ability.money or 15)
