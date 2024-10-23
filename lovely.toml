@@ -653,6 +653,34 @@ if next(SMODS.find_card("j_grm_showdown")) then
     text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = upgrade_poker_hand_showdown(text, scoring_hand, card)
     mult = mod_mult(G.GAME.hands[text].mult)
     hand_chips = mod_chips(G.GAME.hands[text].chips)
+end
+if (G.GAME.area == "Tunnel") and (G.GAME.current_round.hands_played == 0) then
+    local active = true
+    local play_more_than = (G.GAME.hands[text].played or 0)
+    for k, v in pairs(G.GAME.hands) do
+        if k ~= text and v.played > play_more_than and v.visible then
+            active = false
+            break
+        end
+    end
+    if active then
+        level_up_hand(nil, text)
+    else
+        local _handname, _played, _order = 'High Card', -1, 100
+        for k, v in pairs(G.GAME.hands) do
+            if v.played > _played or (v.played == _played and _order > v.order) then 
+                _played = v.played
+                _handname = k
+            end
+        end
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(_handname, 'poker_hands'),chips = G.GAME.hands[_handname].chips, mult = G.GAME.hands[_handname].mult, level=G.GAME.hands[_handname].level})
+        delay(0.35)
+        level_up_hand(nil, _handname, nil, -math.min(G.GAME.hands[_handname].level - 1, math.floor(G.GAME.hands[_handname].level / 2)))
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(text, 'poker_hands'),chips = hand_chips, mult = mult, level=G.GAME.hands[text].level})
+    end
+end
+if (G.GAME.area == "Toxic Waste") and (G.GAME.current_round.discards_left > 0) then
+    ease_discard(-G.GAME.area_data.discard_decay)
 end'''
 match_indent = true
 
@@ -1627,4 +1655,29 @@ position = 'after'
 payload = '''if (AUT.card_type == "Skill") and (card.config.center and card.config.center.class) then
     card_type = localize('k_class')
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if not v.boss then'''
+position = 'after'
+payload = '''elseif (G.GAME.area == "Dungeon") and not v.boss.showdown then
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''elseif not v.boss.showdown and (v.boss.min <= math.max(1, G.GAME.round_resets.ante) and ((math.max(1, G.GAME.round_resets.ante))%G.GAME.win_ante ~= 0 or G.GAME.round_resets.ante < 2)) then'''
+position = 'before'
+payload = '''elseif (G.GAME.area == "Dungeon") then
+    if v.in_pool and type(v.in_pool) == 'function' then
+        local res, options = v:in_pool()
+        eligible_bosses[k] = res and true or nil
+    else
+        eligible_bosses[k] = true
+    end
+'''
 match_indent = true

@@ -841,6 +841,9 @@ function leave_area(area)
         G.GAME.round_resets.discards = G.GAME.round_resets.discards - (G.GAME.area_data.discards_mod or 2)
         ease_hands_played(G.GAME.area_data.hands_mod)
         ease_discard(-1 * G.GAME.area_data.discards_mod)
+    elseif area == 'Toxic Waste' then
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards - (G.GAME.area_data.discards_mod or 2)
+        ease_discard(-1 * G.GAME.area_data.discards_mod)
     end
 end
 
@@ -888,6 +891,15 @@ function enter_area(area, card)
         G.GAME.area_data.ghost_dollars = (card and card.ability and card.ability.money or 15)
     elseif area == 'Midnight' then
         G.GAME.area_data.midnight_mult = (card and card.ability and card.ability.grm_x_mult or 1.7)
+    elseif area == 'Dungeon' then
+        if not G.P_BLINDS[G.GAME.round_resets.blind_choices.Boss].boss or not G.P_BLINDS[G.GAME.round_resets.blind_choices.Boss].boss.showdown then
+            G.GAME.round_resets.blind_choices.Boss = get_new_boss()
+        end
+    elseif area == 'Toxic Waste' then
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards + (card and card.ability and card.ability.discards or 2)
+        G.GAME.area_data.discards_mod = card and card.ability and card.ability.discards or 2
+        ease_discard(card and card.ability and card.ability.discards or 2)
+        G.GAME.area_data.discard_decay = card and card.ability and card.ability.degrade or 1
     end
 end
 
@@ -1507,7 +1519,8 @@ SMODS.Area {
     end,
     adjacent = {
         Classic = true,
-        Spooky = true
+        Spooky = true,
+        Sewer = true,
     }
 }
 
@@ -1564,6 +1577,84 @@ SMODS.Area {
     loc_vars = function(self, info_queue, card)
         return {vars = {
             card.ability.grm_x_mult,
+        }}
+    end,
+}
+
+SMODS.Area {
+    key = 'dungeon',
+    loc_txt = {
+        name = "Dungeon",
+        text = {
+            "Every {C:attention}Boss Blind{}",
+            "is a {C:attention}Showdown Blind{}",
+        }
+    },
+    area = "Dungeon",
+    region = "Sewer",
+    atlas = "areas",
+    pos = {x = 0, y = 2},
+    config = {},
+    norm_color = HEX("c2c1c1"),
+    endless_color = HEX("737272"),
+    adjacent = {
+        Metro = true
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+        }}
+    end,
+}
+
+SMODS.Area {
+    key = 'tunnel',
+    loc_txt = {
+        name = "Tunnel",
+        text = {
+            "On {C:attention}first hand{} of round, {C:attention}upgrade{}",
+            "your {C:attention}most played hand{} if it is",
+            "played, otherwise {C:attention}half{} its level"
+        }
+    },
+    area = "Tunnel",
+    region = "Sewer",
+    atlas = "areas",
+    pos = {x = 1, y = 2},
+    config = {},
+    norm_color = HEX("c3c3ff"),
+    endless_color = HEX("504f67"),
+    adjacent = {
+        Metro = true
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+        }}
+    end,
+}
+
+SMODS.Area {
+    key = 'toxic_waste',
+    loc_txt = {
+        name = "Toxic Waste",
+        text = {
+            "{C:red}+#1#{} discards per round",
+            "On {C:attention}Play{}, {C:red}-#2#{} discard",
+        }
+    },
+    area = "Toxic Waste",
+    region = "Sewer",
+    atlas = "areas",
+    pos = {x = 4, y = 1},
+    config = {discards = 2, degrade = 1},
+    norm_color = HEX("d5f1b5"),
+    endless_color = HEX("5f674f"),
+    adjacent = {
+        Metro = true
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.discards,
+            card.ability.degrade,
         }}
     end,
 }
