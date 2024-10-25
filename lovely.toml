@@ -30,8 +30,8 @@ area_data = {
     norm_color = HEX("50846e"),
     endless_color = HEX("4f6367"),
     adjacent = {
-        Metro = true,
         Classic = true,
+        Metro = true,
     },
 },
 special_levels = {
@@ -549,6 +549,9 @@ payload = '''if G.GAME.skills["sk_grm_mystical_2"] and (self.ability.set == 'Tar
 end
 if G.GAME.area == "Market" then
     self.cost = math.floor(self.cost * (G.GAME.area_data.market_upcount or 1.5))
+end
+if G.GAME.area == "Aether" then
+    self.cost = math.floor(self.cost * (G.GAME.area_data.aether_discount or 0.5))
 end
 if self.ability.no_sell_value then
     self.cost = 0
@@ -1681,3 +1684,21 @@ payload = '''elseif (G.GAME.area == "Dungeon") then
     end
 '''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''elseif self.ability.name == 'Perkeo' then loc_vars = {self.ability.extra}'''
+position = 'before'
+payload = '''elseif self.ability.name == 'Hyperspace' then
+    local active = (G.GAME and G.GAME.area == "Aether")
+    main_end = (self.area and (not self.area.config or not self.area.config.collection)) and {
+        {n=G.UIT.C, config={align = "bm", minh = 0.4}, nodes={
+            {n=G.UIT.C, config={ref_table = self, align = "m", colour = active and G.C.GREEN or G.C.RED, r = 0.05, padding = 0.06}, nodes={
+                {n=G.UIT.T, config={text = ' '..localize(active and 'k_active' or 'k_inactive')..' ',colour = G.C.UI.TEXT_LIGHT, scale = 0.32*0.9}},
+            }}
+        }}
+    } or nil
+'''
+match_indent = true
+

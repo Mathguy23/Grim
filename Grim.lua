@@ -752,7 +752,7 @@ function get_modded_xp(amount)
     if G.GAME.skills["sk_grm_ghost_3"] and (new_amount > 0) then
         new_amount = math.max(1 , math.floor(new_amount * 0.5))
     end
-    if G.GAME.area == "Metro" then
+    if (G.GAME.area == "Metro") or (G.GAME.area == "Aether") then
         new_amount = math.max(1 , math.floor(new_amount * (G.GAME.area_data.xp_buff or 1)))
     end
     new_amount = math.floor(new_amount)
@@ -900,6 +900,14 @@ function enter_area(area, card)
         G.GAME.area_data.discards_mod = card and card.ability and card.ability.discards or 2
         ease_discard(card and card.ability and card.ability.discards or 2)
         G.GAME.area_data.discard_decay = card and card.ability and card.ability.degrade or 1
+    elseif area == 'Aether' then
+        G.GAME.area_data.xp_buff = 1 + (0.01 * (card and card.ability and card.ability.xp_buff or 0))
+        G.GAME.area_data.aether_discount = 1 - (0.01 * (card and card.ability and card.ability.money_buff or 0))
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+        return true end }))
     end
 end
 
@@ -1659,6 +1667,37 @@ SMODS.Area {
     end,
 }
 
+SMODS.Area {
+    key = 'aether',
+    loc_txt = {
+        name = "Aether",
+        text = {
+            "All cards and packs in",
+            "shop are {C:attention}#1#%{} off,",
+            "Earn {C:purple}#2#%{} more XP"
+        }
+    },
+    area = "Aether",
+    region = "Aether",
+    atlas = "areas",
+    pos = {x = 2, y = 2},
+    config = {money_buff = 50, xp_buff = 50},
+    norm_color = HEX("fff769"),
+    endless_color = HEX("65674f"),
+    adjacent = {
+        Metro = true,
+        Classic = true,
+        Sewer = true,
+        Spooky = true
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {
+            card.ability.money_buff,
+            card.ability.xp_buff,
+        }}
+    end,
+}
+
 SMODS.Booster {
     key = 'area_normal_1',
     atlas = 'boosters',
@@ -1676,6 +1715,9 @@ SMODS.Booster {
     pos = {x = 0, y = 0},
     config = {extra = 2, choose = 1, name = "Area Pack"},
     create_card = function(self, card)
+        if next(SMODS.find_card("j_grm_hyperspace")) and pseudorandom('odds') < 0.07 then
+            return {key = "c_grm_aether"}
+        end
         return {set = "Area"}
     end,
     in_pool = function(self)
@@ -1721,6 +1763,41 @@ SMODS.Tag {
         return false
     end,
     config = {type = 'new_blind_choice'}
+}
+
+SMODS.Joker {
+    key = 'hyperspace',
+    name = "Hyperspace",
+    loc_txt = {
+        name = "Hyperspace",
+        text = {
+            "{X:red,C:white} X#1# {} Mult"
+        }
+    },
+    rarity = 2,
+    atlas = 'jokers',
+    pos = {x = 2, y = 0},
+    cost = 4,
+    blueprint_compat = false,
+    config = {extra = {Xmult = 4}},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
+    end,
+    loc_vars = function(self, info_queue, card)
+        if G.GAME and (G.GAME.area == "Aether") then
+            return {vars = {4}}
+        else
+            return {vars = {1}}
+        end
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main and (G.GAME and (G.GAME.area == "Aether")) then
+            return {
+                message = localize{type='variable',key='a_xmult',vars={card.ability.extra.Xmult}},
+                Xmult_mod = card.ability.extra.Xmult,
+            }
+        end
+    end
 }
 
 ---------------------------------------
@@ -2523,6 +2600,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
     G.localization.misc.dictionary['k_skill'] = "Skill"
     G.localization.misc.dictionary['k_class'] = "Class"
+    G.localization.misc.dictionary['k_inactive'] = "inactive"
     G.localization.misc.dictionary['nullified'] = "Nullified!"
     G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
     G.localization.misc.labels['skill'] = "Skill"
