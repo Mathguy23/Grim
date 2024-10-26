@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 0.9.6
+--- VERSION: 0.9.7
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
