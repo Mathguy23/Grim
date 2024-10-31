@@ -1377,7 +1377,7 @@ SMODS.Stellar {
     atlas = "stellar",
     special_level = "nothing",
     pos = {x = 1, y = 1},
-    config = {suit = "Nothing", mult = 0.15, chips = 6},
+    config = {suit = "Nothings", mult = 0.15, chips = 6},
     in_pool = function(self)
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
     end
