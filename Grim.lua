@@ -346,7 +346,7 @@ function SMODS.SAVE_UNLOCKS()
         end
     end
 
-	for k, v in pairs(G.P_SKILLS) do
+	for k, v in pairs(G.P_SKILLS or {}) do
         v.key = k
         if not v.wip and not v.demo then 
             if TESTHELPER_unlocks then
@@ -368,7 +368,7 @@ function SMODS.SAVE_UNLOCKS()
         G.P_BLINDS,
         G.P_TAGS,
         G.P_SEALS,
-        G.P_SKILLS,
+        G.P_SKILLS or {},
     } do
         for k, v in pairs(t) do
             v._discovered_unlocked_overwritten = true
