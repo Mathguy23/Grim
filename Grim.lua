@@ -1425,6 +1425,59 @@ SMODS.Element {
     end,
 }
 
+SMODS.Element {
+    key = 'm_silver',
+    loc_txt = {
+        name = "Silver",
+        text = {
+            "Enhances a",
+            "selected {C:attention}Common Card",
+            "to a {C:attention}#1#"
+        }
+    },
+    atlas = "metal",
+    m_type = "Precious",
+    pos = {x = 0, y = 2},
+    config = {mod_conv = 'm_grm_silver', max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'common_metal'}
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_silver']
+        return {vars = {
+            localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_silver')},
+        }}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 >= #G.hand.highlighted) and
+        (G.hand.highlighted[1] and (G.hand.highlighted[1].ability.m_type == "Common"))
+    end,
+}
+
+SMODS.Element {
+    key = 'm_iron',
+    loc_txt = {
+        name = "Iron",
+        text = {
+            "Enhances {C:attention}#1#",
+            "selected cards to",
+            "{C:attention}#2#s"
+        }
+    },
+    atlas = "metal",
+    pos = {x =4, y = 1},
+    config = {mod_conv = 'm_grm_iron', max_highlighted = 2},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_iron']
+        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_lead')}}}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+}
+
 SMODS.Enhancement {
     key = 'radium',
     name = "Radium Card",
@@ -1485,6 +1538,46 @@ SMODS.Enhancement {
     end,
     loc_vars = function(self, info_queue, card)
         return {vars = {card and card.ability.h_chips or 50}}
+    end,
+}
+
+SMODS.Enhancement {
+    key = 'iron',
+    name = "Iron Card",
+    loc_txt = {
+        name = 'Iron Card',
+        text = {
+            "{X:red,C:white} X#1# {} Mult",
+        }
+    },
+    atlas = 'enhance',
+    config = {x_mult = 1.2, m_type = "Common"},
+    pos = {x = 0, y = 2},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability.x_mult or 1.2}}
+    end,
+}
+
+SMODS.Enhancement {
+    key = 'silver',
+    name = "Silver Card",
+    loc_txt = {
+        name = 'Silver Card',
+        text = {
+            "{C:money}+$#1#{}",
+        }
+    },
+    atlas = 'enhance',
+    config = {p_dollars = 2, m_type = "Precious"},
+    pos = {x = 2, y = 1},
+    in_pool = function(self)
+        return false
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability.p_dollars or 2}}
     end,
 }
 
