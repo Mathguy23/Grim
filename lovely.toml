@@ -1768,9 +1768,9 @@ match_indent = true
 target = 'functions/common_events.lua'
 pattern = '''new_card:set_base(other.config.card)'''
 position = 'after'
-payload = '''if other.ability.grm_status and other.ability.grm_status.gust and (not new_card.ability.grm_status or not new_card.ability.grm_status.gust) then
+payload = '''if other.ability.grm_status and other.ability.grm_status.gust and (not new_card.ability.grm_status or not new_card.ability.grm_status.gust) and new_card.highlighted then
     G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
-elseif new_card.ability.grm_status and new_card.ability.grm_status.gust and (not other.ability.grm_status or not other.ability.grm_status.gust) then
+elseif new_card.ability.grm_status and new_card.ability.grm_status.gust and (not other.ability.grm_status or not other.ability.grm_status.gust) and new_card.highlighted then
     G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
 end
 new_card.ability.grm_status = {}'''
