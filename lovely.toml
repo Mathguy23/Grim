@@ -1435,7 +1435,7 @@ payload = '''
 local destroyed_cards = {}
 for i = 1, #G.play.cards do
     local card = G.play.cards[i]
-    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff and false then
+    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff then
         local pool = {}
         for j = 1, #G.play.cards do
             local card2 = G.play.cards[j]
@@ -1459,9 +1459,11 @@ for i, j in ipairs(destroyed_cards) do
     card_eval_status_text(j[1], 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={1}}})
 end
 for i, j in ipairs(destroyed_cards) do
-    j[2]:juice_up(0.8, 0.8)
-    j[2]:start_dissolve({G.C.RED}, nil, 1.6)
-    if j[2].area then j[2].area:remove_card(j[2]) end
+    if false then
+        j[2]:juice_up(0.8, 0.8)
+        j[2]:start_dissolve({G.C.RED}, nil, 1.6)
+        if j[2].area then j[2].area:remove_card(j[2]) end
+    end
 end
 for i = 1, #G.hand.cards do
     local card = G.hand.cards[i]
