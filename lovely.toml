@@ -981,7 +981,9 @@ match_indent = true
 target = 'card.lua'
 pattern = '''rental = self.ability and self.ability.rental'''
 position = 'before'
-payload = '''xp = center.config.xp or 0,'''
+payload = '''xp = center.config.xp or 0,
+h_chips = center.h_chips or 0,
+m_type = center.m_type or ((name == "Gold Card") and "Precious") or "",'''
 match_indent = true
 
 [[patches]]
@@ -1284,6 +1286,10 @@ payload = '''   if card.debuff and G.GAME.special_levels and (G.GAME.special_lev
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + G.GAME.special_levels["debuff"] * 0.2
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.2}}})
+    end
+    local h_chips = card:get_chip_h_chips()
+    if h_chips > 0 then 
+        ret.h_chips = h_chips
     end'''
 match_indent = true
 
@@ -1429,7 +1435,7 @@ payload = '''
 local destroyed_cards = {}
 for i = 1, #G.play.cards do
     local card = G.play.cards[i]
-    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff then
+    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff and false then
         local pool = {}
         for j = 1, #G.play.cards do
             local card2 = G.play.cards[j]
@@ -1474,16 +1480,16 @@ pattern = '''card.T.x = self.T.x'''
 position = 'before'
 payload = '''if G.GAME.skills["sk_grm_cl_alchemist"] and self.ability.name:find('Standard') then
     card.ability.grm_status = {}
-    if pseudorandom('status') < 0.4 then
+    if pseudorandom('status') < 0.03 then
         card.ability.grm_status.flint = true
     end
-    if pseudorandom('status') < 0.4 then
+    if pseudorandom('status') < 0.03 then
         card.ability.grm_status.subzero = true
     end 
-    if pseudorandom('status') < 0.4 then
+    if pseudorandom('status') < 0.03 then
         card.ability.grm_status.rocky = true
     end 
-    if pseudorandom('status') < 0.4 then
+    if pseudorandom('status') < 0.03 then
         card.ability.grm_status.gust = true
     end 
 end'''
@@ -1700,5 +1706,66 @@ payload = '''elseif self.ability.name == 'Hyperspace' then
         }}
     } or nil
 '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local ret = {}'''
+position = 'after'
+payload = '''if self.ability.name == 'Radium Card' and not self.ability.decayed then
+    if (pseudorandom('radondecay') < ((self.ability and self.ability.base_odds or 226) * G.GAME.probabilities.normal / (self.ability and self.ability.odds or 1600))) then
+        self.ability.decayed = true
+        card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_ex_decay'), colour = G.C.GREEN})
+    else
+        add_skill_xp(self.ability and self.ability.h_xp or 12, self)
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.FUNCS.draw_from_hand_to_discard()'''
+position = 'before'
+payload = '''
+for i = #G.hand.cards,1,-1 do
+    if G.hand.cards[i].ability and G.hand.cards[i].ability.decayed then
+        G.hand.cards[i]:start_dissolve()
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''pseudoshuffle(self.cards, pseudoseed(_seed or 'shuffle'))'''
+position = 'after'
+payload = '''self:dragLead()'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''if effects[ii].h_mult then'''
+position = 'before'
+payload = '''
+if effects[ii].h_chips then
+    mod_percent = true
+    hand_chips = mod_mult(hand_chips + effects[ii].h_chips)
+    update_hand_text({delay = 0}, {chips = hand_chips})
+    card_eval_status_text(G.hand.cards[i], 'chips', effects[ii].h_chips, percent)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''new_card:set_base(other.config.card)'''
+position = 'after'
+payload = '''new_card.ability.grm_status = {}'''
 match_indent = true
 

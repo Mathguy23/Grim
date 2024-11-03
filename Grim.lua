@@ -74,6 +74,28 @@ local stellarType = SMODS.ConsumableType {
     default = "c_grm_sun"
 }
 
+local elementType = SMODS.ConsumableType {
+    key = 'Elemental',
+    primary_colour = HEX('e9e4d3'),
+    secondary_colour = HEX('e9e4d3'),
+    loc_txt = {
+        name = 'Elemental',
+        collection = 'Elemental Cards',
+        undiscovered = {
+            name = "Not Discovered",
+            text = {
+                "Purchase or use",
+                "this card in an",
+                "unseeded run to",
+                "learn what it does"
+            }
+        }
+    },
+    collection_rows = { 4, 4 },
+    shop_rate = 0,
+    default = "c_grm_m_lead"
+}
+
 SMODS.Lunar = SMODS.Consumable:extend {
     set = 'Lunar',
     use = function(self, card, area, copier)
@@ -138,6 +160,58 @@ SMODS.Area = SMODS.Consumable:extend {
     end
 }
 
+SMODS.Element = SMODS.Consumable:extend {
+    set = 'Elemental',
+    use = function(self, card, area, copier)
+        local used_tarot = copier or card
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = skip_animation or 0.4, func = function()
+            play_sound('tarot1')
+            used_tarot:juice_up(0.3, 0.5)
+            return true end }))
+        for i=1, #G.hand.highlighted do
+            local percent = 1.15 - (i-0.999)/(#G.hand.highlighted-0.998)*0.3
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.hand.highlighted[i]:flip();play_sound('card1', percent);G.hand.highlighted[i]:juice_up(0.3, 0.3);return true end }))
+        end
+        delay(0.2)
+        if self.status then
+            for i=1, #G.hand.highlighted do
+                G.hand.highlighted[i].ability.grm_status = G.hand.highlighted[i].ability.grm_status or {}
+                if (self.status == "gust") and not G.hand.highlighted[i].ability.grm_status.gust and not card.debuff then
+                    G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+                end
+                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function() 
+                    G.hand.highlighted[i].ability.grm_status[self.status] = true
+                    return true 
+                end }))
+            end
+        else
+            for i=1, #G.hand.highlighted do
+                G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function() G.hand.highlighted[i]:set_ability(G.P_CENTERS[card.ability.consumeable.mod_conv]);return true end }))
+            end
+        end
+        for i=1, #G.hand.highlighted do
+            local percent = 0.85 + (i-0.999)/(#G.hand.highlighted-0.998)*0.3
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.hand.highlighted[i]:flip();play_sound('tarot2', percent, 0.6);G.hand.highlighted[i]:juice_up(0.3, 0.3);return true end }))
+        end
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2,func = function() G.hand:unhighlight_all(); return true end }))
+        delay(0.5)
+    end,
+    cost = 6,
+    m_type = 'Common',
+    set_badges = function(self, card, badges)
+        local colours = {
+            Common = HEX('939393'),
+            Precious =  HEX('e2d583'),
+            Modern = HEX("339d41"),
+        }
+        local len = string.len(card.config.center.m_type)
+        local size = 1.3 - (len > 5 and 0.02 * (len - 5) or 0)
+        if card.config.center.discovered then
+            badges[#badges + 1] = create_badge(card.config.center.m_type, colours[card.config.center.m_type], nil, size)
+        end
+    end
+}
+
 SMODS.UndiscoveredSprite {
     key = 'Lunar',
     atlas = 'lunar',
@@ -161,6 +235,16 @@ SMODS.UndiscoveredSprite {
     atlas = 'areas',
     pos = {x = 0, y = 1}
 }
+
+SMODS.UndiscoveredSprite {
+    key = 'Elemental',
+    atlas = 'metal',
+    pos = {x = 0, y = 0}
+}
+
+function SMODS.current_mod.reset_game_globals()
+    G.GAME.grim_hand_size_bonus = 0
+end
 
 SMODS.current_mod.custom_collection_tabs = function()
 	return { UIBox_button {
@@ -519,6 +603,7 @@ function learn_skill(card)
         G.GAME.grim_class.astronomer = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_alchemist" then
+        G.GAME.banned_keys['c_devil'] = true
         G.GAME.grim_class.alchemist = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_explorer" then
@@ -1062,6 +1147,8 @@ SMODS.Atlas({ key = "status", atlas_table = "ASSET_ATLAS", path = "Status.png", 
 
 SMODS.Atlas({ key = "decks", atlas_table = "ASSET_ATLAS", path = "Backs.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "metal", atlas_table = "ASSET_ATLAS", path = "Metallic.png", px = 71, py = 95})
+
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
 SMODS.Shader {
@@ -1111,6 +1198,320 @@ SMODS.Tarot {
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
     end,
+}
+
+-----Alchemist Stuff---------
+
+SMODS.Element {
+    key = 'm_lead',
+    loc_txt = {
+        name = "Lead",
+        text = {
+            "Enhances {C:attention}#1#",
+            "selected cards to",
+            "{C:attention}#2#s"
+        }
+    },
+    atlas = "metal",
+    pos = {x = 1, y = 0},
+    config = {mod_conv = 'm_grm_lead', max_highlighted = 2},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_lead']
+        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_lead')}}}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Element {
+    key = 'm_radium',
+    loc_txt = {
+        name = "Radium",
+        text = {
+            "Enhances a",
+            "selected {C:attention}Common Card",
+            "to a {C:attention}#1#"
+        }
+    },
+    atlas = "metal",
+    m_type = "Modern",
+    pos = {x = 3, y = 0},
+    config = {mod_conv = 'm_grm_radium', max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'common_metal'}
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_radium']
+        return {vars = {
+            localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_radium')},
+        }}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 >= #G.hand.highlighted) and
+        (G.hand.highlighted[1] and (G.hand.highlighted[1].ability.m_type == "Common"))
+    end,
+}
+
+SMODS.Element {
+    key = 'm_gold',
+    loc_txt = {
+        name = "Gold",
+        text = {
+            "Enhances a",
+            "selected {C:attention}Common Card",
+            "to a {C:attention}#1#"
+        }
+    },
+    atlas = "metal",
+    m_type = "Precious",
+    pos = {x = 2, y = 0},
+    config = {mod_conv = 'm_gold', max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'common_metal'}
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_gold']
+        return {vars = {
+            localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_gold')},
+        }}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 >= #G.hand.highlighted) and
+        (G.hand.highlighted[1] and (G.hand.highlighted[1].ability.m_type == "Common"))
+    end,
+}
+
+SMODS.Element {
+    key = 'm_platinum',
+    loc_txt = {
+        name = "Platinum",
+        text = {
+            "Enhances a",
+            "selected {C:attention}Common Card",
+            "to a {C:attention}#1#"
+        }
+    },
+    atlas = "metal",
+    m_type = "Precious",
+    pos = {x = 4, y = 0},
+    config = {mod_conv = 'm_grm_platinum', max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'common_metal'}
+        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_platinum']
+        return {vars = {
+            localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_platinum')},
+        }}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 >= #G.hand.highlighted) and
+        (G.hand.highlighted[1] and (G.hand.highlighted[1].ability.m_type == "Common"))
+    end,
+}
+
+SMODS.Element {
+    key = 'm_fire',
+    loc_txt = {
+        name = "Fire",
+        text = {
+            "Adds a {C:attention}Flint",
+            "{C:green}Status{} to a",
+            "{C:attention}selected card"
+        }
+    },
+    atlas = "metal",
+    status = "flint",
+    pos = {x = 0, y = 1},
+    config = {max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'flint'}
+        return {vars = {}}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 == #G.hand.highlighted)
+    end,
+}
+
+SMODS.Element {
+    key = 'm_water',
+    loc_txt = {
+        name = "Water",
+        text = {
+            "Adds a {C:attention}Subzero",
+            "{C:green}Status{} to a",
+            "{C:attention}selected card"
+        }
+    },
+    atlas = "metal",
+    status = "subzero",
+    pos = {x = 1, y = 1},
+    config = {max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'subzero'}
+        return {vars = {}}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 == #G.hand.highlighted)
+    end,
+}
+
+SMODS.Element {
+    key = 'm_earth',
+    loc_txt = {
+        name = "Earth",
+        text = {
+            "Adds a {C:attention}Rocky",
+            "{C:green}Status{} to a",
+            "{C:attention}selected card"
+        }
+    },
+    atlas = "metal",
+    status = "rocky",
+    pos = {x = 2, y = 1},
+    config = {max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'rocky'}
+        return {vars = {}}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 == #G.hand.highlighted)
+    end,
+}
+
+SMODS.Element {
+    key = 'm_air',
+    loc_txt = {
+        name = "Air",
+        text = {
+            "Adds a {C:attention}Gust",
+            "{C:green}Status{} to a",
+            "{C:attention}selected card"
+        }
+    },
+    atlas = "metal",
+    status = "gust",
+    pos = {x = 3, y = 1},
+    config = {max_highlighted = 1},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {set = "Other", key = 'gust'}
+        return {vars = {}}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    can_use = function(self, card)
+        return (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) and
+        (1 == #G.hand.highlighted)
+    end,
+}
+
+SMODS.Enhancement {
+    key = 'radium',
+    name = "Radium Card",
+    loc_txt = {
+        name = 'Radium Card',
+        text = {
+            "{C:green}#2# in #3#{} chance to",
+            "destroy this card if held",
+            "in hand at end of round",
+            "Otherwise {C:purple}+#1#{} XP"
+        }
+    },
+    atlas = 'enhance',
+    config = {h_xp = 12, base_odds = 226, odds = 1600, m_type = "Modern"},
+    pos = {x = 0, y = 1},
+    in_pool = function(self)
+        return false
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability.h_xp or 12, (card and card.ability.base_odds or 226) * G.GAME.probabilities.normal, card and card.ability.odds or 1600}}
+    end
+}
+
+SMODS.Enhancement {
+    key = 'lead',
+    name = "Lead Card",
+    loc_txt = {
+        name = 'Lead Card',
+        text = {
+            "Tends to be shuffled",
+            "lower in the deck",
+        }
+    },
+    atlas = 'enhance',
+    config = {m_type = "Common"},
+    pos = {x = 1, y = 1},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist
+    end
+}
+
+SMODS.Enhancement {
+    key = 'platinum',
+    name = "Platinum Card",
+    loc_txt = {
+        name = 'Platinum Card',
+        text = {
+            "{C:blue}+#1#{} Chips",
+            "while this card",
+            "stays in hand"
+        }
+    },
+    atlas = 'enhance',
+    config = {h_chips = 50, m_type = "Precious"},
+    pos = {x = 2, y = 0},
+    in_pool = function(self)
+        return false
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability.h_chips or 50}}
+    end,
+}
+
+SMODS.Booster {
+    key = 'ancient_normal_1',
+    atlas = 'boosters',
+    group_key = 'k_ancient_pack',
+    loc_txt = {
+        name = "Ancient Pack",
+        text = {
+            "Choose {C:attention}#1#{} of up to",
+            "{C:attention}#2#{C:attention} Element{} cards to",
+            "be used immediately"
+        }
+    },
+    weight = 8,
+    cost = 4,
+    name = "Ancient Pack",
+    pos = {x = 1, y = 0},
+    config = {extra = 3, choose = 1, name = "Ancient Pack"},
+    create_card = function(self, card)
+        return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    draw_hand = true
 }
 
 ---- Astronomer Stuff ------
@@ -1942,7 +2343,7 @@ SMODS.Enhancement {
     config = {},
     pos = {x = 1, y = 0},
     in_pool = function(self)
-        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
+        return G.GAME.skills.sk_grm_cl_hoarder
     end,
 }
 
@@ -2433,9 +2834,8 @@ function SMODS.current_mod.process_loc_text()
         sk_grm_cl_alchemist = {
             name = "Alchemist",
             text = {
-                "{C:attention}Playing cards{} with",
-                "{C:green}statuses{} can appear in",
-                "{C:attention}Standard{} packs",
+                "{C:attention}Elements{} and",
+                "{C:green}Statuses{} enabled",
             },
             unlock = {
                 "Have at least {E:1,C:attention}52",
@@ -2459,8 +2859,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.descriptions.Other["flint"] = {
         name = "Flint",
         text = {
-            "{C:attention}Destroys{} a {C:attention}played{} card to",
-            "gain {C:red}+1{} Mult, when {C:attention}played{}",
+            "gains {C:red}+1{} Mult, when {C:attention}played{}",
             "{C:red}Expires when discarded!{}"
         }
     }
@@ -2595,6 +2994,31 @@ function SMODS.current_mod.process_loc_text()
             "{C:money}$1{} {C:attention}sell value{}"
         }
     }
+    G.localization.descriptions.Other["common_metal"] = 
+        {
+        name = "Common",
+        text = {
+            "Card with a",
+            "Common Enhancement"
+        }
+    }
+    G.localization.descriptions.Other["precious_metal"] = 
+        {
+        name = "Precious",
+        text = {
+            "Card with",
+            "a Precious",
+            "Enhancement"
+        }
+    }
+    G.localization.descriptions.Other["modern_metal"] = 
+        {
+        name = "Modern",
+        text = {
+            "Card with a",
+            "Modern Enhancement",
+        }
+    }
     G.localization.misc.v_dictionary["skill_xp"] = "XP: #1#"
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
@@ -2603,12 +3027,14 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['k_inactive'] = "inactive"
     G.localization.misc.dictionary['nullified'] = "Nullified!"
     G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
+    G.localization.misc.dictionary['k_ex_decay'] = "Decayed!"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.dictionary['b_draw'] = "Draw"
     G.localization.misc.dictionary['b_pack'] = "Pack"
     G.localization.misc.dictionary['k_new_area'] = "New Area!"
     G.localization.misc.dictionary['k_area_pack'] = "Area Pack"
+    G.localization.misc.dictionary['k_ancient_pack'] = "Ancient Pack"
     G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
 end
 
@@ -2967,6 +3393,37 @@ function nullified_blinds_sect()
         }}
     }}
     return t
+end
+
+function CardArea:dragLead()
+    if self.cards and (self.config.type == 'deck') then
+        local lead = {}
+        for i, j in ipairs(self.cards) do
+            if j.ability and j.ability.name == 'Lead Card' then
+                table.insert(lead, i)
+            end
+        end
+        local k = #self.cards
+        for i, j in ipairs(lead) do
+            local landing = j
+            local count = 0
+            local l = k / 2
+            l = math.floor(pseudorandom('lead') * k / 2)
+            while ((landing > 1)) and (count < l) do
+                if not (self.cards[landing].ability and (self.cards[landing].ability.name == 'Lead Card')) then
+                    count = count + 1
+                end
+                k = k + 1
+                landing = landing - 1
+            end
+            self.cards[landing], self.cards[j] = self.cards[j], self.cards[landing]
+        end
+    end
+end
+
+function Card:get_chip_h_chips()
+    if self.debuff then return 0 end
+    return self.ability.h_chips
 end
 
 G.FUNCS.your_lunar_stats = function(e)
