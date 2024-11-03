@@ -1500,10 +1500,36 @@ SMODS.Booster {
             "be used immediately"
         }
     },
-    weight = 8,
+    weight = 4,
     cost = 4,
     name = "Ancient Pack",
     pos = {x = 1, y = 0},
+    config = {extra = 3, choose = 1, name = "Ancient Pack"},
+    create_card = function(self, card)
+        return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    draw_hand = true
+}
+
+SMODS.Booster {
+    key = 'ancient_normal_2',
+    atlas = 'boosters',
+    group_key = 'k_ancient_pack',
+    loc_txt = {
+        name = "Ancient Pack",
+        text = {
+            "Choose {C:attention}#1#{} of up to",
+            "{C:attention}#2#{C:attention} Element{} cards to",
+            "be used immediately"
+        }
+    },
+    weight = 4,
+    cost = 4,
+    name = "Ancient Pack",
+    pos = {x = 2, y = 0},
     config = {extra = 3, choose = 1, name = "Ancient Pack"},
     create_card = function(self, card)
         return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
