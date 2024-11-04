@@ -1436,34 +1436,18 @@ local destroyed_cards = {}
 for i = 1, #G.play.cards do
     local card = G.play.cards[i]
     if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff then
-        local pool = {}
-        for j = 1, #G.play.cards do
-            local card2 = G.play.cards[j]
-            if not card2.getting_sliced and (card2 ~= card) then
-                table.insert(pool, card2)
-            end
-        end
-        if #pool > 0 then
-            local target = pseudorandom_element(pool, pseudoseed('grm_flint'))
-            target.getting_sliced = true
-            table.insert(destroyed_cards, {card, target})
-        end
+        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
+        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + 1
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={1}}})
     end
     if card.ability and card.ability.grm_status and card.ability.grm_status.subzero and not card.debuff then
         G.GAME.grim_hand_size_bonus = (G.GAME.grim_hand_size_bonus or 0) + 1
     end
 end
 for i, j in ipairs(destroyed_cards) do
-    j[1].ability.perma_bonus_mult = j[1].ability.perma_bonus_mult or 0
-    j[1].ability.perma_bonus_mult = j[1].ability.perma_bonus_mult + 1
-    card_eval_status_text(j[1], 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={1}}})
-end
-for i, j in ipairs(destroyed_cards) do
-    if false then
-        j[2]:juice_up(0.8, 0.8)
-        j[2]:start_dissolve({G.C.RED}, nil, 1.6)
-        if j[2].area then j[2].area:remove_card(j[2]) end
-    end
+    j[2]:juice_up(0.8, 0.8)
+    j[2]:start_dissolve({G.C.RED}, nil, 1.6)
+    if j[2].area then j[2].area:remove_card(j[2]) end
 end
 for i = 1, #G.hand.cards do
     local card = G.hand.cards[i]
