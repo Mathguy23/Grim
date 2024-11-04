@@ -489,9 +489,15 @@ local function get_skils()
     return shown_skills
 end
 
-function learn_skill(card)
-    local obj = card.config.center
-    local key = obj.key
+function learn_skill(card, direct_)
+    local obj, key = "", ""
+    if direct_ then
+        obj = G.P_SKILLS[direct_]
+        key = direct_
+    else
+        obj = card.config.center
+        key = obj.key
+    end
     G.GAME.skills[key] = true
     if G.GAME.ante_banners then
         G.GAME.ante_banners[key] = G.GAME.round_resets.ante
@@ -502,8 +508,10 @@ function learn_skill(card)
         G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
     end
     check_for_unlock({type = 'skill_check', learned_skill = key})
-    discover_card(obj)
-    card:set_sprites(obj)
+    if card then
+        discover_card(obj)
+        card:set_sprites(obj)
+    end
     if key == "sk_grm_ease_1" then
         G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.9
         if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
@@ -1198,6 +1206,49 @@ SMODS.Tarot {
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
     end,
+}
+
+SMODS.Joker {
+    key = 'jack_of_all_trades',
+    name = "Jack of All Trades",
+    loc_txt = {
+        name = "Jack of All Trades",
+        text = {
+            "{C:attention}Sell{} this card to",
+            "{C:attention}learn{} an unlearned",
+            "{C:attention}Skill{}"
+        }
+    },
+    rarity = 3,
+    atlas = 'jokers',
+    pos = {x = 0, y = 1},
+    cost = 10,
+    blueprint_compat = false,
+    config = {},
+    in_pool = function(self)
+        local valid = false
+        for i, j in pairs(G.P_CENTER_POOLS['Skill']) do
+            if j.unlocked and j.class and not G.GAME.skills[j.key] then
+                valid = true
+            end
+        end
+        return valid, {allow_duplicates = false}
+    end,
+    calculate = function(self, card, context)
+        if context.selling_self then
+            local classes = {}
+            for i, j in pairs(G.P_CENTER_POOLS['Skill']) do
+                if j.unlocked and j.class and not G.GAME.skills[j.key] then
+                    classes[#classes + 1] = j.key
+                end
+            end
+            if #classes > 0 then
+                local class = pseudorandom_element(classes, pseudoseed('jack'))
+                learn_skill(nil, class)
+                card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize{type='name_text',key=class,set = "Skill"},colour = G.C.FILTER, delay = 0.45})
+            end
+        end
+    end
 }
 
 -----Alchemist Stuff---------
