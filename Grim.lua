@@ -1216,7 +1216,7 @@ SMODS.Joker {
         text = {
             "{C:attention}Sell{} this card to",
             "{C:attention}learn{} an unlearned",
-            "{C:attention}Skill{}"
+            "{C:attention}Class{}"
         }
     },
     rarity = 3,
