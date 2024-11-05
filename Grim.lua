@@ -605,6 +605,7 @@ function learn_skill(card, direct_)
             G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
         end
     elseif key == "sk_grm_cl_hoarder" then
+        G.hand:change_size(-1)
         G.GAME.grim_class.hoarder = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_astronomer" then
@@ -1032,7 +1033,7 @@ G.FUNCS.grm_discard_card = function(e)
 end
 
 G.FUNCS.grm_can_discard_card = function(e)
-    if false then 
+    if (G.play and #G.play.cards > 0) or (G.CONTROLLER.locked) or (G.GAME.STOP_USE and G.GAME.STOP_USE > 0) then 
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else
@@ -1043,11 +1044,11 @@ end
 
 G.FUNCS.grm_draw_card = function(e)
     local card = e.config.ref_table
-    draw_card(G.consumeables, G.hand, nil, nil, nil, card)
+    draw_card(G.consumeables, G.hand, nil, nil, nil, card, nil, nil, (card.facing == "back"))
 end
 
 G.FUNCS.grm_can_draw_card = function(e)
-    if not G.hand or not (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) then 
+    if not G.hand or not (G.STATE == G.STATES.SELECTING_HAND or G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED) or ((G.play and #G.play.cards > 0) or (G.CONTROLLER.locked) or (G.GAME.STOP_USE and G.GAME.STOP_USE > 0)) then 
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else
@@ -1058,12 +1059,12 @@ end
 
 G.FUNCS.grm_pack_card = function(e)
     local card = e.config.ref_table
-    draw_card(card.area, G.consumeables, nil, nil, nil, card)
+    draw_card(card.area, G.consumeables, nil, nil, nil, card, nil, nil, (card.facing == "back"))
 end
 
 G.FUNCS.grm_can_pack_card = function(e)
     local card = e.config.ref_table
-    if not G.consumeables or (#G.consumeables.cards >= G.consumeables.config.card_limit) or (card.area ~= G.hand) then 
+    if not G.consumeables or (#G.consumeables.cards >= G.consumeables.config.card_limit) or (card.area ~= G.hand) or ((G.play and #G.play.cards > 0) or (G.CONTROLLER.locked) or (G.GAME.STOP_USE and G.GAME.STOP_USE > 0)) then 
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else
@@ -1204,7 +1205,7 @@ SMODS.Tarot {
         return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_package')}}}
     end,
     in_pool = function(self)
-        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
+        return false, {allow_duplicates = false}
     end,
 }
 
@@ -2565,7 +2566,7 @@ SMODS.Enhancement {
     config = {},
     pos = {x = 1, y = 0},
     in_pool = function(self)
-        return G.GAME.skills.sk_grm_cl_hoarder
+        return false
     end,
 }
 
@@ -3018,8 +3019,9 @@ function SMODS.current_mod.process_loc_text()
         sk_grm_cl_hoarder = {
             name = "Hoarder",
             text = {
-                "{C:green}Packed cards{}",
-                "are enabled."
+                "{C:red}-1{} Hand Size",
+                "You may {C:green}Pack{}",
+                "cards."
             },
             unlock = {
                 "Have {C:purple}2,000{} or",

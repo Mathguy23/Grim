@@ -418,7 +418,7 @@ if self.playing_card then
                         {x=0,y=0.65},
                     parent =self}
             }
-        elseif self.highlighted and (self.ability.name == "m_grm_package") and (self.area ~= G.pack_cards) then
+        elseif self.highlighted and G.GAME.skills.sk_grm_cl_hoarder and (self.area ~= G.pack_cards) and (self.area ~= G.play) then
             local x_off = (self.ability.consumeable and -0.1 or 0)
             self.children.use_button = UIBox{
                 definition = G.UIDEF.use_and_sell_buttons(self), 
@@ -1093,7 +1093,7 @@ payload = '''if card.area and (card.area == G.consumeables) and card.playing_car
         }},
     }}
     return t
-elseif card.playing_card and (card.ability.name == "m_grm_package") and (card.area ~= G.pack_cards) then
+elseif card.playing_card and G.GAME.skills.sk_grm_cl_hoarder and (card.area ~= G.pack_cards) and (card.area ~= G.play) then
     return {
         n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
           {n=G.UIT.R, config={mid = true}, nodes={
@@ -1771,5 +1771,13 @@ position = "at"
 payload = '''
 if #G.hand.highlighted <= 0 or G.GAME.blind.block_play or #G.hand.highlighted > G.hand.config.highlighted_limit then
 '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(to, card)'''
+position = 'at'
+payload = '''local stay_flipped = stay_flipped or (G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(to, card))'''
 match_indent = true
 
