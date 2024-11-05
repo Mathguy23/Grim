@@ -3108,6 +3108,12 @@ function SMODS.current_mod.process_loc_text()
             "{C:red}Expires when debuffed!{}"
         }
     }
+    G.localization.descriptions.Other["aether"] = {
+        name = "Ultimate",
+        text = {
+            "Statuses cannot expire",
+        }
+    }
     G.localization.descriptions.Other["undiscovered_skill"] = {
         name = "Not Discovered",
         text = {
@@ -3645,7 +3651,7 @@ end
 
 function Card:get_chip_h_chips()
     if self.debuff then return 0 end
-    return self.ability.h_chips
+    return self.ability.h_chips or 0
 end
 
 G.FUNCS.your_lunar_stats = function(e)

@@ -1416,12 +1416,11 @@ payload = '''if self.ability and (self.ability.grm_status) then
         G.shared_stickers['sa_rocky'].role.draw_major = self
         G.shared_stickers['sa_rocky']:draw_shader('dissolve', nil, nil, nil, self.children.center)
     end
-    if self.ability.grm_status.gust then
+    if self.ability.grm_status.gust or self.ability.grm_status.aether then
         self.children.center:draw_shader('voucher', nil, self.ARGS.send_to_shader)
     end
     if self.ability.grm_status.aether then
         G.shared_stickers['sa_aether'].role.draw_major = self
-        G.shared_stickers['sa_aether']:draw_shader('dissolve', nil, nil, nil, self.children.center)
     end
 end'''
 match_indent = true
@@ -1435,6 +1434,10 @@ payload = '''
 local destroyed_cards = {}
 for i = 1, #G.play.cards do
     local card = G.play.cards[i]
+    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and card.ability.grm_status.gust and card.ability.grm_status.rocky and card.ability.grm_status.subzero and not card.debuff then
+        card:juice_up()
+        card.ability.grm_status.aether = true
+    end
     if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff then
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + 1
@@ -1451,7 +1454,7 @@ for i, j in ipairs(destroyed_cards) do
 end
 for i = 1, #G.hand.cards do
     local card = G.hand.cards[i]
-    if card.ability and card.ability.grm_status and card.ability.grm_status.rocky and not card.debuff then
+    if card.ability and card.ability.grm_status and card.ability.grm_status.rocky and not card.debuff and not card.ability.grm_status.aether then
         card.ability.grm_status.rocky = nil
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
     end
@@ -1498,7 +1501,7 @@ target = 'functions/state_events.lua'
 pattern = '''if destroyed_cards[1] then'''
 position = 'before'
 payload = '''for i = 1, #G.hand.highlighted do
-    if G.hand.highlighted[i].ability and G.hand.highlighted[i].ability.grm_status and G.hand.highlighted[i].ability.grm_status.flint and not G.hand.highlighted[i].debuff then
+    if G.hand.highlighted[i].ability and G.hand.highlighted[i].ability.grm_status and G.hand.highlighted[i].ability.grm_status.flint and not G.hand.highlighted[i].debuff and not G.hand.highlighted[i].ability.grm_status.aether then
         G.hand.highlighted[i].ability.grm_status.flint = nil
         card_eval_status_text(G.hand.highlighted[i], 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
     end
@@ -1512,7 +1515,7 @@ pattern = '''table.sort(scoring_hand, function (a, b) return a.T.x < b.T.x end )
 position = 'before'
 payload = '''
 for i = 1, #scoring_hand do
-    if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.subzero and not scoring_hand[i].debuff then
+    if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.subzero and not scoring_hand[i].debuff and not scoring_hand[i].ability.grm_status.aether then
         scoring_hand[i].ability.grm_status.subzero = nil
         card_eval_status_text(scoring_hand[i], 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
     end
@@ -1539,7 +1542,7 @@ match_indent = true
 target = 'card.lua'
 pattern = '''if self.ability and self.ability.perma_debuff then self.debuff = true end'''
 position = 'after'
-payload = '''   if (self.area == G.hand) and self.debuff and self.ability and self.ability.grm_status and self.ability.grm_status.gust then
+payload = '''   if (self.area == G.hand) and self.debuff and self.ability and self.ability.grm_status and self.ability.grm_status.gust and not self.ability.grm_status.aether then
         if self.highlighted then
             G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
         end
@@ -1758,5 +1761,15 @@ elseif new_card.ability.grm_status and new_card.ability.grm_status.gust and (not
     G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
 end
 new_card.ability.grm_status = {}'''
+match_indent = true
+
+[[patches]] # thnx JamMod
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''if #G.hand.highlighted <= 0 or G.GAME.blind.block_play or #G.hand.highlighted > 5 then'''
+position = "at"
+payload = '''
+if #G.hand.highlighted <= 0 or G.GAME.blind.block_play or #G.hand.highlighted > G.hand.config.highlighted_limit then
+'''
 match_indent = true
 
