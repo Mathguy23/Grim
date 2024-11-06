@@ -1144,6 +1144,11 @@ payload = '''if effects.playing_card then
             card_eval_status_text(_card, 'chips', effects.chips, percent)
         end
 
+        if effects.xp then
+            juice_card(_card)
+            add_skill_xp(effects.xp, _card)
+        end
+
         if effects.mult then 
             juice_card(_card)
             mult = mod_mult(mult + effects.mult)
@@ -1284,8 +1289,8 @@ pattern = '''if context.cardarea == G.hand then'''
 position = 'after'
 payload = '''   if card.debuff and G.GAME.special_levels and (G.GAME.special_levels["debuff"] > 0) then
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
-        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + G.GAME.special_levels["debuff"] * 0.2
-        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.2}}})
+        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + G.GAME.special_levels["debuff"] * 0.5
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.5}}})
     end
     local h_chips = card:get_chip_h_chips()
     if h_chips > 0 then 
@@ -1311,7 +1316,7 @@ payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels a
         effects[#effects + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
     end
     if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
-        effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.05)}
+        effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}
     end
     if scoring_hand[i].grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
         effects[#effects + 1] = {x_mult = G.GAME.area_data.midnight_mult}
@@ -1361,10 +1366,10 @@ target = 'functions/state_events.lua'
 pattern = '''play_area_status_text("Not Allowed!")--localize('k_not_allowed_ex'), true)'''
 position = 'after'
 payload = '''if G.GAME.special_levels and (G.GAME.special_levels["not_allowed"] > 0) then
-    if pseudorandom('rhea') < G.GAME.probabilities.normal * ((G.GAME.special_levels["not_allowed"] + 1) % 5) / 5 then
-        level_up_hand(used_tarot, text, nil, math.ceil((G.GAME.special_levels["not_allowed"] + 1) / 5))
-    elseif G.GAME.special_levels["not_allowed"] >= 4 then
-        level_up_hand(used_tarot, text, nil, math.floor((G.GAME.special_levels["not_allowed"] + 1) / 5))
+    if pseudorandom('rhea') < G.GAME.probabilities.normal * ((G.GAME.special_levels["not_allowed"]) % 2) / 2 then
+        level_up_hand(used_tarot, text, nil, math.ceil((G.GAME.special_levels["not_allowed"]) / 2))
+    elseif G.GAME.special_levels["not_allowed"] >= 2 then
+        level_up_hand(used_tarot, text, nil, math.floor((G.GAME.special_levels["not_allowed"]) / 2))
     end
 end'''
 match_indent = true

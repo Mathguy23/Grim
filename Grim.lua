@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 0.9.7
+--- VERSION: 0.9.8
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -613,6 +613,7 @@ function learn_skill(card, direct_)
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_alchemist" then
         G.GAME.banned_keys['c_devil'] = true
+        G.GAME.elemental_rate = 4
         G.GAME.grim_class.alchemist = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_explorer" then
@@ -1225,6 +1226,7 @@ SMODS.Joker {
     pos = {x = 0, y = 1},
     cost = 10,
     blueprint_compat = false,
+    eternal_compat = false,
     config = {},
     in_pool = function(self)
         local valid = false
@@ -1737,6 +1739,47 @@ SMODS.Booster {
     draw_hand = true
 }
 
+SMODS.Tag {
+    key = 'philosopher',
+    atlas = 'tags',
+    loc_txt = {
+        name = "Philosopher's Tag",
+        text = {
+            "Gives a free",
+            "{C:attention}Mega Ancient Pack"
+        }
+    },
+    pos = {x = 2, y = 0},
+    min_ante = 2,
+    apply = function(tag, context)
+        if context.type == 'new_blind_choice' then
+            local lock = tag.ID
+            G.CONTROLLER.locks[lock] = true
+            tag:yep('+', G.C.FILTER,function() 
+                local key = 'p_grm_ancient_mega_1'
+                local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W*1.27/2,
+                G.play.T.y + G.play.T.h/2-G.CARD_H*1.27/2, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[key], {bypass_discovery_center = true, bypass_discovery_ui = true})
+                card.cost = 0
+                card.from_tag = true
+                G.FUNCS.use_card({config = {ref_table = card}})
+                card:start_materialize()
+                G.CONTROLLER.locks[lock] = nil
+                return true
+            end)
+            tag.triggered = true
+            return true
+        end
+    end,
+    loc_vars = function(self, info_queue, tag)
+        info_queue[#info_queue+1] = {key = 'p_grm_ancient_mega_1', set = 'Other', vars = {2, 5}}
+        return {}
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist
+    end,
+    config = {type = 'new_blind_choice'}
+}
+
 ---- Astronomer Stuff ------
 
 SMODS.Lunar {
@@ -1756,7 +1799,7 @@ SMODS.Lunar {
     loc_vars = function(self, info_queue, card)
         return {vars = {
             G.GAME.special_levels[self.special_level] + 1, 
-            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level] + 1) or 1) * 0.2)
+            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level] + 1) or 1) * 0.5)
         }}
     end
 }
@@ -1778,7 +1821,7 @@ SMODS.Lunar {
     loc_vars = function(self, info_queue, card)
         return {vars = {
             G.GAME.special_levels[self.special_level] + 1,
-            string.format("%.2f",1 + 0.05 * (G.GAME.special_levels[self.special_level] + 1)),
+            string.format("%.2f",1 + 0.15 * (G.GAME.special_levels[self.special_level] + 1)),
         }}
     end
 }
@@ -1801,10 +1844,10 @@ SMODS.Lunar {
     loc_vars = function(self, info_queue, card)
         return {vars = {
             G.GAME.special_levels[self.special_level] + 1, 
-            G.GAME.probabilities.normal * ((G.GAME.special_levels[self.special_level] + 1) % 5),
-            5,
-            math.ceil((G.GAME.special_levels[self.special_level] + 1) / 5),
-            math.floor((G.GAME.special_levels[self.special_level] + 1) / 5),
+            G.GAME.probabilities.normal * ((G.GAME.special_levels[self.special_level] + 1) % 2),
+            2,
+            math.ceil((G.GAME.special_levels[self.special_level] + 1) / 2),
+            math.floor((G.GAME.special_levels[self.special_level] + 1) / 2),
         }}
     end
 }
@@ -2471,6 +2514,7 @@ SMODS.Joker {
     pos = {x = 0, y = 0},
     cost = 6,
     blueprint_compat = false,
+    eternal_compat = false,
     config = {extra = {xp = 30, xp_mod = 1}},
     loc_vars = function(self, info_queue, card)
         return { vars = {card.ability.extra.xp ,card.ability.extra.xp_mod}}
@@ -3438,7 +3482,7 @@ function moon_row(moon)
     local level = 0
     if moon == 'c_grm_moon' then
         loc_vars = {
-            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels["debuff"]) or 0) * 0.2)
+            string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels["debuff"]) or 0) * 0.5)
         }
         desc_nodes = localize{type = 'raw_descriptions', key = 'moon_level_desc', set = "Other", vars = loc_vars}
         moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
@@ -3447,7 +3491,7 @@ function moon_row(moon)
         level = G.GAME.special_levels["debuff"] + 1
     elseif moon == 'c_grm_callisto' then
         loc_vars = {
-            string.format("%.2f",1 + 0.05 * (G.GAME.special_levels and G.GAME.special_levels["face_down"] or 0))
+            string.format("%.2f",1 + 0.15 * (G.GAME.special_levels and G.GAME.special_levels["face_down"] or 0))
         }
         desc_nodes = localize{type = 'raw_descriptions', key = 'callisto_level_desc', set = "Other", vars = loc_vars}
         moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
@@ -3456,7 +3500,7 @@ function moon_row(moon)
         level = G.GAME.special_levels["face_down"] + 1
     elseif moon == 'c_grm_rhea' then
         loc_vars = {
-            string.format("%.1f",0.2 * (G.GAME.special_levels and G.GAME.special_levels["not_allowed"] or 0))
+            string.format("%.1f",0.5 * (G.GAME.special_levels and G.GAME.special_levels["not_allowed"] or 0))
         }
         desc_nodes = localize{type = 'raw_descriptions', key = 'rhea_level_desc', set = "Other", vars = loc_vars}
         moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
@@ -3606,6 +3650,9 @@ function nullified_blinds_sect()
     local blind_options = {}
     for i = 1, math.ceil(#blind_tab/12) do
       table.insert(blind_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(#blind_tab/20)))
+    end
+    if #blind_options == 0 then
+        blind_options = {localize('k_page')..' 1/1'}
     end
 
     local t = 
