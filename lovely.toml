@@ -514,6 +514,9 @@ position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_1"] and self.ability.name:find('Arcana') then
     _size = _size + 1
 end
+if next(SMODS.find_card("j_grm_brochure")) and self.ability.name:find('Area') then
+    _size = _size + 1
+end
 if G.GAME.skills["sk_grm_motley_3"] and self.ability.name:find('Arcana') then
     _size = math.max(2, _size - 1)
 end
@@ -855,15 +858,25 @@ if (G.GAME.area == "Ghost Town") and G.GAME.area_data and (pseudorandom('ghost')
     dollars = dollars + G.GAME.area_data.ghost_dollars
 end
 if (G.GAME.blind_on_deck == "Boss") then
-    local add_skill_table = {1, 50, 90, 120, 150, 180, 220, 250}
-    local plus_xp = add_skill_table[G.GAME.stake] or 300
+    local stake_key = G.P_CENTER_POOLS.Stake[G.GAME.stake].key
+    local add_skill_table = {
+        stake_white = 1,
+        stake_red = 50,
+        stake_green = 90,
+        stake_black = 120,
+        stake_blue = 150,
+        stake_purple = 180,
+        stake_orange = 220,
+        stake_gold = 250,
+    }
+    local plus_xp = add_skill_table[stake_key] or 300
     if G.GAME.modifiers and G.GAME.modifiers.force_stake_xp then
         plus_xp = G.GAME.modifiers.force_stake_xp
     end
     if G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
         plus_xp = math.floor(plus_xp * 2)
     end
-    local stake_name = localize {type = 'name_text', key = G.P_CENTER_POOLS.Stake[G.GAME.stake].key, set = 'Stake'}
+    local stake_name = localize {type = 'name_text', key = stake_key, set = 'Stake'}
     if plus_xp and (plus_xp > 0) then
         add_custom_round_eval_row(stake_name , tostring(get_modded_xp(plus_xp)) .. " XP")
         cash_out_xp = cash_out_xp + get_modded_xp(plus_xp)
@@ -1449,6 +1462,11 @@ for i = 1, #G.play.cards do
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={1}}})
     end
     if card.ability and card.ability.grm_status and card.ability.grm_status.subzero and not card.debuff then
+        for j = 1, #G.jokers.cards do
+            if not G.jokers.cards[j].debuff and (G.jokers.cards[j].ability.name == "Absolute Zero") then
+                G.GAME.grim_hand_size_bonus = (G.GAME.grim_hand_size_bonus or 0) + 1
+            end
+        end
         G.GAME.grim_hand_size_bonus = (G.GAME.grim_hand_size_bonus or 0) + 1
     end
 end
@@ -1786,3 +1804,33 @@ position = 'at'
 payload = '''local stay_flipped = stay_flipped or (G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(to, card))'''
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)'''
+position = 'at'
+payload = '''local c_pool = {}
+for i, j in ipairs(G.consumeables.cards) do
+    local card = G.consumeables.cards[i]
+    if card.ability.consumeable then
+        c_pool[#c_pool + 1] = card
+    end
+end
+if #c_pool == 0 then
+    return true
+end
+local card = copy_card(pseudorandom_element(c_pool, pseudoseed('perkeo')), nil)'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.name == "Steel Joker" then'''
+position = 'before'
+payload = '''if self.ability.name == "Precious Joker" then
+    self.ability.precious_tally = 0
+    for k, v in pairs(G.playing_cards) do
+        if v.ability and (v.ability.m_type == "Precious") then self.ability.precious_tally = self.ability.precious_tally+1 end
+    end
+end'''
+match_indent = true

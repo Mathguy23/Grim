@@ -149,6 +149,9 @@ SMODS.Area = SMODS.Consumable:extend {
         G.GAME.area_data.adjacent[G.GAME.region] = true
         enter_area(self.area, card)
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.GREEN, message = localize('k_new_area')})
+        for i = 1, #G.jokers.cards do
+            eval = G.jokers.cards[i]:calculate_joker({visited_area = self.area})
+        end
     end,
     region = "Classic",
     can_use = function(self, card)
@@ -1780,6 +1783,110 @@ SMODS.Tag {
     config = {type = 'new_blind_choice'}
 }
 
+SMODS.Joker {
+    key = 'cohesion',
+    name = "Cohesion",
+    loc_txt = {
+        name = "Cohesion",
+        text = {
+            "{C:red}+#1#{} Mult if hand contains",
+            "{C:attention}#2#{} scoring cards of",
+            "the same {C:green}status{}"
+        }
+    },
+    rarity = 1,
+    atlas = 'jokers',
+    pos = {x = 0, y = 2},
+    cost = 4,
+    config = {extra = {mult = 12, value = 2}},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability and card.ability.extra.mult or 12, card and card.ability and card.ability.extra.value or 2}}
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main then
+            local valid = false
+            local stauses = {}
+            for i = 1, #context.scoring_hand do
+                if context.scoring_hand[i].ability.grm_status then
+                    for i, j in pairs(context.scoring_hand[i].ability.grm_status) do
+                        if stauses[i] then
+                            valid = true
+                            break
+                        end
+                        stauses[i] = true
+                    end
+                end
+            end
+            if valid then
+                return {
+                    message = localize{type='variable',key='a_mult',vars={card.ability.extra.mult}},
+                    mult_mod = card.ability.extra.mult,
+                }
+            end
+        end
+    end
+}
+
+SMODS.Joker {
+    key = 'absolute_zero',
+    name = "Absolute Zero",
+    loc_txt = {
+        name = "Absolute Zero",
+        text = {
+            "{C:attention}Subzero{} cards draw",
+            "an additional card",
+        }
+    },
+    rarity = 1,
+    atlas = 'jokers',
+    pos = {x = 1, y = 2},
+    cost = 6,
+    config = {},
+    blueprint_compat = false,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {key = 'subzero', set = 'Other'}
+        return {vars = {}}
+    end,
+}
+
+SMODS.Joker {
+    key = 'precious_joker',
+    name = "Precious Joker",
+    loc_txt = {
+        name = "Precious Joker",
+        text = {
+            "Gives {C:money}$#1#{} for",
+            "each {C:attention}Precious Card",
+            "in your {C:attention}full deck",
+            "{C:inactive}(Currently {C:money}$#2#{C:inactive})",
+        }
+    },
+    rarity = 2,
+    atlas = 'jokers',
+    pos = {x = 2, y = 2},
+    cost = 8,
+    config = {dollar = 1},
+    blueprint_compat = false,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = {key = 'precious_metal', set = 'Other'}
+        return {vars = {card.ability and card.ability.dollar or 1, card.ability and card.ability.precious_tally or 0}}
+    end,
+    calc_dollar_bonus = function(self, card)
+        if card.ability and (card.ability.precious_tally > 0) then
+            return card.ability.precious_tally
+        end
+    end,
+}
+
 ---- Astronomer Stuff ------
 
 SMODS.Lunar {
@@ -2445,7 +2552,6 @@ SMODS.Joker {
     atlas = 'jokers',
     pos = {x = 2, y = 0},
     cost = 4,
-    blueprint_compat = false,
     config = {extra = {Xmult = 4}},
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
@@ -2465,6 +2571,73 @@ SMODS.Joker {
             }
         end
     end
+}
+
+SMODS.Joker {
+    key = 'tourist',
+    name = "Tourist",
+    loc_txt = {
+        name = "Tourist",
+        text = {
+            "This Joker gains {X:mult,C:white} X#1# {} Mult",
+            "for every {C:attention}unique",
+            "{C:attention}Area{} visited",
+            "{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
+        }
+    },
+    rarity = 2,
+    atlas = 'jokers',
+    pos = {x = 1, y = 1},
+    cost = 6,
+    perishable_compat = false,
+    config = {extra = {x_mult = 1, x_mult_mod = 0.75}},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability and card.ability.extra.x_mult_mod or 0.75, card and card.ability and card.ability.extra.x_mult or 1}}
+    end,
+    set_ability = function(self, card, initial, delay_sprites)
+        card.ability.visited = {}
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main and (card.ability.extra.x_mult > 1) then
+            return {
+                message = localize{type='variable',key='a_xmult',vars={card.ability.extra.x_mult}},
+                Xmult_mod = card.ability.extra.x_mult,
+            }
+        end
+        if context.visited_area and not card.ability.visited[context.visited_area] and not context.blueprint then
+            card.ability.visited[context.visited_area] = true
+            card.ability.extra.x_mult = card.ability.extra.x_mult + card.ability.extra.x_mult_mod
+            card_eval_status_text(card, 'extra', nil, nil, nil, {message = localize{type = 'variable', key = 'a_xmult', vars = {card.ability.extra.x_mult}}})
+            return true
+        end
+    end
+}
+
+SMODS.Joker {
+    key = 'brochure',
+    name = "Brochure",
+    loc_txt = {
+        name = "Brochure",
+        text = {
+            "{C:attention}+#1#{} option in",
+            "{C:attention}Area Packs{}",
+        }
+    },
+    rarity = 1,
+    atlas = 'jokers',
+    blueprint_compat = false,
+    pos = {x = 2, y = 1},
+    cost = 5,
+    config = {extra = 1},
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
+    end,
+    loc_vars = function(self, info_queue, card)
+        return {vars = {card and card.ability and card.ability.extra or 1}}
+    end,
 }
 
 ---------------------------------------
