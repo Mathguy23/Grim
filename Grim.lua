@@ -1865,9 +1865,9 @@ SMODS.Joker {
     loc_txt = {
         name = "Precious Joker",
         text = {
-            "Gives {C:money}$#1#{} for",
-            "each {C:attention}Precious Card",
-            "in your {C:attention}full deck",
+            "Earn {C:money}$#1#{} at {C:attention}end of",
+            "{C:attention}round{} for each {C:attention}Precious",
+            "{C:attention}Card{} in your {C:attention}full deck",
             "{C:inactive}(Currently {C:money}$#2#{C:inactive})",
         }
     },
