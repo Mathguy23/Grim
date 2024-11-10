@@ -1033,7 +1033,11 @@ end
 
 G.FUNCS.grm_discard_card = function(e)
     local card = e.config.ref_table
-    draw_card(G.consumeables, G.deck, nil, nil, nil, card)
+    if G.STATE == G.STATES.SELECTING_HAND then
+        draw_card(G.consumeables, G.discard, nil, nil, nil, card)
+    else
+        draw_card(G.consumeables, G.deck, nil, nil, nil, card)
+    end
 end
 
 G.FUNCS.grm_can_discard_card = function(e)
