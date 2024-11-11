@@ -450,12 +450,31 @@ function SMODS.SAVE_UNLOCKS()
             end
         end
     end
+
+    for k, v in pairs(G.P_CRAFTS or {}) do
+        v.key = k
+        if not v.wip and not v.demo then 
+            if TESTHELPER_unlocks then
+                v.unlocked = true; v.discovered = true; v.alerted = true
+            end --REMOVE THIS
+            if not v.unlocked and meta.unlocked[k] then
+                v.unlocked = true
+            end
+            if not v.discovered and meta.discovered[k] then
+                v.discovered = true
+            end
+            if v.discovered then
+                v.alerted = false
+            end
+        end
+    end
     for _, t in ipairs{
         G.P_CENTERS,
         G.P_BLINDS,
         G.P_TAGS,
         G.P_SEALS,
         G.P_SKILLS or {},
+        G.P_CRAFTS or {},
     } do
         for k, v in pairs(t) do
             v._discovered_unlocked_overwritten = true
@@ -625,6 +644,16 @@ function learn_skill(card, direct_)
     elseif key == "sk_grm_orbit_1" then
         G.GAME.lunar_rate = 4
         G.GAME.stellar_rate = 4
+    elseif key == "sk_grm_sticky_2" then
+        G.GAME.perishable_rounds = (G.GAME.perishable_rounds or 5) + 3
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards[i].ability.perishable then
+                G.jokers.cards[i].ability.perish_tally = (G.jokers.cards[i].ability.perish_tally or 5) + 3
+                G.jokers.cards[i]:set_debuff()
+            end
+        end
+    elseif key == "sk_grm_sticky_3" then
+        G.GAME.rental_rate = -G.GAME.rental_rate
     end
 end
 
@@ -3298,6 +3327,27 @@ function SMODS.current_mod.process_loc_text()
             unlock = {
                 "Win a run with",
                 "{C:attention}10 skills{} learned",
+            }
+        },
+        sk_grm_sticky_1 = {
+            name = "Sticky I",
+            text = {
+                "{C:attention}Eternal Jokers{} cost",
+                "{C:purple}100 XP{} to sell"
+            }
+        },
+        sk_grm_sticky_2 = {
+            name = "Sticky II",
+            text = {
+                "{C:attention}Perishable Jokers{} last",
+                "{C:attention}3{} extra rounds"
+            }
+        },
+        sk_grm_sticky_3 = {
+            name = "Sticky III",
+            text = {
+                "{C:attention}Rental Jokers{} give",
+                "{C:money}$3{} instead of {C:red}-$3{}"
             }
         }
     }

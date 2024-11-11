@@ -9,7 +9,7 @@ target = 'game.lua'
 pattern = '''chips_text = '0','''
 position = 'after'
 payload = '''skills = {},
-skill_xp = 0,
+skill_xp = 999999999,
 reset_antes = {},
 reset_antes2 = {},
 reset_antes3 = {},
@@ -192,6 +192,9 @@ payload = '''self.P_SKILLS = {
     sk_grm_orbit_2 = {order = 45, key = 'sk_grm_orbit_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit II", xp_req = 500, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_orbit_1'}},
     sk_grm_cl_alchemist = {order = 46, key = 'sk_grm_cl_alchemist', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Alchemist", xp_req = 0, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
     sk_grm_cl_explorer = {order = 47, key = 'sk_grm_cl_explorer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Explorer", xp_req = 0, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_sticky_1 = {order = 48, key = 'sk_grm_sticky_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky I", xp_req = 300, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}},
+    sk_grm_sticky_2 = {order = 49, key = 'sk_grm_sticky_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky II", xp_req = 400, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_1'}},
+    sk_grm_sticky_3 = {order = 50, key = 'sk_grm_sticky_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky III", xp_req = 500, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_2'}},
 }'''
 match_indent = true
 
@@ -316,6 +319,12 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_TAGS["tag_ethereal"]
     elseif _c.name == "Explorer" then
         info_queue[#info_queue+1] = G.P_TAGS["tag_grm_grid"]
+    elseif _c.name == "Sticky I" then
+        info_queue[#info_queue+1] = {key = 'eternal', set = 'Other'}
+    elseif _c.name == "Sticky II" then
+        info_queue[#info_queue+1] = {key = 'perishable', set = 'Other', vars = {G.GAME.perishable_rounds or 5, G.GAME.perishable_rounds or 5}}
+    elseif _c.name == "Sticky III" then
+        info_queue[#info_queue+1] = {key = 'rental', set = 'Other', vars = {3}}
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -1833,4 +1842,29 @@ payload = '''if self.ability.name == "Precious Joker" then
         if v.ability and (v.ability.m_type == "Precious") then self.ability.precious_tally = self.ability.precious_tally+1 end
     end
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if (G.SETTINGS.tutorial_complete or G.GAME.pseudorandom.seed ~= 'TUTORIAL' or G.GAME.round_resets.ante > 1) and'''
+position = 'before'
+payload = '''if (G.SETTINGS.tutorial_complete or G.GAME.pseudorandom.seed ~= 'TUTORIAL' or G.GAME.round_resets.ante > 1) and
+    self.area and
+    self.area.config.type == 'joker' and
+    G.GAME.skills["sk_grm_sticky_1"] and
+    self.ability.eternal and
+    (G.GAME.skill_xp >= 100) then
+    return true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:sell_card()'''
+position = 'after'
+payload = '''   if self.ability.eternal and G.GAME.skills["sk_grm_sticky_1"] then
+        G.GAME.skill_xp = G.GAME.skill_xp - 100
+    end'''
 match_indent = true
