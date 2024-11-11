@@ -9,7 +9,7 @@ target = 'game.lua'
 pattern = '''chips_text = '0','''
 position = 'after'
 payload = '''skills = {},
-skill_xp = 999999999,
+skill_xp = 0,
 reset_antes = {},
 reset_antes2 = {},
 reset_antes3 = {},
