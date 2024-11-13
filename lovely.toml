@@ -187,8 +187,8 @@ payload = '''self.P_SKILLS = {
     sk_grm_dash_1 = {order = 40, key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 250, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}},
     sk_grm_dash_2 = {order = 41, key = 'sk_grm_dash_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash II", xp_req = 400, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_dash_1'}},
     sk_grm_cl_hoarder = {order = 42, key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
-    sk_grm_cl_astronomer = {order = 43, key = 'sk_grm_cl_astronomer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Astronomer", xp_req = 0, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
-    sk_grm_orbit_1 = {order = 44, key = 'sk_grm_orbit_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_cl_astronomer'}},
+    sk_grm_cl_astronaut = {order = 43, key = 'sk_grm_cl_astronaut', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Astronaut", xp_req = 0, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_orbit_1 = {order = 44, key = 'sk_grm_orbit_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_cl_astronaut'}},
     sk_grm_orbit_2 = {order = 45, key = 'sk_grm_orbit_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit II", xp_req = 500, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_orbit_1'}},
     sk_grm_cl_alchemist = {order = 46, key = 'sk_grm_cl_alchemist', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Alchemist", xp_req = 0, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
     sk_grm_cl_explorer = {order = 47, key = 'sk_grm_cl_explorer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Explorer", xp_req = 0, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
@@ -556,7 +556,7 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'card.lua'
-pattern = '''if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' and self.ability.name:find('Celestial'))) and #find_joker('Astronomer') > 0 then self.cost = 0 end'''
+pattern = '''if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' and self.ability.name:find('Celestial'))) and #find_joker('Astronaut') > 0 then self.cost = 0 end'''
 position = 'after'
 payload = '''if G.GAME.skills["sk_grm_mystical_2"] and (self.ability.set == 'Tarot' or (self.ability.set == 'Booster' and self.ability.name:find('Arcana'))) then
     self.cost = 0
@@ -765,14 +765,14 @@ payload = '''if lovers_indexes and (((lovers_indexes[1] == i) and not G.GAME.use
 end
 if self.ability.name:find('Celestial') and G.GAME.used_vouchers.v_telescope and (i ~= 1) then
     local rng = pseudorandom('astro')
-    if G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.35) then
+    if G.GAME.skills["sk_grm_cl_astronaut"] and (rng <= 0.35) then
         card = create_card("Lunar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
         card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
         card.T.x = self.T.x + 0
         card.T.y = self.T.y
         pack_cards[i] = card or {}
         goto continue
-    elseif G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.59) then
+    elseif G.GAME.skills["sk_grm_cl_astronaut"] and (rng <= 0.59) then
         card = create_card("Stellar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
         card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
         card.T.x = self.T.x + 0
@@ -782,14 +782,14 @@ if self.ability.name:find('Celestial') and G.GAME.used_vouchers.v_telescope and 
     end
 elseif self.ability.name:find('Celestial') then
     local rng = pseudorandom('astro')
-    if G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.34) then
+    if G.GAME.skills["sk_grm_cl_astronaut"] and (rng <= 0.34) then
         card = create_card("Lunar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
         card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
         card.T.x = self.T.x + 0
         card.T.y = self.T.y
         pack_cards[i] = card or {}
         goto continue
-    elseif G.GAME.skills["sk_grm_cl_astronomer"] and (rng <= 0.56) then
+    elseif G.GAME.skills["sk_grm_cl_astronaut"] and (rng <= 0.56) then
         card = create_card("Stellar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
         card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
         card.T.x = self.T.x + 0

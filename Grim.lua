@@ -199,7 +199,7 @@ SMODS.Element = SMODS.Consumable:extend {
         G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.2,func = function() G.hand:unhighlight_all(); return true end }))
         delay(0.5)
     end,
-    cost = 6,
+    cost = 4,
     m_type = 'Common',
     set_badges = function(self, card, badges)
         local colours = {
@@ -630,8 +630,8 @@ function learn_skill(card, direct_)
         G.hand:change_size(-1)
         G.GAME.grim_class.hoarder = true
         G.GAME.grim_class.class = true
-    elseif key == "sk_grm_cl_astronomer" then
-        G.GAME.grim_class.astronomer = true
+    elseif key == "sk_grm_cl_astronaut" then
+        G.GAME.grim_class.astronaut = true
         G.GAME.grim_class.class = true
     elseif key == "sk_grm_cl_alchemist" then
         G.GAME.banned_keys['c_devil'] = true
@@ -754,7 +754,7 @@ function G.UIDEF.learned_skills()
             create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true})
         }},
       }}
-    if G.GAME.skills["sk_grm_cl_astronomer"] then
+    if G.GAME.skills["sk_grm_cl_astronaut"] then
         t.nodes[4] = UIBox_button{id = 'lunar_button', label = {"Lunar Stats"}, button = "your_lunar_stats", minw = 5}
     end
     return t
@@ -934,7 +934,7 @@ function skill_unlock_check(card, args)
                 end
             end
         end
-    elseif (card.key == "sk_grm_cl_astronomer") and args.learned_skill then
+    elseif (card.key == "sk_grm_cl_astronaut") and args.learned_skill then
         if args.learned_skill == "sk_grm_gravity_3" then
             return true
         end
@@ -1479,9 +1479,9 @@ SMODS.Element {
 }
 
 SMODS.Element {
-    key = 'm_earth',
+    key = 'm_rock',
     loc_txt = {
-        name = "Earth",
+        name = "Rock",
         text = {
             "Adds a {C:attention}Rocky",
             "{C:green}Status{} to a",
@@ -1937,7 +1937,7 @@ SMODS.Joker {
     end,
 }
 
----- Astronomer Stuff ------
+---- Astronaut Stuff ------
 
 SMODS.Lunar {
     key = 'moon',
@@ -3324,8 +3324,8 @@ function SMODS.current_mod.process_loc_text()
                 "more {C:attention}XP{}",
             }
         },
-        sk_grm_cl_astronomer = {
-            name = "Astronomer",
+        sk_grm_cl_astronaut = {
+            name = "Astronaut",
             text = {
                 "{C:money}Stellar{} cards and {C:blue}Lunar{}",
                 "cards can appear in",
