@@ -654,6 +654,23 @@ function learn_skill(card, direct_)
         end
     elseif key == "sk_grm_sticky_3" then
         G.GAME.rental_rate = -G.GAME.rental_rate
+    elseif key == "sk_grm_shelf_1" then
+        change_shop_size(-1)
+        G.GAME.grm_modify_booster_slots = (G.GAME.grm_modify_booster_slots or 0) + 2
+        if G.shop then
+            for i = 3, 4 do
+                local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+                G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[get_pack('shop_pack').key], {bypass_discovery_center = true, bypass_discovery_ui = true})
+                create_shop_card_ui(card, 'Booster', G.shop_booster)
+                card.ability.booster_pos = i
+                card:start_materialize()
+                G.shop_booster:emplace(card)
+            end
+        end
+    elseif key == "sk_grm_shelf_2" then
+        if not G.GAME.grm_did_purchase then
+            change_shop_size(1)
+        end
     end
 end
 
@@ -2904,6 +2921,35 @@ SMODS.Stake {
     sticker_atlas = "stickers"
 }
 
+SMODS.Stake {
+    key = 'bismuth',
+    name = "Bismuth Stake",
+    atlas = "stakes",
+    pos = {x = 1, y = 0},
+    applied_stakes = {"gold"},
+	loc_txt = {
+        name = "Bismuth Stake",
+        text = {
+            "No shop after",
+            "each {C:attention}Big Blind{}"
+        },
+        sticker = {
+            name = "Bismuth Sticker",
+            text = {
+                "Used this Joker",
+                "to win on {C:attention}Bismuth",
+                "{C:attention}Stake{} difficulty"
+            }
+        }
+    },
+    modifiers = function()
+        G.GAME.modifiers.no_big_shop = true
+    end,
+    colour = HEX("D184BC"),
+    sticker_pos = {x = 1, y = 0},
+    sticker_atlas = "stickers"
+}
+
 SMODS.Back {
     key = 'talent',
     loc_txt = {
@@ -3348,6 +3394,21 @@ function SMODS.current_mod.process_loc_text()
             text = {
                 "{C:attention}Rental Jokers{} give",
                 "{C:money}$3{} instead of {C:red}-$3{}"
+            }
+        },
+        sk_grm_shelf_1 = {
+            name = "Shelf I",
+            text = {
+                "{C:red}-1{} shop slot",
+                "{C:attention}+2{} booster slots"
+            }
+        },
+        sk_grm_shelf_2 = {
+            name = "Shelf II",
+            text = {
+                "{C:attention}+1{} shop slot each",
+                "shop until an item is",
+                "{C:attention}purchased"
             }
         }
     }

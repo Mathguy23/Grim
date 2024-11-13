@@ -195,6 +195,8 @@ payload = '''self.P_SKILLS = {
     sk_grm_sticky_1 = {order = 48, key = 'sk_grm_sticky_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky I", xp_req = 300, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}},
     sk_grm_sticky_2 = {order = 49, key = 'sk_grm_sticky_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky II", xp_req = 400, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_1'}},
     sk_grm_sticky_3 = {order = 50, key = 'sk_grm_sticky_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky III", xp_req = 500, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_2'}},
+    sk_grm_shelf_1 = {order = 51, key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 200, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}},
+    sk_grm_shelf_2 = {order = 52, key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 300, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}},
 }'''
 match_indent = true
 
@@ -590,11 +592,13 @@ target = 'functions/state_events.lua'
 pattern = '''mult, hand_chips, modded = G.GAME.blind:modify_hand(G.play.cards, poker_hands, text, mult, hand_chips)'''
 position = 'after'
 payload = '''mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
-for i, j in pairs(G.GAME.skills) do
-    hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult, scoring_name = text})
-    if modded then
-        mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
-        update_hand_text({sound = 'chips2'}, {chips = hand_chips, mult = mult})
+for j, i in ipairs({'sk_grm_strike_1', 'sk_grm_strike_2', 'sk_grm_gravity_2', 'sk_grm_strike_3'}) do
+    if G.GAME.skills[i] then
+        hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult, scoring_name = text})
+        if modded then
+            mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
+            update_hand_text({sound = 'chips2'}, {chips = hand_chips, mult = mult})
+        end
     end
 end'''
 match_indent = true
@@ -877,8 +881,44 @@ if (G.GAME.blind_on_deck == "Boss") then
         stake_purple = 180,
         stake_orange = 220,
         stake_gold = 250,
+        stake_grm_bismuth = 300,
+        stake_bunc_cyan = 227,
+        stake_bunc_pink = 235,
+        stake_bunc_magenta = 242,
+        stake_cry_pink = 270,
+        stake_cry_brown = 300,
+        stake_cry_yellow = 300,
+        stake_cry_jade = 300,
+        stake_cry_cyan = 300,
+        stake_cry_gray = 300,
+        stake_cry_crimson = 300,
+        stake_cry_diamond = 300,
+        stake_cry_amber = 300,
+        stake_cry_bronze = 300,
+        stake_cry_quartz = 300,
+        stake_cry_ruby = 300,
+        stake_cry_sapphire = 300,
+        stake_cry_emerald = 300,
+        stake_cry_platinum = 300,
+        stake_cry_twilight = 300,
+        stake_cry_verdant = 300,
+        stake_cry_ember = 300,
+        stake_cry_dawn = 300,
+        stake_cry_horizon = 300,
+        stake_cry_blossom = 300,
+        stake_cry_azure = 300,
+        stake_cry_ascendant = 300,
+        stake_cruel_mean = 50,
+        stake_cruel_rude = 100,
+        stake_cruel_mocking = 150,
+        stake_cruel_painful = 200,
+        stake_cruel_harsh = 250,
+        stake_cruel_brutal = 300,
+        stake_cruel_horrid = 300,
+        stake_cruel_cruel = 300,
+        stake_cruel_fools = 300,
     }
-    local plus_xp = add_skill_table[stake_key] or 300
+    local plus_xp = add_skill_table[stake_key] or 150
     if G.GAME.modifiers and G.GAME.modifiers.force_stake_xp then
         plus_xp = G.GAME.modifiers.force_stake_xp
     end
@@ -921,6 +961,13 @@ payload = '''if G.shop then
     for i, j in pairs(G.GAME.skills) do
         calculate_skill(i, {ending_shop = true})
     end
+    if G.GAME.grm_unlocks then
+        G.GAME.grm_unlocks.shop_rerolls = 0
+    end
+    if G.GAME.skills["sk_grm_shelf_2"] and G.GAME.grm_did_purchase then
+        change_shop_size(1)
+    end
+    G.GAME.grm_did_purchase = false
 end'''
 match_indent = true
 
@@ -1013,7 +1060,27 @@ match_indent = true
 target = 'game.lua'
 pattern = '''if not G.GAME.current_round.used_packs[i] then'''
 position = 'before'
-payload = '''if not G.GAME.current_round.used_packs[i] and G.GAME.skills["sk_grm_dash_1"] and (i == 1) then
+payload = '''if G.GAME.grm_modify_booster_slots then
+    for i0 = 1, 2 + G.GAME.grm_modify_booster_slots do
+        if not G.GAME.current_round.used_packs[i0] and G.GAME.skills["sk_grm_dash_1"] and (i0 == 1) then
+            G.GAME.current_round.used_packs[i0] = get_pack('shop_pack', 'Standard').key
+        end
+        if not G.GAME.current_round.used_packs[i0] then
+            G.GAME.current_round.used_packs[i0] = get_pack('shop_pack').key
+        end
+
+        if G.GAME.current_round.used_packs[i0] ~= 'USED' then 
+            local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+            G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i0]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+            create_shop_card_ui(card, 'Booster', G.shop_booster)
+            card.ability.booster_pos = i0
+            card:start_materialize()
+            G.shop_booster:emplace(card)
+        end
+    end
+    break
+end
+if not G.GAME.current_round.used_packs[i] and G.GAME.skills["sk_grm_dash_1"] and (i == 1) then
     G.GAME.current_round.used_packs[i] = get_pack('shop_pack', 'Standard').key
 end'''
 match_indent = true
@@ -1656,6 +1723,8 @@ pattern = '''G.STATE = G.STATES.SHOP'''
 position = 'before'
 payload = '''if G.GAME.area == "Metro" then
     G.STATE = G.STATES.BLIND_SELECT
+elseif G.GAME.modifiers and G.GAME.modifiers.no_big_shop and (G.GAME.blind_on_deck == "Big") then
+    G.STATE = G.STATES.BLIND_SELECT
 else'''
 match_indent = true
 
@@ -1867,4 +1936,26 @@ position = 'after'
 payload = '''   if self.ability.eternal and G.GAME.skills["sk_grm_sticky_1"] then
         G.GAME.skill_xp = G.GAME.skill_xp - 100
     end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''c1.area:remove_card(c1)'''
+position = "before"
+payload = '''
+    if G.shop and G.GAME.skills["sk_grm_shelf_2"] and not G.GAME.grm_did_purchase then
+        c1.immune_to_removal = true
+        change_shop_size(-1)
+    end
+    G.GAME.grm_did_purchase = true
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if G.shop_jokers.cards[i] then'''
+position = 'at'
+payload = '''if G.shop_jokers.cards[i] and not G.shop_jokers.cards[i].immune_to_removal then'''
 match_indent = true
