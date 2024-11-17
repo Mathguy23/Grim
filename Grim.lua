@@ -3656,6 +3656,7 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
         },
         restrictions = {
             banned_cards = {
+                {id = 'j_burglar'},
             },
             banned_tags = {
             },
