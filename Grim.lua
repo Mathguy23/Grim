@@ -96,6 +96,50 @@ local elementType = SMODS.ConsumableType {
     default = "c_grm_m_lead"
 }
 
+local attackType = SMODS.ConsumableType {
+    key = 'Attack',
+    primary_colour = HEX('E9D3D3'),
+    secondary_colour = HEX('E9D3D3'),
+    loc_txt = {
+        name = 'Attack',
+        collection = 'Attack Cards',
+        undiscovered = {
+            name = "Not Discovered",
+            text = {
+                "Recieve this",
+                "attack in an",
+                "unseeded run to",
+                "learn what it does"
+            }
+        }
+    },
+    collection_rows = { 4, 4 },
+    shop_rate = 0,
+    default = "c_grm_debuff"
+}
+
+local lootType = SMODS.ConsumableType {
+    key = 'Loot',
+    primary_colour = HEX('7190A6'),
+    secondary_colour = HEX('7190A6'),
+    loc_txt = {
+        name = 'Loot',
+        collection = 'Loot Cards',
+        undiscovered = {
+            name = "Not Discovered",
+            text = {
+                "Purchase or use",
+                "this card in an",
+                "unseeded run to",
+                "learn what it does"
+            }
+        }
+    },
+    collection_rows = { 4, 4 },
+    shop_rate = 0,
+    default = "c_grm_hand_refresh"
+}
+
 SMODS.Lunar = SMODS.Consumable:extend {
     set = 'Lunar',
     use = function(self, card, area, copier)
@@ -215,6 +259,24 @@ SMODS.Element = SMODS.Consumable:extend {
     end
 }
 
+SMODS.Attack = SMODS.Consumable:extend {
+    set = 'Attack',
+    use = function(self, card, area, copier)
+       local a = 1
+    end,
+    cost = 4,
+    discovered = true,
+}
+
+SMODS.Loot = SMODS.Consumable:extend {
+    set = 'Loot',
+    cost = 4,
+    can_use = function(self, card)
+        return true
+    end,
+    discovered = true,
+}
+
 SMODS.UndiscoveredSprite {
     key = 'Lunar',
     atlas = 'lunar',
@@ -245,6 +307,18 @@ SMODS.UndiscoveredSprite {
     pos = {x = 0, y = 0}
 }
 
+SMODS.UndiscoveredSprite {
+    key = 'Attack',
+    atlas = 'attack',
+    pos = {x = 0, y = 2}
+}
+
+SMODS.UndiscoveredSprite {
+    key = 'Loot',
+    atlas = 'loot',
+    pos = {x = 0, y = 0}
+}
+
 function SMODS.current_mod.reset_game_globals()
     G.GAME.grim_hand_size_bonus = 0
 end
@@ -259,6 +333,9 @@ end
 SMODS.current_mod.set_debuff = function(card)
     if G.GAME.skills["sk_grm_motley_1"] and ((card.ability.name == 'Wild Card') or (G.GAME.skills["sk_grm_motley_3"] and (card.config.center ~= G.P_CENTERS.c_base))) then
         return 'prevent_debuff'
+    end
+    if card.ability.temp_debuff then
+        return true
     end
 end
 
@@ -1055,6 +1132,186 @@ function enter_area(area, card)
     end
 end
 
+function random_attack()
+    if G.GAME.modifiers["blind_attack"] then
+        local rng = pseudorandom('attack')
+        if G.GAME.blind_on_deck == "Small" then
+            if rng < 0.3 then
+                return {attack = "debuff", amt = 1, context = "pre_draw_hand"}
+            else
+                return {attack = "hide", amt = 1, context = "press_play"}
+            end
+        elseif G.GAME.blind_on_deck == "Big" then
+            if rng < 0.25 then
+                return {attack = "debuff", amt = 2, context = "pre_draw_hand"}
+            elseif rng < 0.5 then
+                return {attack = "up", amt = 1.1, context = "pre_draw_hand"}
+            elseif rng < 0.75 then
+                return {attack = "hide", amt = 2, context = "press_play"}
+            else
+                return {attack = "ring", amt = 1, context = "pre_draw_hand"}
+            end
+        elseif G.GAME.blind_on_deck == "Boss" then
+            if G.GAME.blind.name == "Coral Well" then
+                if rng < 0.2 then
+                    return {attack = "collapse", amt = 3, context = "press_play"}
+                elseif rng < 0.4 then
+                    return {attack = "up", amt = 1.25, context = "pre_draw_hand"}
+                elseif rng < 0.6 then
+                    return {attack = "snatch", amt = 4, context = "press_play"}
+                elseif rng < 0.8 then
+                    return {attack = "debuff", amt = 4, context = "pre_draw_hand"}
+                else
+                    return {attack = "ring", amt = 2, context = "pre_draw_hand"}
+                end
+            else
+                if rng < 0.2 then
+                    return {attack = "collapse", amt = 2, context = "press_play"}
+                elseif rng < 0.4 then
+                    return {attack = "up", amt = 1.1, context = "pre_draw_hand"}
+                elseif rng < 0.6 then
+                    return {attack = "hide", amt = 2, context = "press_play"}
+                elseif rng < 0.8 then
+                    return {attack = "debuff", amt = 2, context = "pre_draw_hand"}
+                else
+                    return {attack = "ring", amt = 1, context = "pre_draw_hand"}
+                end
+            end
+        end
+    end
+end
+
+function do_attack(context, extra)
+    local attack_type, amt = 0,0
+    if G.GAME.blind_attack and G.GAME.blind_attack.context == context then
+        attack_type = G.GAME.blind_attack.attack
+        amt = G.GAME.blind_attack.amt
+    else
+        return
+    end
+    atk_card = "c_grm_" .. attack_type
+    discover_card(G.P_CENTERS[atk_card])
+    local card = Card(G.play.T.x + G.play.T.w/2 - G.CARD_W/2,
+    G.play.T.y + G.play.T.h/2-G.CARD_H/2, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS[atk_card], {bypass_discovery_center = true, bypass_discovery_ui = true})
+    card.cost = 0
+    card.attack_card = true
+    G.FUNCS.use_card({config = {ref_table = card}})
+    card:start_materialize()
+    G.CONTROLLER.locks.blind_attack = true
+    if attack_type == "debuff" then
+        G.E_MANAGER:add_event(Event({func = function()
+            local amount = math.min(#G.hand.cards, amt)
+            local pool = {}
+            local result = {}
+            for i, j in ipairs(G.hand.cards) do
+                if not j.debuff then
+                    table.insert(pool, j)
+                end
+            end
+            for i = 1, amount do
+                local card2, key = pseudorandom_element(pool, pseudoseed('attack'))
+                table.remove(pool, key)
+                table.insert(result, card2)
+            end
+            for i, j in ipairs(result) do
+                j.ability.temp_debuff = true
+                j:set_debuff()
+            end
+        return true end }))
+    elseif attack_type == "snatch" then
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                local amount = math.min(#G.hand.cards, amt)
+                local pool = {}
+                local result = {}
+                for i, j in ipairs(G.hand.cards) do
+                    if not j.debuff then
+                        table.insert(pool, j)
+                    end
+                end
+                for i = 1, amount do
+                    local card2, key = pseudorandom_element(pool, pseudoseed('attack'))
+                    table.remove(pool, key)
+                    table.insert(result, card2)
+                end
+                for i, j in ipairs(result) do
+                    draw_card(G.hand, G.discard, nil, nil, nil, j, nil, nil, true)
+                end
+        return true end }))
+    elseif attack_type == "hide" then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            func = function()
+            local amount = math.min(G.hand.config.card_limit - #G.hand.cards, amt)
+            for i = 1, amount do
+                draw_card(G.deck, G.hand, nil, nil, nil, nil, nil, nil, true)
+            end
+        return true end }))
+    elseif attack_type == "ring" then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            func = function()
+                local amount = math.min(5, math.min(#G.hand.cards, amt))
+                local pool = {}
+                local result = {}
+                for i, j in ipairs(G.hand.cards) do
+                    if not j.debuff then
+                        table.insert(pool, j)
+                    end
+                end
+                for i = 1, amount do
+                    local card2, key = pseudorandom_element(pool, pseudoseed('attack'))
+                    table.remove(pool, key)
+                    table.insert(result, card2)
+                end
+                for i, j in ipairs(result) do
+                    G.hand:unhighlight_all()
+                    j.ability.forced_selection = true
+                    G.hand:add_to_highlighted(j)
+                end
+        return true end }))
+    elseif attack_type == "up" then
+        G.E_MANAGER:add_event(Event({
+            trigger = 'after',
+            func = function()
+                G.GAME.blind.chips = math.floor(G.GAME.blind.chips * amt)
+                G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
+                G.GAME.blind:set_text()
+                G.GAME.blind:wiggle()
+        return true end }))
+    elseif attack_type == "collapse" then
+        local pool = {}
+        local total = 0
+        local result = nil
+        local valid = false
+        for i, j in pairs(G.GAME.hands) do
+            if (j.level > 1) and j.visible then
+                pool[i] = j.played
+                valid = true
+                total = total + j.played
+            end
+        end
+        if valid then
+            local index = math.min(total - 1, math.floor((total) * pseudorandom('collapse')))
+            local subtotal = 0
+            for i, j in pairs(pool) do
+                subtotal = subtotal + j
+                if index <= subtotal then
+                    result = i
+                    break
+                end
+            end
+            if result then
+                update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(result, 'poker_hands'),chips = G.GAME.hands[result].chips, mult = G.GAME.hands[result].mult, level=G.GAME.hands[result].level})
+                delay(0.35)
+                level_up_hand(nil, result, nil, -math.min(G.GAME.hands[result].level - 1, amt))
+            end
+        end
+    end
+    G.GAME.blind_attack = nil
+    G.CONTROLLER.locks.blind_attack = nil
+end
+
 G.FUNCS.your_game_skill_page = function(args)
     local shown_skills = get_skils()
     if not args or not args.cycle_config then return end
@@ -1212,6 +1469,12 @@ SMODS.Atlas({ key = "decks", atlas_table = "ASSET_ATLAS", path = "Backs.png", px
 
 SMODS.Atlas({ key = "metal", atlas_table = "ASSET_ATLAS", path = "Metallic.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "attack", atlas_table = "ASSET_ATLAS", path = "Attack.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "loot", atlas_table = "ASSET_ATLAS", path = "Loot.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "blinds", atlas_table = "ANIMATION_ATLAS", path = "Blinds.png", px = 34, py = 34, frames = 21 })
+
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
 SMODS.Shader {
@@ -1305,6 +1568,406 @@ SMODS.Joker {
             end
         end
     end
+}
+
+SMODS.Attack {
+    key = 'debuff',
+    loc_txt = {
+        name = "Debuffer",
+        text = {
+            "{C:red}Debuff{} cards",
+            "in hand."
+        }
+    },
+    pos = {x = 0, y = 0},
+    config = {},
+    atlas = "attack",
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Attack {
+    key = 'hide',
+    loc_txt = {
+        name = "Hide",
+        text = {
+            "Draw cards",
+            "{C:attention}face down{}"
+        }
+    },
+    pos = {x = 1, y = 1},
+    config = {},
+    atlas = "attack",
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Attack {
+    key = 'up',
+    loc_txt = {
+        name = "Up",
+        text = {
+            "Raise",
+            "{C:attention}blind size{}"
+        }
+    },
+    pos = {x = 2, y = 0},
+    config = {},
+    atlas = "attack",
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Attack {
+    key = 'ring',
+    loc_txt = {
+        name = "Ring",
+        text = {
+            "Force {C:attention}cards{}",
+            "to be selected"
+        }
+    },
+    pos = {x = 0, y = 1},
+    config = {},
+    atlas = "attack",
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Attack {
+    key = 'snatch',
+    loc_txt = {
+        name = "Snatch",
+        text = {
+            "{C:red}Discard{} cards",
+            "in hand"
+        }
+    },
+    pos = {x = 1, y = 0},
+    config = {},
+    atlas = "attack",
+    -- loc_vars = function(self, info_queue, card)
+    --     info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_package']
+    --     return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_package')}}}
+    -- end,
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Attack {
+    key = 'collapse',
+    loc_txt = {
+        name = "Collapse",
+        text = {
+            "{C:red}Downgrade{} a",
+            "{C:attention}poker hand{}"
+        }
+    },
+    pos = {x = 2, y = 1},
+    config = {},
+    atlas = "attack",
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+}
+
+SMODS.Loot {
+    key = 'hand_refresh',
+    loc_txt = {
+        name = "Hand Refresh",
+        text = {
+            "Refresh {C:blue}Hands{}",
+        }
+    },
+    pos = {x = 1, y = 0},
+    config = {},
+    atlas = "loot",
+    loc_vars = function(self, info_queue, card)
+        return {vars = {(card and card.ability.hands or 2)}}
+    end,
+    use = function(self, card, area, copier)
+       ease_hands_played(G.GAME.round_resets.hands - G.GAME.current_round.hands_left)
+    end,
+}
+
+SMODS.Loot {
+    key = 'discard_refresh',
+    loc_txt = {
+        name = "Discard Refresh",
+        text = {
+            "Refresh {C:red}Discards{}",
+        }
+    },
+    pos = {x = 2, y = 0},
+    config = {discards = 2},
+    atlas = "loot",
+    loc_vars = function(self, info_queue, card)
+        return {vars = {(card and card.ability.discards or 2)}}
+    end,
+    use = function(self, card, area, copier)
+       ease_discard(G.GAME.round_resets.discards - G.GAME.current_round.discards_left)
+    end,
+}
+
+SMODS.Loot {
+    key = 'dollar_gain',
+    loc_txt = {
+        name = "Dollar Gain",
+        text = {
+            "{C:money}+$#1#{}",
+        }
+    },
+    pos = {x = 0, y = 1},
+    config = {money = 6},
+    atlas = "loot",
+    loc_vars = function(self, info_queue, card)
+        return {vars = {(card and card.ability.money or 6)}}
+    end,
+    use = function(self, card, area, copier)
+       ease_dollars(card and card.ability.money or 6)
+    end,
+}
+
+SMODS.Loot {
+    key = 'joker_create',
+    loc_txt = {
+        name = "Joker Maker",
+        text = {
+            "Create an",
+            "{C:green}Uncommon{} {C:attention}Joker",
+            "{C:inactive}(Must have room)"
+        }
+    },
+    pos = {x = 1, y = 1},
+    config = {},
+    atlas = "loot",
+    use = function(self, card, area, copier)
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+            play_sound('timpani')
+            local card2 = SMODS.create_card{set = 'Joker', area = G.jokers, rarity = 0.83}
+            card2:add_to_deck()
+            G.jokers:emplace(card2)
+            card:juice_up(0.3, 0.5)
+            return true end }))
+        delay(0.6)
+    end,
+    can_use = function(self, card)
+        return #G.jokers.cards < G.jokers.config.card_limit
+    end,
+}
+
+SMODS.Booster {
+    key = 'area_loot_1',
+    group_key = 'k_loot_pack',
+    loc_txt = {
+        name = "Loot Pack",
+        text = {
+            "Choose {C:attention}#1#{} of up to",
+            "{C:attention}#2# Loot{} cards to",
+            "be used immediately"
+        }
+    },
+    weight = 0,
+    cost = 0,
+    name = "Loot Pack",
+    atlas = "boosters",
+    pos = {x = 2, y = 1},
+    config = {extra = 2, choose = 1, name = "Loot Pack"},
+    create_card = function(self, card)
+        return {set = "Loot"}
+    end,
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
+    discovered = true,
+}
+
+SMODS.Blind	{
+    loc_txt = {
+        name = 'The Monday',
+        text = { 'Cards drawn debuffed', 'after each hand' }
+    },
+    key = 'monday',
+    config = {},
+    boss = {min = 1, max = 10, astronaut = true}, 
+    boss_colour = HEX("b4c6cd"),
+    atlas = "blinds",
+    name = "The Monday",
+    pos = { x = 0, y = 1},
+    vars = {},
+    dollars = 5,
+    mult = 2,
+    stay_flipped = function(self, area, card)
+        if (area == G.hand) and G.GAME.blind.prepped and not card.debuff then
+            card.ability.temp_debuff = true
+            card.ability.drawn_this_blind = true
+            card:set_debuff()
+        end
+    end,
+    press_play = function(self)
+        if not G.GAME.blind.disabled then
+            G.GAME.blind.triggered = true
+            G.GAME.blind.prepped = true
+        end
+    end,
+    defeat = function(self)
+        for k, v in ipairs(G.playing_cards) do
+            if v.ability.drawn_this_blind then
+                v.ability.drawn_this_blind = nil
+            end
+        end
+    end,
+    disable = function(self)
+        for k, v in ipairs(G.playing_cards) do
+            if v.ability.drawn_this_blind then
+                v.ability.drawn_this_blind = nil
+            end
+        end
+    end,
+    in_pool = function(self)
+        return G.GAME.modifiers["astro_blinds"]
+    end,
+    recalc_debuff = function(self, card, from_blind)
+        if card.ability.drawn_this_blind and not G.GAME.blind.disabled then
+            return true
+        end
+        return false
+    end,
+    set_blind = function(self, reset, silent)
+        if not reset then
+            G.GAME.blind.prepped = false
+        end
+    end,
+    discovered = true,
+}
+
+SMODS.Blind	{
+    loc_txt = {
+        name = 'The Ganymede',
+        text = { 'Cards only drawn face', 'up after each discard' }
+    },
+    key = 'ganymede',
+    config = {},
+    boss = {min = 1, max = 10, astronaut = true}, 
+    boss_colour = HEX("c4b594"),
+    atlas = "blinds",
+    name = "The Ganymede",
+    pos = { x = 0, y = 2},
+    vars = {},
+    dollars = 5,
+    mult = 2,
+    stay_flipped = function(self, area, card)
+        if (area == G.hand) and G.GAME.blind.prepped then
+            return true
+        end
+    end,
+    press_play = function(self)
+        if not G.GAME.blind.disabled then
+            G.GAME.blind.prepped = true
+        end
+    end,
+    set_blind = function(self, reset, silent)
+        if not reset then
+            G.GAME.blind.prepped = true
+        end
+    end,
+    in_pool = function(self)
+        return G.GAME.modifiers["astro_blinds"]
+    end,
+    discovered = true,
+}
+
+SMODS.Blind	{
+    loc_txt = {
+        name = 'The Titan',
+        text = { 'Only final hand', 'allowed' }
+    },
+    key = 'titan',
+    config = {},
+    boss = {min = 2, max = 10, astronaut = true}, 
+    boss_colour = HEX("d3d28a"),
+    atlas = "blinds",
+    pos = { x = 0, y = 3},
+    name = "The Titan",
+    vars = {},
+    dollars = 5,
+    mult = 1.5,
+    debuff_hand = function(self, cards, hand, handname, check)
+        G.GAME.blind.triggered = true
+        if G.GAME.current_round.hands_left > (check and 1 or 0) then
+            return true
+        end
+    end,
+    in_pool = function(self)
+        return G.GAME.modifiers["astro_blinds"]
+    end,
+    discovered = true,
+}
+
+SMODS.Blind	{
+    loc_txt = {
+        name = 'The Triton',
+        text = { 'Discarding sets', "money to $-100" }
+    },
+    key = 'triton',
+    config = {},
+    boss = {min = 1, max = 10, astronaut = true}, 
+    boss_colour = HEX("737373"),
+    atlas = "blinds",
+    name = "The Triton",
+    pos = { x = 0, y = 4},
+    vars = {},
+    dollars = 5,
+    mult = 2,
+    in_pool = function(self)
+        return G.GAME.modifiers["astro_blinds"]
+    end,
+    discovered = true,
+}
+
+SMODS.Blind	{
+    loc_txt = {
+        name = 'Coral Well',
+        text = { 'Convert all discards', 'to hands' }
+    },
+    key = 'coral_well',
+    config = {},
+    boss = {showdown = true, min = 2, max = 10, astronaut = true},
+    showdown = true, 
+    boss_colour = HEX("ff7f50"),
+    atlas = "blinds",
+    pos = { x = 0, y = 0},
+    name = 'Coral Well',
+    vars = {},
+    dollars = 5,
+    mult = 3,
+    in_pool = function(self)
+        return G.GAME.modifiers["astro_blinds"]
+    end,
+    set_blind = function(self, reset, silent)
+        if not reset then
+            self.discards_sub = G.GAME.current_round.discards_left
+            self.hands_sub = -G.GAME.current_round.discards_left
+            ease_hands_played(-self.hands_sub)
+            ease_discard(-self.discards_sub)
+        end
+    end,
+    defeat = function(self)
+        ease_hands_played(self.hands_sub)
+        ease_discard(self.discards_sub)
+    end,
+    disable = function(self)
+        if not G.GAME.blind.disabled then
+            ease_hands_played(self.hands_sub)
+            ease_discard(self.discards_sub)
+        end
+    end,
+    discovered = true,
 }
 
 -----Alchemist Stuff---------
@@ -2967,6 +3630,45 @@ SMODS.Back {
     end
 }
 
+table.insert(G.CHALLENGES,#G.CHALLENGES+1,
+    {name = 'Astro Dungeon',
+        id = 'c_astro_dungeon',
+        rules = {
+            custom = {
+                {id = 'no_hand_discard_reset'},
+                {id = 'no_extra_hand_money'},
+                {id = 'blind_attack'},
+                {id = 'astro_blinds'},
+                {id = 'force_astronaut'}
+            },
+            modifiers = {
+                {id = 'hands', value = 8},
+                {id = 'discards', value = 6},
+                {id = 'force_stake_xp', value = 150},
+            }
+        },
+        jokers = {       
+        },
+        consumeables = {
+        },
+        vouchers = {
+        },
+        deck = {
+            type = 'Challenge Deck',
+        },
+        restrictions = {
+            banned_cards = {
+            },
+            banned_tags = {
+            },
+            banned_other = {
+                {id = 'bl_water', type = 'blind'},
+                {id = 'bl_needle', type = 'blind'},
+            }
+        },
+    }
+)
+
 function Card:get_chip_xp(context)
     if self.debuff then return 0 end
     if self.ability.set == 'Joker' then return 0 end
@@ -2985,6 +3687,13 @@ end
 
 function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary["b_learn"] = "LEARN"
+    G.localization.misc.challenge_names["c_astro_dungeon"] = "Astro Dungeon"
+    G.localization.misc.v_text.ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."}
+    G.localization.misc.v_text.ch_c_blind_attack = {"Blinds may use {C:attention}Attack{} cards"}
+    G.localization.misc.v_text.ch_c_astro_blinds = {"Only {C:attention}Astronaut{} blinds may show up."}
+    G.localization.misc.v_text.ch_c_force_astronaut = {"You must play on the {C:attention}Astronaut{} class."}
+    G.localization.misc.v_text.ch_m_force_stake_xp = {"{C:purple}#1#{} XP per Ante"}
+    
     G.localization.descriptions.Skill = {
         sk_grm_chime_1 = {
             name = "Chime I",

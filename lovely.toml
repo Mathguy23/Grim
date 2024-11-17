@@ -462,6 +462,7 @@ target = 'functions/state_events.lua'
 pattern = '''G.RESET_JIGGLES = true'''
 position = 'after'
 payload = '''
+G.GAME.blind_attack = nil
 local skill_saved = false
 for i, j in pairs(G.GAME.skills) do
     local saved = calculate_skill(i, {end_of_round = true, game_over = game_over})
@@ -1060,7 +1061,18 @@ match_indent = true
 target = 'game.lua'
 pattern = '''if not G.GAME.current_round.used_packs[i] then'''
 position = 'before'
-payload = '''if G.GAME.grm_modify_booster_slots then
+payload = '''if G.GAME.modifiers["blind_attack"] and not G.GAME.current_round.used_packs[0] then
+    G.GAME.current_round.used_packs[0] = 'p_grm_area_loot_1'
+    local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+    G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[0]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+    create_shop_card_ui(card, 'Booster', G.shop_booster)
+    card.ability.booster_pos = 0
+    card:start_materialize()
+    G.shop_booster:emplace(card)
+    card.ability.couponed = true
+    card:set_cost()
+end
+if G.GAME.grm_modify_booster_slots then
     for i0 = 1, 2 + G.GAME.grm_modify_booster_slots do
         if not G.GAME.current_round.used_packs[i0] and G.GAME.skills["sk_grm_dash_1"] and (i0 == 1) then
             G.GAME.current_round.used_packs[i0] = get_pack('shop_pack', 'Standard').key
@@ -1958,4 +1970,175 @@ target = 'functions/common_events.lua'
 pattern = '''if G.shop_jokers.cards[i] then'''
 position = 'at'
 payload = '''if G.shop_jokers.cards[i] and not G.shop_jokers.cards[i].immune_to_removal then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)'''
+position = 'before'
+payload = '''if not G.GAME.modifiers["no_hand_discard_reset"] then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))'''
+position = 'after'
+payload = '''elseif G.GAME.current_round.hands_left and (G.GAME.current_round.hands_left <= 0) then
+    G.GAME.current_round.hands_left = 1
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)'''
+position = 'before'
+payload = '''if G.GAME.modifiers["blind_attack"] then
+    G.GAME.blind_attack = random_attack()
+end
+if not G.GAME.modifiers["no_hand_discard_reset"] then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))'''
+position = 'after'
+payload = '''end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''v.ability.discarded = nil'''
+position = 'after'
+payload = '''if v.debuff then
+    v.ability.temp_debuff = nil
+    v:set_debuff()
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.current_round.hands_played = G.GAME.current_round.hands_played + 1'''
+position = 'after'
+payload = '''return true
+    end
+}))
+G.E_MANAGER:add_event(Event({
+    trigger = 'after',
+    func = function()
+        G.E_MANAGER:add_event(Event({
+        func = function()
+            if (G.GAME.chips < G.GAME.blind.chips) and G.GAME.modifiers["blind_attack"] then
+                do_attack("pre_draw_hand")
+                do_attack("pre_draw")
+            end
+            G.GAME.blind_attack = random_attack()
+            return true
+        end
+        }))
+        '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''e.config.button = 'sell_card''''
+position = 'after'
+payload = '''if e.config.ref_table.ability.eternal and G.GAME.skills["sk_grm_sticky_1"] then
+    e.config.colour = G.C.PURPLE
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''if G.GAME.blind:press_play() then'''
+position = 'before'
+payload = '''G.E_MANAGER:add_event(Event({ func = function()
+    do_attack("press_play")
+return true end }))'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(self, card)'''
+position = 'at'
+payload = '''local stay_flipped = stay_flipped or (G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(self, card))'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''else draw_card(G.hand, G.play, 1, 'up', true, card, nil, mute) end'''
+position = 'before'
+payload = '''elseif card.attack_card then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''ease_discard(-1)'''
+position = 'before'
+payload = '''G.E_MANAGER:add_event(Event({ func = function()
+    do_attack("pre_draw_discard")
+    do_attack("pre_draw")
+return true end }))'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = 'G.FUNCS.discard_cards_from_highlighted = function(e, hook)'
+position = 'after'
+payload = '''   if G.GAME.blind and (G.GAME.blind.name == "The Triton") and not G.GAME.blind.disabled then
+        ease_dollars(-G.GAME.dollars-100, true)
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = 'if not v.boss then'
+position = 'after'
+payload = '''elseif G.GAME.modifiers["astro_blinds"] and (v.boss.astronaut ~= true) then
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''elseif v.id == 'no_shop_jokers' then'''
+position = 'before'
+payload = '''elseif v.id == 'force_astronaut' then
+    if G.P_SKILLS['sk_grm_cl_astronaut'] and G.P_SKILLS['sk_grm_cl_astronaut'].unlocked then
+        learn_skill(nil, 'sk_grm_cl_astronaut')
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''hand_size = {value = starting_params.hand_size, order = 3},'''
+position = 'after'
+payload = '''force_stake_xp = {value = 1, order = 8},'''
+match_indent = true
+
+
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''self.GAME.base_reroll_cost = self.GAME.starting_params.reroll_cost'''
+position = 'after'
+payload = '''G.GAME.modifiers.force_stake_xp = self.GAME.starting_params.force_stake_xp
+'''
 match_indent = true
