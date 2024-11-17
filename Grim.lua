@@ -1225,9 +1225,7 @@ function do_attack(context, extra)
                 local pool = {}
                 local result = {}
                 for i, j in ipairs(G.hand.cards) do
-                    if not j.debuff then
-                        table.insert(pool, j)
-                    end
+                    table.insert(pool, j)
                 end
                 for i = 1, amount do
                     local card2, key = pseudorandom_element(pool, pseudoseed('attack'))
@@ -1255,7 +1253,7 @@ function do_attack(context, extra)
                 local pool = {}
                 local result = {}
                 for i, j in ipairs(G.hand.cards) do
-                    if not j.debuff then
+                    if not j.forced_selection then
                         table.insert(pool, j)
                     end
                 end
