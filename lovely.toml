@@ -1061,7 +1061,7 @@ match_indent = true
 target = 'game.lua'
 pattern = '''if not G.GAME.current_round.used_packs[i] then'''
 position = 'before'
-payload = '''if G.GAME.modifiers["blind_attack"] and not G.GAME.current_round.used_packs[0] then
+payload = '''if G.GAME.modifiers["loot_pack"] and not G.GAME.current_round.used_packs[0] then
     G.GAME.current_round.used_packs[0] = 'p_grm_area_loot_1'
     local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
     G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[0]], {bypass_discovery_center = true, bypass_discovery_ui = true})

@@ -3636,6 +3636,7 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
                 {id = 'no_hand_discard_reset'},
                 {id = 'no_extra_hand_money'},
                 {id = 'blind_attack'},
+                {id = 'loot_pack'},
                 {id = 'astro_blinds'},
                 {id = 'force_astronaut'}
             },
@@ -3691,6 +3692,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.v_text.ch_c_blind_attack = {"Blinds may use {C:attention}Attack{} cards"}
     G.localization.misc.v_text.ch_c_astro_blinds = {"Only {C:attention}Astronaut{} blinds may show up."}
     G.localization.misc.v_text.ch_c_force_astronaut = {"You must play on the {C:attention}Astronaut{} class."}
+    G.localization.misc.v_text.ch_c_loot_pack = {"Each shop has a free {C:attention}Loot Pack{}."}
     G.localization.misc.v_text.ch_m_force_stake_xp = {"{C:purple}#1#{} XP per Ante"}
     
     G.localization.descriptions.Skill = {
@@ -4304,6 +4306,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['b_pack'] = "Pack"
     G.localization.misc.dictionary['k_new_area'] = "New Area!"
     G.localization.misc.dictionary['k_area_pack'] = "Area Pack"
+    G.localization.misc.dictionary['k_loot_pack'] = "Loot Pack"
     G.localization.misc.dictionary['k_ancient_pack'] = "Ancient Pack"
     G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
 end
