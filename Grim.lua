@@ -588,6 +588,21 @@ local function get_skils()
     return shown_skills
 end
 
+function fix_ante_scaling(do_blind)
+    local result = 1
+    for i, j in pairs(G.GAME.scaling_multipliers) do
+        result = result * j
+    end
+    result = 0.01 * math.max(1,math.floor(result * 100))
+    local orig = G.GAME.starting_params.ante_scaling
+    G.GAME.starting_params.ante_scaling = result * G.GAME.base_ante_scaling
+    local mult = 0.01 * math.max(1,math.floor(G.GAME.starting_params.ante_scaling / orig * 100))
+    if not do_blind and G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
+        G.GAME.blind.chips = math.floor(G.GAME.blind.chips * mult)
+        G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
+    end
+end
+
 function learn_skill(card, direct_)
     local obj, key = "", ""
     if direct_ then
@@ -598,31 +613,29 @@ function learn_skill(card, direct_)
         key = obj.key
     end
     G.GAME.skills[key] = true
-    if G.GAME.ante_banners then
+    if G.GAME.ante_banners and not G.GAME.ante_banners[key] then
         G.GAME.ante_banners[key] = G.GAME.round_resets.ante
     end
     if not obj.class and (G.GAME.free_skills and (G.GAME.free_skills > 0)) then
         G.GAME.free_skills = G.GAME.free_skills - 1
     else
         G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
+        G.GAME.xp_spent = (G.GAME.xp_spent or 0) + obj.xp_req
     end
-    check_for_unlock({type = 'skill_check', learned_skill = key})
+    if obj.token_req then
+        G.GAME.legendary_tokens = G.GAME.legendary_tokens - obj.token_req
+    end
+    check_for_unlock({type = 'skill_check', learned_skill = key, learned_tier = obj.tier})
     if card then
         discover_card(obj)
         card:set_sprites(obj)
     end
     if key == "sk_grm_ease_1" then
-        G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.9
-        if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
-            G.GAME.blind.chips = math.floor(G.GAME.blind.chips * 0.9)
-            G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
-        end
+        G.GAME.scaling_multipliers.ease = 0.9
+        fix_ante_scaling()
     elseif key == "sk_grm_ease_2" then
-        G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 8 / 9
-        if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
-            G.GAME.blind.chips = math.floor(G.GAME.blind.chips * 8 / 9)
-            G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
-        end
+        G.GAME.scaling_multipliers.ease = 0.8
+        fix_ante_scaling()
     elseif key == "sk_grm_hexahedron_1" then
         G.E_MANAGER:add_event(Event({func = function()
             G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost - 1
@@ -641,23 +654,19 @@ function learn_skill(card, direct_)
             end
         return true end }))
     elseif key == "sk_grm_stake_3" then
-        local mult = 1.3 ^ G.GAME.round_resets.ante
-        local new_scaling = 0.01 * math.max(1,math.floor(mult * 100))
-        G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * new_scaling
-        if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
-            G.GAME.blind.chips = math.floor(G.GAME.blind.chips * new_scaling)
-            G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
-        end
+        G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
+        fix_ante_scaling()
         G.E_MANAGER:add_event(Event({func = function()
             if G.jokers then 
                 G.jokers.config.card_limit = G.jokers.config.card_limit + 3
             end
         return true end }))
     elseif key == "sk_grm_scarce_1" then
-        G.GAME.banned_keys['p_buffoon_normal_1'] = true
-        G.GAME.banned_keys['p_buffoon_normal_2'] = true
-        G.GAME.banned_keys['p_buffoon_jumbo_1'] = true
-        G.GAME.banned_keys['p_buffoon_mega_1'] = true
+        for i, j in ipairs({'p_buffoon_normal_1', 'p_buffoon_normal_2', 'p_buffoon_jumbo_1', 'p_buffoon_mega_1'}) do
+            if not G.GAME.banned_keys[j] then
+                G.GAME.banned_keys[j] = 'grim'
+            end
+        end
     elseif key == "sk_grm_ghost_1" then
         G.hand:change_size(-1)
     elseif key == "sk_grm_ghost_2" then
@@ -666,11 +675,8 @@ function learn_skill(card, direct_)
         G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
         ease_hands_played(-1)
     elseif key == "sk_grm_strike_3" then
-        G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 1.2
-        if G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
-            G.GAME.blind.chips = math.floor(G.GAME.blind.chips * 1.2)
-            G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
-        end
+        G.GAME.scaling_multipliers.strike = 1.2
+        fix_ante_scaling()
     elseif key == "sk_grm_receipt_3" then
         G.GAME.bankrupt_at = G.GAME.bankrupt_at - 25
     elseif key == "sk_grm_mystical_2" then
@@ -689,19 +695,22 @@ function learn_skill(card, direct_)
         G.GAME.reset_antes[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
         if G.GAME.skills["sk_grm_stake_3"] then
-            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+            G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
+            fix_ante_scaling()
         end
     elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
         G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
         if G.GAME.skills["sk_grm_stake_3"] then
-            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+            G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
+            fix_ante_scaling()
         end
     elseif key == "sk_grm_chime_3" and ((G.GAME.round_resets.ante) % 3 == 0) and not G.GAME.reset_antes3[G.GAME.round_resets.ante] then
         G.GAME.reset_antes3[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
         if G.GAME.skills["sk_grm_stake_3"] then
-            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+            G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
+            fix_ante_scaling()
         end
     elseif key == "sk_grm_cl_hoarder" then
         G.hand:change_size(-1)
@@ -748,14 +757,137 @@ function learn_skill(card, direct_)
         if not G.GAME.grm_did_purchase then
             change_shop_size(1)
         end
+    elseif key == "sk_grm_prestige_1" then
+        local pool = {}
+        for i, j in pairs(G.GAME.skills) do
+            if not G.P_SKILLS[i].class and (i ~= "sk_grm_prestige_1") then
+                table.insert(pool, i)
+            end
+        end
+        for i, j in ipairs(pool) do
+            unlearn_skill(j)
+        end
+        skills_page = nil
+        if G.GAME.xp_spent >= 2500 then
+            G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
+        end
+    end
+end
+
+function unlearn_skill(direct_)
+    local obj, key = G.P_SKILLS[direct_], direct_
+    G.GAME.skills[key] = nil
+    if key == "sk_grm_ease_1" then
+        G.GAME.scaling_multipliers.ease = nil
+        fix_ante_scaling()
+    elseif key == "sk_grm_ease_2" then
+        G.GAME.scaling_multipliers.ease = 0.9
+        fix_ante_scaling()
+    elseif key == "sk_grm_hexahedron_1" then
+        G.E_MANAGER:add_event(Event({func = function()
+            G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost + 1
+            G.GAME.current_round.reroll_cost = math.max(0, G.GAME.current_round.reroll_cost + 1)
+        return true end }))
+    elseif key == "sk_grm_ocean_1" then
+        G.hand:change_size(-1)
+    elseif key == "sk_grm_stake_1" then
+        G.GAME.win_ante = G.GAME.win_ante - 1
+        G.hand:change_size(-1)
+    elseif key == "sk_grm_stake_2" then
+        G.GAME.win_ante = G.GAME.win_ante - 2
+        G.E_MANAGER:add_event(Event({func = function()
+            if G.jokers then 
+                G.jokers.config.card_limit = G.jokers.config.card_limit - 1
+            end
+        return true end }))
+    elseif key == "sk_grm_stake_3" then
+        G.GAME.scaling_multipliers.stake = nil
+        fix_ante_scaling()
+        G.E_MANAGER:add_event(Event({func = function()
+            if G.jokers then 
+                G.jokers.config.card_limit = G.jokers.config.card_limit - 3
+            end
+        return true end }))
+    elseif key == "sk_grm_scarce_1" then
+        for i, j in ipairs({'p_buffoon_normal_1', 'p_buffoon_normal_2', 'p_buffoon_jumbo_1', 'p_buffoon_mega_1'}) do
+            if G.GAME.banned_keys[j] == 'grim' then
+                G.GAME.banned_keys[j] = nil
+            end
+        end
+    elseif key == "sk_grm_ghost_1" then
+        G.hand:change_size(1)
+    elseif key == "sk_grm_ghost_2" then
+        G.hand:change_size(2)
+    elseif key == "sk_grm_chime_3" then
+        G.GAME.round_resets.hands = G.GAME.round_resets.hands + 1
+        ease_hands_played(1)
+    elseif key == "sk_grm_strike_3" then
+        G.GAME.scaling_multipliers.strike = nil
+        fix_ante_scaling()
+    elseif key == "sk_grm_receipt_3" then
+        G.GAME.bankrupt_at = G.GAME.bankrupt_at + 25
+    elseif key == "sk_grm_mystical_2" then
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+            return true end }))
+    elseif key == "sk_grm_receipt_2" then
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+            return true end }))
+    -- elseif key == "sk_grm_cl_hoarder" then
+    --     G.hand:change_size(1)
+    --     G.GAME.grim_class.hoarder = true
+    --     G.GAME.grim_class.class = true
+    -- elseif key == "sk_grm_cl_astronaut" then
+    --     G.GAME.grim_class.astronaut = true
+    --     G.GAME.grim_class.class = true
+    -- elseif key == "sk_grm_cl_alchemist" then
+    --     G.GAME.banned_keys['c_devil'] = true
+    --     G.GAME.elemental_rate = 4
+    --     G.GAME.grim_class.alchemist = true
+    --     G.GAME.grim_class.class = true
+    -- elseif key == "sk_grm_cl_explorer" then
+    --     G.GAME.grim_class.explorer = true
+    --     G.GAME.grim_class.class = true
+    elseif key == "sk_grm_orbit_1" then
+        G.GAME.lunar_rate = nil
+        G.GAME.stellar_rate = nil
+    elseif key == "sk_grm_sticky_2" then
+        G.GAME.perishable_rounds = (G.GAME.perishable_rounds or 5) - 3
+        for i = 1, #G.jokers.cards do
+            if G.jokers.cards[i].ability.perishable then
+                G.jokers.cards[i].ability.perish_tally = math.max(0,(G.jokers.cards[i].ability.perish_tally or 5) - 3)
+                G.jokers.cards[i]:set_debuff()
+            end
+        end
+    elseif key == "sk_grm_sticky_3" then
+        G.GAME.rental_rate = -G.GAME.rental_rate
+    elseif key == "sk_grm_shelf_1" then
+        change_shop_size(1)
+        G.GAME.grm_modify_booster_slots = (G.GAME.grm_modify_booster_slots or 0) - 2
+        if G.shop then
+        end
+    elseif key == "sk_grm_shelf_2" then
+        if not G.GAME.grm_did_purchase then
+            change_shop_size(-1)
+        end
     end
 end
 
 G.FUNCS.can_learn = function(e)
-    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < e.config.ref_table.config.center.xp_req))) and (not G.GAME.free_skills or (G.GAME.free_skills <= 0)) then
+    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < e.config.ref_table.config.center.xp_req)) or (e.config.ref_table.config.center.token_req and (G.GAME.legendary_tokens < e.config.ref_table.config.center.token_req))) and (not G.GAME.free_skills or (G.GAME.free_skills <= 0)) then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = 'do_nothing'
     else
+        if e.config.ref_table and e.config.ref_table.config.center.key and (e.config.ref_table.config.center.key == "sk_grm_prestige_1") and (not G.GAME.xp_spent or (G.GAME.xp_spent < 2500)) then
+            e.config.colour = G.C.RED
+            e.config.button = 'do_nothing'
+            return 
+        end
         e.config.colour = G.C.ORANGE
         e.config.button = 'learn_skill'
     end
@@ -822,6 +954,8 @@ function G.UIDEF.learned_skills()
 
     local text = localize{type = 'variable', key = 'skill_xp', vars = {number_format(G.GAME.skill_xp)}, nodes = text}
 
+    local text2 = localize{type = 'variable', key = 'legendary_tokens', vars = {number_format(G.GAME.legendary_tokens)}, nodes = text}
+
     local t = {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes = {
         {n=G.UIT.R, config={align = "cm"}, nodes={
             {n=G.UIT.O, config={object = DynaText({string = text, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
@@ -833,6 +967,11 @@ function G.UIDEF.learned_skills()
       }}
     if G.GAME.skills["sk_grm_cl_astronaut"] then
         t.nodes[4] = UIBox_button{id = 'lunar_button', label = {"Lunar Stats"}, button = "your_lunar_stats", minw = 5}
+    end
+    if G.GAME.legendary_tokens and (G.GAME.legendary_tokens > 0) then
+        table.insert(t.nodes, 2, {n=G.UIT.R, config={align = "cm", padding = 0.2}, nodes={
+            {n=G.UIT.O, config={object = DynaText({string = text2, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
+        }})
     end
     return t
 end
@@ -849,24 +988,26 @@ function calculate_skill(skill, context)
             G.GAME.reset_antes[context.current_ante] = true
             ease_ante(-1, true)
             if G.GAME.skills["sk_grm_stake_3"] then
-                G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+                G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+                fix_ante_scaling(true)
             end
         elseif skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
             G.GAME.reset_antes2[context.current_ante] = true
             ease_ante(-1, true)
             if G.GAME.skills["sk_grm_stake_3"] then
-                G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+                G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+                fix_ante_scaling(true)
             end
         elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
             G.GAME.reset_antes3[context.current_ante] = true
             ease_ante(-1, true)
             if G.GAME.skills["sk_grm_stake_3"] then
-                G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * 0.78
+                G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+                fix_ante_scaling(true)
             end
         elseif skill == "sk_grm_stake_3" then
-            local mult = 1.3 ^ (context.current_ante - context.old_ante)
-            local new_scaling = 0.01 * math.max(1,math.floor(mult * 100))
-            G.GAME.starting_params.ante_scaling = G.GAME.starting_params.ante_scaling * new_scaling
+            G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+            fix_ante_scaling(true)
         end
     elseif context.using_consumeable then
         if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.3) then
@@ -1027,6 +1168,10 @@ function skill_unlock_check(card, args)
         end
     elseif card.key == "sk_grm_cl_hoarder" then
         if args.total_xp and (args.total_xp >= 2000) then
+            return true
+        end
+    elseif card.key == "sk_grm_prestige_1" and args.learned_tier then
+        if args.learned_tier == 3 then
             return true
         end
     end
@@ -4120,6 +4265,27 @@ function SMODS.current_mod.process_loc_text()
                 "shop until an item is",
                 "{C:attention}purchased"
             }
+        },
+        sk_grm_prestige_1 = {
+            name = "Prestige I",
+            text = {
+                "{C:attention}Unlearn{} all other skills",
+                "{C:dark_edition}+1{} Legendary Token",
+                "Must have {C:purple}2,500{} XP spent this run",
+                "{C:inactive}({C:purple}#1#{} XP spent this run)"
+            },
+            unlock = {
+                "Learn a {C:red}Tier{}",
+                "{C:red}III{} skill",
+            }
+        },
+        sk_grm_blind_breaker = {
+            name = "Blind Breaker",
+            text = {
+                "After {C:attention}main scoring{}, Gives",
+                "{X:red,C:white} XMult {} equal to {C:blue}scored chips^0.15{}",
+                "{C:inactive}(Minimum of {X:red,C:white} X1 {C:inactive})"
+            }
         }
     }
     G.localization.descriptions.Other["flint"] = {
@@ -4183,6 +4349,12 @@ function SMODS.current_mod.process_loc_text()
         text = {
             "XP Needed:",
             "{C:purple}0{} XP {C:inactive}(#1#){}",
+        }
+    }
+    G.localization.descriptions.Other["leg_unlearned_skill"] = {
+        text = {
+            "Tokens Needed:",
+            "{C:dark_edition}#1#{} Legendary Token",
         }
     }
     G.localization.descriptions.Other["star_tooltip"] = {
@@ -4292,6 +4464,7 @@ function SMODS.current_mod.process_loc_text()
         }
     }
     G.localization.misc.v_dictionary["skill_xp"] = "XP: #1#"
+    G.localization.misc.v_dictionary["legendary_tokens"] = "Legendary Tokens: #1#"
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
     G.localization.misc.dictionary['k_skill'] = "Skill"
