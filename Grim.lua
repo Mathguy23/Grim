@@ -4272,7 +4272,7 @@ function SMODS.current_mod.process_loc_text()
                 "{C:attention}Unlearn{} all other skills",
                 "{C:dark_edition}+1{} Legendary Token",
                 "Must have {C:purple}2,500{} XP spent this run",
-                "{C:inactive}({C:purple}#1#{} XP spent this run)"
+                "{C:inactive}({C:purple}#1#{C:inactive} XP spent this run)"
             },
             unlock = {
                 "Learn a {C:red}Tier{}",
