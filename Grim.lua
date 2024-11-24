@@ -1574,7 +1574,26 @@ SMODS.Atlas({ key = "banners", atlas_table = "ASSET_ATLAS", path = "banners.png"
     end
 })
 
-SMODS.Atlas({ key = "stellar", atlas_table = "ASSET_ATLAS", path = "Stellar.png", px = 71, py = 95})
+SMODS.Atlas({ key = "stellar", atlas_table = "ASSET_ATLAS", path = "Stellar.png", px = 71, py = 95,
+    inject = function(self)
+        local file_path = type(self.path) == 'table' and
+            (self.path[G.SETTINGS.language] or self.path['default'] or self.path['en-us']) or self.path
+        if file_path == 'DEFAULT' then return end
+        -- language specific sprites override fully defined sprites only if that language is set
+        if self.language and not (G.SETTINGS.language == self.language) then return end
+        if not self.language and self.obj_table[('%s_%s'):format(self.key, G.SETTINGS.language)] then return end
+        self.full_path = (self.mod and self.mod.path or SMODS.path) ..
+            'assets/' .. G.SETTINGS.GRAPHICS.texture_scaling .. 'x/' .. file_path
+        local file_data = assert(NFS.newFileData(self.full_path),
+            ('Failed to collect file data for Atlas %s'):format(self.key))
+        self.image_data = assert(love.image.newImageData(file_data),
+            ('Failed to initialize image data for Atlas %s'):format(self.key))
+        self.image = love.graphics.newImage(self.image_data,
+            { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
+        G[self.atlas_table][self.key_noloc or self.key] = self
+        G.iron_core = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 3,y = 1})
+    end
+})
 
 SMODS.Atlas({ key = "lunar", atlas_table = "ASSET_ATLAS", path = "Lunar.png", px = 71, py = 95})
 
@@ -1610,7 +1629,26 @@ SMODS.Atlas({ key = "status", atlas_table = "ASSET_ATLAS", path = "Status.png", 
 
 SMODS.Atlas({ key = "decks", atlas_table = "ASSET_ATLAS", path = "Backs.png", px = 71, py = 95})
 
-SMODS.Atlas({ key = "metal", atlas_table = "ASSET_ATLAS", path = "Metallic.png", px = 71, py = 95})
+SMODS.Atlas({ key = "metal", atlas_table = "ASSET_ATLAS", path = "Metallic.png", px = 71, py = 95,
+    inject = function(self)
+        local file_path = type(self.path) == 'table' and
+            (self.path[G.SETTINGS.language] or self.path['default'] or self.path['en-us']) or self.path
+        if file_path == 'DEFAULT' then return end
+        -- language specific sprites override fully defined sprites only if that language is set
+        if self.language and not (G.SETTINGS.language == self.language) then return end
+        if not self.language and self.obj_table[('%s_%s'):format(self.key, G.SETTINGS.language)] then return end
+        self.full_path = (self.mod and self.mod.path or SMODS.path) ..
+            'assets/' .. G.SETTINGS.GRAPHICS.texture_scaling .. 'x/' .. file_path
+        local file_data = assert(NFS.newFileData(self.full_path),
+            ('Failed to collect file data for Atlas %s'):format(self.key))
+        self.image_data = assert(love.image.newImageData(file_data),
+            ('Failed to initialize image data for Atlas %s'):format(self.key))
+        self.image = love.graphics.newImage(self.image_data,
+            { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
+        G[self.atlas_table][self.key_noloc or self.key] = self
+        G.ultra_status = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 2,y = 2})
+    end
+})
 
 SMODS.Atlas({ key = "attack", atlas_table = "ASSET_ATLAS", path = "Attack.png", px = 71, py = 95})
 
@@ -2391,6 +2429,66 @@ SMODS.Element {
     end,
 }
 
+SMODS.Spectral {
+    key = 'philosophy',
+    loc_txt = {
+        name = "Philosphy",
+        text = {
+            "{C:attention}Adds{} a {C:green}status{} to",
+            "all {C:attention}cards in hand{}",
+        }
+    },
+    name = "Philosphy",
+    atlas = "metal",
+    soul_set = 'Elemental',
+    hidden = true,
+    soul_rate = 0.01,
+    pos = {x = 1, y = 2},
+    use = function(self, card, area, copier)
+        local used_tarot = card
+        G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
+            play_sound('tarot1')
+            used_tarot:juice_up(0.3, 0.5)
+            return true end }))
+        for i=1, #G.hand.cards do
+            local percent = 1.15 - (i-0.999)/(#G.hand.cards-0.998)*0.3
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.hand.cards[i]:flip();play_sound('card1', percent);G.hand.cards[i]:juice_up(0.3, 0.3);return true end }))
+        end
+        delay(0.2)
+        for i=1, #G.hand.cards do
+            local statuses = {flint = true, subzero = true, rocky = true, gust = true}
+            G.hand.cards[i].ability.grm_status = G.hand.cards[i].ability.grm_status or {}
+            if G.hand.cards[i].ability.grm_status then
+                for j, k in pairs(G.hand.cards[i].ability.grm_status) do
+                    statuses[j] = nil
+                end
+            end
+            local valid = false
+            for j, k in pairs(statuses) do
+                valid = true
+                break
+            end
+            if valid then
+                local _, status = pseudorandom_element(statuses, pseudoseed('phil'))
+                G.E_MANAGER:add_event(Event({func = function()
+                    G.hand.cards[i].ability.grm_status[status] = true
+                    if status == "gust" and G.hand.cards[i].highlighted then
+                        G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+                    end
+                return true end }))
+            end
+        end 
+        for i=1, #G.hand.cards do
+            local percent = 0.85 + (i-0.999)/(#G.hand.cards-0.998)*0.3
+            G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.15,func = function() G.hand.cards[i]:flip();play_sound('tarot2', percent, 0.6);G.hand.cards[i]:juice_up(0.3, 0.3);return true end }))
+        end
+        delay(0.5)
+    end,
+    can_use = function(self, card)
+        return true
+    end,
+}
+
 SMODS.Enhancement {
     key = 'radium',
     name = "Radium Card",
@@ -2512,7 +2610,7 @@ SMODS.Booster {
     pos = {x = 1, y = 0},
     config = {extra = 3, choose = 1, name = "Ancient Pack"},
     create_card = function(self, card)
-        return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
+        return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2538,7 +2636,7 @@ SMODS.Booster {
     pos = {x = 2, y = 0},
     config = {extra = 3, choose = 1, name = "Ancient Pack"},
     create_card = function(self, card)
-        return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
+        return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2564,7 +2662,7 @@ SMODS.Booster {
     pos = {x = 0, y = 1},
     config = {extra = 5, choose = 1, name = "Ancient Pack"},
     create_card = function(self, card)
-        return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
+        return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2590,7 +2688,7 @@ SMODS.Booster {
     pos = {x = 1, y = 1},
     config = {extra = 5, choose = 2, name = "Ancient Pack"},
     create_card = function(self, card)
-        return {set = "Elemental", area = G.pack_cards, skip_materialize = true}
+        return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2920,6 +3018,36 @@ SMODS.Lunar {
     end
 }
 
+SMODS.Spectral {
+    key = 'moon_x',
+    loc_txt = {
+        name = "Moon X",
+        text = {
+            "Increase every",
+            "{C:legendary,E:1}lunar level",
+            "by {C:attention}1{} level"
+        }
+    },
+    atlas = "lunar",
+    soul_set = 'Lunar',
+    hidden = true,
+    soul_rate = 0.01,
+    pos = {x = 0, y = 2},
+    soul_pos = {x = 1, y = 2},
+    use = function(self, card, area, copier)
+        for i, j in ipairs({'debuff', 'face_down', 'not_allowed', 'overshoot', 'money'}) do
+            G.GAME.special_levels[j] = G.GAME.special_levels[j] + 1
+        end
+        if G.GAME.skills.sk_grm_orbit_2 then
+            G.GAME.special_levels['grind'] = G.GAME.special_levels['grind'] + 1
+        end
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
+    can_use = function(self, card)
+        return true
+    end,
+}
+
 SMODS.Stellar {
     key = 'sun',
     loc_txt = {
@@ -3011,6 +3139,42 @@ SMODS.Stellar {
     in_pool = function(self)
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
     end
+}
+
+SMODS.Spectral {
+    key = 'iron_core',
+    loc_txt = {
+        name = "Iron Core",
+        text = {
+            "{C:legendary,E:1}Upgrade{} a",
+            "{C:attention}random suit{}",
+            "by {C:attention}3{} levels"
+        }
+    },
+    name = "Iron Core",
+    atlas = "stellar",
+    soul_set = 'Stellar',
+    hidden = true,
+    soul_rate = 0.01,
+    pos = {x = 2, y = 1},
+    use = function(self, card, area, copier)
+        local suits = {"Hearts", "Diamonds", "Spades", "Clubs"}
+        local suit2 = pseudorandom_element(suits, pseudoseed('iron'))
+        local suit = string.sub(suit2:lower(),1,-2)
+        stellar_mults = {
+            club = {mult = 0.45, chips = 1},
+            heart = {mult = 0.35, chips = 1.8},
+            spade = {mult = 0.22, chips = 4},
+            diamond = {mult = 0.3, chips = 2.5},
+        }
+        G.GAME.special_levels[suit] = G.GAME.special_levels[suit] + 3
+        G.GAME.stellar_levels[suit .. "s"].chips = (G.GAME.special_levels and (G.GAME.special_levels[suit]) or 0) * stellar_mults[suit].chips
+        G.GAME.stellar_levels[suit .. "s"].mult = (G.GAME.special_levels and (G.GAME.special_levels[suit]) or 0) * stellar_mults[suit].mult
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.MONEY, message = localize(suit2, 'suits_singular') .. "s"})
+    end,
+    can_use = function(self, card)
+        return true
+    end,
 }
 
 -------Explorer Stuff--------
@@ -3839,6 +4003,7 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.v_text.ch_c_force_astronaut = {"You must play on the {C:attention}Astronaut{} class."}
     G.localization.misc.v_text.ch_c_loot_pack = {"Each shop has a free {C:attention}Loot Pack{}."}
     G.localization.misc.v_text.ch_m_force_stake_xp = {"{C:purple}#1#{} XP per Ante"}
+    G.localization.descriptions.Other.ch_m_force_stake_xp2 = {name = "", text = {"{s:0.8,C:purple}#1#{s:0.8} XP per Ante"}}
     
     G.localization.descriptions.Skill = {
         sk_grm_chime_1 = {

@@ -2148,6 +2148,10 @@ payload = '''elseif v.id == 'force_astronaut' then
     if G.P_SKILLS['sk_grm_cl_astronaut'] and G.P_SKILLS['sk_grm_cl_astronaut'].unlocked then
         learn_skill(nil, 'sk_grm_cl_astronaut')
     end
+elseif v.id == 'force_astronaut' then
+    if G.P_SKILLS['sk_grm_cl_astronaut'] and G.P_SKILLS['sk_grm_cl_astronaut'].unlocked then
+        learn_skill(nil, 'sk_grm_cl_astronaut')
+    end
 '''
 match_indent = true
 
@@ -2203,4 +2207,28 @@ payload = '''if G.GAME.skills["sk_grm_blind_breaker"] then
     mult = mod_mult(mult*value)
     update_hand_text({delay = 0}, {mult = mult})
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.name == 'The Soul' and (self.config.center.discovered or self.bypass_discovery_center) then'''
+position = 'before'
+payload = '''if self.ability.name == 'Iron Core' and (self.config.center.discovered or self.bypass_discovery_center) then
+    local scale_mod = 0.05 + 0.05*math.sin(3.6*G.TIMERS.REAL) + 0.07*math.sin((2*G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+    local rotate_mod = 0
+
+    G.iron_core.role.draw_major = self
+    G.iron_core:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+    G.iron_core:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+end
+if self.ability.name == 'Philosphy' and (self.config.center.discovered or self.bypass_discovery_center) then
+    local scale_mod = 0
+    local rotate_mod = (G.TIMERS.REAL - math.sin(G.TIMERS.REAL)) / 2
+
+    G.ultra_status.role.draw_major = self
+    G.ultra_status:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+    G.ultra_status:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+end
+'''
 match_indent = true
