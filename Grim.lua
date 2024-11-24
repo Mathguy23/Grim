@@ -854,8 +854,8 @@ function unlearn_skill(direct_)
     --     G.GAME.grim_class.explorer = true
     --     G.GAME.grim_class.class = true
     elseif key == "sk_grm_orbit_1" then
-        G.GAME.lunar_rate = nil
-        G.GAME.stellar_rate = nil
+        G.GAME.lunar_rate = 0
+        G.GAME.stellar_rate = 0
     elseif key == "sk_grm_sticky_2" then
         G.GAME.perishable_rounds = (G.GAME.perishable_rounds or 5) - 3
         for i = 1, #G.jokers.cards do
@@ -1530,6 +1530,8 @@ end
 SMODS.Atlas({ key = "skills", atlas_table = "ASSET_ATLAS", path = "skills.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "skills2", atlas_table = "ASSET_ATLAS", path = "skills2.png", px = 71, py = 95})
+
+SMODS.Atlas({ key = "skills3", atlas_table = "ASSET_ATLAS", path = "skills3.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "enhance", atlas_table = "ASSET_ATLAS", path = "enhance.png", px = 71, py = 95})
 
@@ -4246,6 +4248,14 @@ function SMODS.current_mod.process_loc_text()
                 "Add the {C:dark_edition}Negative{} edition",
                 "to a {C:attention}Joker{} using",
                 "{C:attention}The Wheel of Fortune{}",
+            }
+        },
+        sk_grm_fortunate_3 = {
+            name = "Fortunate III",
+            text = {
+                "{C:attention}The Wheel of Fortune{}",
+                "is {C:green}guarenteed{} to apply",
+                "an {C:attention}edition{}"
             }
         },
         sk_grm_motley_2 = {

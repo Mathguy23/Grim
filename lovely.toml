@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 9999999999999,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -178,31 +178,32 @@ payload = '''self.P_SKILLS = {
     sk_grm_motley_3 = {order = 27, key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 800, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}, tier = 3, branch = "Motley"},
     sk_grm_fortunate_1 = {order = 28, key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 100, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}, tier = 1, branch = "Fortunate"},
     sk_grm_fortunate_2 = {order = 29, key = 'sk_grm_fortunate_2', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Fortunate II", xp_req = 500, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_fortunate_1'}, tier = 2, branch = "Fortunate"},
-    sk_grm_scarce_1 = {order = 30, key = 'sk_grm_scarce_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Scarce I", xp_req = 800, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2', 'sk_grm_stake_2'}, tier = 1, branch = "Scarce"},
-    sk_grm_gravity_1 = {order = 31, key = 'sk_grm_gravity_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity I", xp_req = 250, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Gravity"},
-    sk_grm_gravity_2 = {order = 32, key = 'sk_grm_gravity_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity II", xp_req = 500, pos = {x=3,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_1'}, tier = 2, branch = "Gravity"},
-    sk_grm_gravity_3 = {order = 33, key = 'sk_grm_gravity_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity III", xp_req = 850, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_2'}, tier = 3, branch = "Gravity"},
-    sk_grm_ghost_1 = {order = 34, key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 300, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "Ghost"},
-    sk_grm_ghost_2 = {order = 35, key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 400, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}, tier = 2, branch = "Ghost"},
-    sk_grm_ghost_3 = {order = 36, key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 700, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}, tier = 3, branch = "Ghost"},
-    sk_grm_receipt_1 = {order = 37, key = 'sk_grm_receipt_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt I", xp_req = 250, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Receipt"},
-    sk_grm_receipt_2 = {order = 38, key = 'sk_grm_receipt_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt II", xp_req = 300, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_1'}, tier = 2, branch = "Receipt"},
-    sk_grm_receipt_3 = {order = 39, key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 500, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}, tier = 3, branch = "Receipt"},
-    sk_grm_dash_1 = {order = 40, key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 250, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}, tier = 1, branch = "Dash"},
-    sk_grm_dash_2 = {order = 41, key = 'sk_grm_dash_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash II", xp_req = 400, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_dash_1'}, tier = 2, branch = "Dash"},
-    sk_grm_cl_hoarder = {order = 42, key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
-    sk_grm_cl_astronaut = {order = 43, key = 'sk_grm_cl_astronaut', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Astronaut", xp_req = 0, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
-    sk_grm_orbit_1 = {order = 44, key = 'sk_grm_orbit_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_cl_astronaut'}, tier = 1, branch = "Orbit"},
-    sk_grm_orbit_2 = {order = 45, key = 'sk_grm_orbit_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit II", xp_req = 500, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_orbit_1'}, tier = 2, branch = "Orbit"},
-    sk_grm_cl_alchemist = {order = 46, key = 'sk_grm_cl_alchemist', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Alchemist", xp_req = 0, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
-    sk_grm_cl_explorer = {order = 47, key = 'sk_grm_cl_explorer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Explorer", xp_req = 0, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
-    sk_grm_sticky_1 = {order = 48, key = 'sk_grm_sticky_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky I", xp_req = 300, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}, tier = 1, branch = "Sticky"},
-    sk_grm_sticky_2 = {order = 49, key = 'sk_grm_sticky_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky II", xp_req = 400, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_1'}, tier = 2, branch = "Sticky"},
-    sk_grm_sticky_3 = {order = 50, key = 'sk_grm_sticky_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky III", xp_req = 500, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_2'}, tier = 3, branch = "Sticky"},
-    sk_grm_shelf_1 = {order = 51, key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 200, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Shelf"},
-    sk_grm_shelf_2 = {order = 52, key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 300, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
-    sk_grm_prestige_1 = {order = 53, key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
-    sk_grm_blind_breaker = {order = 54, key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}},
+    sk_grm_fortunate_3 = {order = 30, key = 'sk_grm_fortunate_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Fortunate III", xp_req = 500, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_fortunate_2'}, tier = 3, branch = "Fortunate"},
+    sk_grm_scarce_1 = {order = 31, key = 'sk_grm_scarce_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Scarce I", xp_req = 800, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2', 'sk_grm_stake_2'}, tier = 1, branch = "Scarce"},
+    sk_grm_gravity_1 = {order = 32, key = 'sk_grm_gravity_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity I", xp_req = 250, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Gravity"},
+    sk_grm_gravity_2 = {order = 33, key = 'sk_grm_gravity_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity II", xp_req = 500, pos = {x=3,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_1'}, tier = 2, branch = "Gravity"},
+    sk_grm_gravity_3 = {order = 34, key = 'sk_grm_gravity_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity III", xp_req = 850, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_2'}, tier = 3, branch = "Gravity"},
+    sk_grm_ghost_1 = {order = 35, key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 300, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "Ghost"},
+    sk_grm_ghost_2 = {order = 36, key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 400, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}, tier = 2, branch = "Ghost"},
+    sk_grm_ghost_3 = {order = 37, key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 700, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}, tier = 3, branch = "Ghost"},
+    sk_grm_receipt_1 = {order = 38, key = 'sk_grm_receipt_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt I", xp_req = 250, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Receipt"},
+    sk_grm_receipt_2 = {order = 39, key = 'sk_grm_receipt_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt II", xp_req = 300, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_1'}, tier = 2, branch = "Receipt"},
+    sk_grm_receipt_3 = {order = 40, key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 500, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}, tier = 3, branch = "Receipt"},
+    sk_grm_dash_1 = {order = 41, key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 250, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}, tier = 1, branch = "Dash"},
+    sk_grm_dash_2 = {order = 42, key = 'sk_grm_dash_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash II", xp_req = 400, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_dash_1'}, tier = 2, branch = "Dash"},
+    sk_grm_cl_hoarder = {order = 43, key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_cl_astronaut = {order = 44, key = 'sk_grm_cl_astronaut', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Astronaut", xp_req = 0, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_orbit_1 = {order = 45, key = 'sk_grm_orbit_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_cl_astronaut'}, tier = 1, branch = "Orbit"},
+    sk_grm_orbit_2 = {order = 46, key = 'sk_grm_orbit_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit II", xp_req = 500, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_orbit_1'}, tier = 2, branch = "Orbit"},
+    sk_grm_cl_alchemist = {order = 47, key = 'sk_grm_cl_alchemist', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Alchemist", xp_req = 0, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_cl_explorer = {order = 48, key = 'sk_grm_cl_explorer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Explorer", xp_req = 0, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_sticky_1 = {order = 49, key = 'sk_grm_sticky_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky I", xp_req = 300, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}, tier = 1, branch = "Sticky"},
+    sk_grm_sticky_2 = {order = 50, key = 'sk_grm_sticky_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky II", xp_req = 400, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_1'}, tier = 2, branch = "Sticky"},
+    sk_grm_sticky_3 = {order = 51, key = 'sk_grm_sticky_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky III", xp_req = 500, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_2'}, tier = 3, branch = "Sticky"},
+    sk_grm_shelf_1 = {order = 52, key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 200, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Shelf"},
+    sk_grm_shelf_2 = {order = 53, key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 300, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
+    sk_grm_prestige_1 = {order = 54, key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
+    sk_grm_blind_breaker = {order = 55, key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}},
 }'''
 match_indent = true
 
@@ -315,6 +316,8 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
         info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
     elseif _c.name == "Fortunate II" then
+        info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
+    elseif _c.name == "Fortunate III" then
         info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
     elseif _c.name == "Orbit II" then
         if G.P_CENTERS["c_grm_dysnomia"].discovered then
@@ -2229,6 +2232,17 @@ if self.ability.name == 'Philosphy' and (self.config.center.discovered or self.b
     G.ultra_status.role.draw_major = self
     G.ultra_status:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
     G.ultra_status:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.name == 'The Wheel of Fortune' or self.ability.name == 'Ectoplasm' or self.ability.name == 'Hex' then'''
+position = 'before'
+payload = '''if self.ability.name == 'The Wheel of Fortune' and G.GAME.skills["sk_grm_fortunate_3"] then
+    self.ability.extra = 1
 end
 '''
 match_indent = true
