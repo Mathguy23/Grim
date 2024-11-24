@@ -1654,6 +1654,8 @@ SMODS.Atlas({ key = "attack", atlas_table = "ASSET_ATLAS", path = "Attack.png", 
 
 SMODS.Atlas({ key = "loot", atlas_table = "ASSET_ATLAS", path = "Loot.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "sleeves", atlas_table = "ASSET_ATLAS", path = "Sleeves.png", px = 71, py = 95})
+
 SMODS.Atlas({ key = "blinds", atlas_table = "ANIMATION_ATLAS", path = "Blinds.png", px = 34, py = 34, frames = 21 })
 
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
@@ -3933,9 +3935,28 @@ SMODS.Back {
     pos = { x = 0, y = 0 },
     atlas = 'decks',
     apply = function(self)
-        G.GAME.free_skills = 1
+        G.GAME.free_skills = (G.GAME.free_skills or 0) + 1
     end
 }
+
+if CardSleeves and CardSleeves.Sleeve then
+    CardSleeves.Sleeve {
+        key = "taleneted_sl",
+        name = "Talented Sleeve",
+        atlas = "sleeves",
+        loc_txt = {
+            name = "Talented Sleeve",
+            text = {
+                "{C:attention}+1 free{} skill",
+            }
+        },
+        pos = { x = 0, y = 0 },
+        config = {},
+        apply = function(self)
+            G.GAME.free_skills = (G.GAME.free_skills or 0) + 1
+        end,
+    }
+end
 
 table.insert(G.CHALLENGES,#G.CHALLENGES+1,
     {name = 'Astro Dungeon',
