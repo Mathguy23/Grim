@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 999999999999,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -859,19 +859,6 @@ position = 'after'
 payload = '''   if (_context.type == 'store_joker_create') and G.GAME.skills["sk_grm_scarce_1"] then
         return
     end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''if self.ability.consumeable.hand_type then'''
-position = 'before'
-payload = '''if self.ability.consumeable.hand_type and G.GAME.skills["sk_grm_gravity_3"] then
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(self.ability.consumeable.hand_type, 'poker_hands'),chips = G.GAME.hands[self.ability.consumeable.hand_type].chips, mult = G.GAME.hands[self.ability.consumeable.hand_type].mult, level=G.GAME.hands[self.ability.consumeable.hand_type].level})
-    level_up_hand(used_tarot, self.ability.consumeable.hand_type)
-    update_hand_text({sound = 'button', volume = 0.7, pitch = 1.1, delay = 0}, {mult = 0, chips = 0, handname = '', level = ''})
-    card_eval_status_text(self, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_again_ex')})
-end'''
 match_indent = true
 
 [[patches]]
@@ -2264,5 +2251,24 @@ position = 'after'
 payload = '''   if not _rarity and G.GAME.skills["sk_grm_spectral_shard"] and (_type == "Joker") and (pseudorandom('shard') < 0.01) then
         _rarity = 4
         _legendary = true
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = 'function Card:use_consumeable(area, copier)'
+position = 'after'
+payload = '''   if not self.grim_retrigger then
+        self.grim_retrigger = 0
+        if G.GAME.skills["sk_grm_gravity_3"] and (self.ability.set == 'Planet') then
+            self.grim_retrigger = self.grim_retrigger + 1
+        end
+        if self.grim_retrigger > 0 then
+            for i = 1, self.grim_retrigger do
+                self:use_consumeable(area, copier)
+                card_eval_status_text(self, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_again_ex')})
+            end
+        end
     end'''
 match_indent = true
