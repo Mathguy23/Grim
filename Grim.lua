@@ -1531,7 +1531,26 @@ SMODS.Atlas({ key = "skills", atlas_table = "ASSET_ATLAS", path = "skills.png", 
 
 SMODS.Atlas({ key = "skills2", atlas_table = "ASSET_ATLAS", path = "skills2.png", px = 71, py = 95})
 
-SMODS.Atlas({ key = "skills3", atlas_table = "ASSET_ATLAS", path = "skills3.png", px = 71, py = 95})
+SMODS.Atlas({ key = "skills3", atlas_table = "ASSET_ATLAS", path = "skills3.png", px = 71, py = 95,
+    inject = function(self)
+        local file_path = type(self.path) == 'table' and
+            (self.path[G.SETTINGS.language] or self.path['default'] or self.path['en-us']) or self.path
+        if file_path == 'DEFAULT' then return end
+        -- language specific sprites override fully defined sprites only if that language is set
+        if self.language and not (G.SETTINGS.language == self.language) then return end
+        if not self.language and self.obj_table[('%s_%s'):format(self.key, G.SETTINGS.language)] then return end
+        self.full_path = (self.mod and self.mod.path or SMODS.path) ..
+            'assets/' .. G.SETTINGS.GRAPHICS.texture_scaling .. 'x/' .. file_path
+        local file_data = assert(NFS.newFileData(self.full_path),
+            ('Failed to collect file data for Atlas %s'):format(self.key))
+        self.image_data = assert(love.image.newImageData(file_data),
+            ('Failed to initialize image data for Atlas %s'):format(self.key))
+        self.image = love.graphics.newImage(self.image_data,
+            { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
+        G[self.atlas_table][self.key_noloc or self.key] = self
+        G.skill_soul = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 2,y = 0})
+    end
+})
 
 SMODS.Atlas({ key = "enhance", atlas_table = "ASSET_ATLAS", path = "enhance.png", px = 71, py = 95})
 
@@ -2491,6 +2510,9 @@ SMODS.Spectral {
     can_use = function(self, card)
         return true
     end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
+    end,
 }
 
 SMODS.Enhancement {
@@ -3050,6 +3072,9 @@ SMODS.Spectral {
     can_use = function(self, card)
         return true
     end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_astronaut, {allow_duplicates = false}
+    end,
 }
 
 SMODS.Stellar {
@@ -3178,6 +3203,9 @@ SMODS.Spectral {
     end,
     can_use = function(self, card)
         return true
+    end,
+    in_pool = function(self)
+        return G.GAME.skills.sk_grm_cl_astronaut, {allow_duplicates = false}
     end,
 }
 
@@ -4481,6 +4509,13 @@ function SMODS.current_mod.process_loc_text()
                 "After {C:attention}main scoring{}, Gives",
                 "{X:red,C:white} XMult {} equal to {C:blue}scored chips^0.15{}",
                 "{C:inactive}(Minimum of {X:red,C:white} X1 {C:inactive})"
+            }
+        },
+        sk_grm_spectral_shard = {
+            name = "Spectral Shard",
+            text = {
+                "{C:legendary,E:1}Legendary{} {C:attention}Jokers{} may appear",
+                "in shops and packs",
             }
         }
     }

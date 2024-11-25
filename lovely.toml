@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 999999999999,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -204,6 +204,7 @@ payload = '''self.P_SKILLS = {
     sk_grm_shelf_2 = {order = 53, key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 300, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
     sk_grm_prestige_1 = {order = 54, key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
     sk_grm_blind_breaker = {order = 55, key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}},
+    sk_grm_spectral_shard = {order = 56, key = 'sk_grm_spectral_shard', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Spectral Shard", xp_req = 0, token_req = 1, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}},
 }'''
 match_indent = true
 
@@ -2233,6 +2234,14 @@ if self.ability.name == 'Philosphy' and (self.config.center.discovered or self.b
     G.ultra_status:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
     G.ultra_status:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
 end
+if self.ability.name == 'Spectral Shard' and (self.config.center.discovered or self.bypass_discovery_center) then
+    local scale_mod = 0.05 + 0.05*math.sin(1.8*G.TIMERS.REAL) + 0.07*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+    local rotate_mod = 0.1*math.sin(1.219*G.TIMERS.REAL) + 0.07*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
+
+    G.skill_soul.role.draw_major = self
+    G.skill_soul:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+    G.skill_soul:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+end
 '''
 match_indent = true
 
@@ -2245,4 +2254,15 @@ payload = '''if self.ability.name == 'The Wheel of Fortune' and G.GAME.skills["s
     self.ability.extra = 1
 end
 '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = 'function get_current_pool(_type, _rarity, _legendary, _append)'
+position = 'after'
+payload = '''   if not _rarity and G.GAME.skills["sk_grm_spectral_shard"] and (_type == "Joker") and (pseudorandom('shard') < 0.01) then
+        _rarity = 4
+        _legendary = true
+    end'''
 match_indent = true
