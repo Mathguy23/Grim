@@ -8,6 +8,24 @@
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
+if not IncantationAddons then
+	IncantationAddons = {
+		Stacking = {},
+		Dividing = {},
+		BulkUse = {},
+		StackingIndividual = {},
+		DividingIndividual = {},
+		BulkUseIndividual = {}
+	} 
+end
+
+table.insert(IncantationAddons.Stacking, "Lunar")
+table.insert(IncantationAddons.Stacking, "Stellar")
+table.insert(IncantationAddons.Dividing, "Lunar")
+table.insert(IncantationAddons.Dividing, "Stellar")
+table.insert(IncantationAddons.BulkUse, "Lunar")
+table.insert(IncantationAddons.BulkUse, "Stellar")
+
 local areaType = SMODS.ConsumableType {
     key = 'Area',
     primary_colour = G.C.GREEN,
@@ -146,6 +164,10 @@ SMODS.Lunar = SMODS.Consumable:extend {
         G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + 1
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
     end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
     can_use = function(self, card)
         return true
     end,
@@ -156,6 +178,12 @@ SMODS.Stellar = SMODS.Consumable:extend {
     set = 'Stellar',
     use = function(self, card, area, copier)
         G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + 1
+        G.GAME.stellar_levels[self.special_level .. "s"].chips = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.chips
+        G.GAME.stellar_levels[self.special_level .. "s"].mult = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.mult
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.MONEY, message = localize('k_upgrade_ex')})
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
         G.GAME.stellar_levels[self.special_level .. "s"].chips = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.chips
         G.GAME.stellar_levels[self.special_level .. "s"].mult = (G.GAME.special_levels and (G.GAME.special_levels[self.special_level]) or 0) * card.ability.mult
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.MONEY, message = localize('k_upgrade_ex')})
@@ -276,6 +304,7 @@ SMODS.Loot = SMODS.Consumable:extend {
     end,
     discovered = true,
 }
+
 
 SMODS.UndiscoveredSprite {
     key = 'Lunar',
