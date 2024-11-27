@@ -1528,6 +1528,7 @@ payload = '''if self.ability and (self.ability.grm_status) then
     end
     if self.ability.grm_status.aether then
         G.shared_stickers['sa_aether'].role.draw_major = self
+        G.shared_stickers['sa_aether']:draw_shader('dissolve', nil, nil, nil, self.children.center)
     end
 end'''
 match_indent = true
