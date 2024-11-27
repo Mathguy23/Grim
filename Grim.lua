@@ -1731,10 +1731,7 @@ SMODS.Tarot {
     loc_vars = function(self, info_queue, card)
         info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_rpg']
         return {vars = {(card and card.ability.max_highlighted or 3), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_rpg')}}}
-    end,
-    in_pool = function(self)
-        return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
-    end,
+    end
 }
 
 SMODS.Tarot {
