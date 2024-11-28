@@ -995,7 +995,12 @@ function G.UIDEF.learned_skills()
         }},
       }}
     if G.GAME.skills["sk_grm_cl_astronaut"] then
-        t.nodes[4] = UIBox_button{id = 'lunar_button', label = {"Lunar Stats"}, button = "your_lunar_stats", minw = 5}
+        table.insert(t.nodes, 4, UIBox_button{id = 'lunar_button', label = {localize("lunar_stats")}, button = "your_lunar_stats", minw = 5})
+    end
+    if G.GAME.skills["sk_grm_cl_explorer"] then
+        table.insert(t.nodes, 2, {n=G.UIT.R, config={align = "cm", padding = 0.2}, nodes={
+            {n=G.UIT.O, config={object = DynaText({string = localize{type='variable',key='area_indicator',vars={G.GAME.area or "Classic"}}, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
+        }})
     end
     if G.GAME.legendary_tokens and (G.GAME.legendary_tokens > 0) then
         table.insert(t.nodes, 2, {n=G.UIT.R, config={align = "cm", padding = 0.2}, nodes={
@@ -4724,12 +4729,14 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.v_dictionary["legendary_tokens"] = "Legendary Tokens: #1#"
     G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
     G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
+    G.localization.misc.v_dictionary["area_indicator"] = "Area: #1#"
     G.localization.misc.dictionary['k_skill'] = "Skill"
     G.localization.misc.dictionary['k_class'] = "Class"
     G.localization.misc.dictionary['k_inactive'] = "inactive"
     G.localization.misc.dictionary['nullified'] = "Nullified!"
     G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
     G.localization.misc.dictionary['k_ex_decay'] = "Decayed!"
+    G.localization.misc.dictionary['lunar_stats'] = "Lunar Stats"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.dictionary['b_draw'] = "Draw"
