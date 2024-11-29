@@ -113,7 +113,7 @@ return {
                 name = "Hexahedron III",
                 text = {
                     "+{C:attention}1{} free {C:green}reroll",
-                    "in the shop per {C:money}$11{} spent",
+                    "in the shop per {C:money}$7{} spent",
                     "on {C:green}reroll"
                 },
                 unlock = {
