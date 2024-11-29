@@ -358,17 +358,6 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/UI_definitions.lua'
-pattern = '''G.GAME.stake > 1 and {'''
-position = 'before'
-payload = '''{
-    label = localize('b_skills'),
-    tab_definition_function = G.UIDEF.learned_skills,
-},'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/UI_definitions.lua'
 pattern = '''elseif args.type == 'use' then'''
 position = 'before'
 payload = '''elseif args.type == 'learn' then 
@@ -2272,4 +2261,31 @@ payload = '''   if not self.grim_retrigger then
             end
         end
     end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.R, config={align = "cm", minh = 1.75, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.ORANGE, button = "options", shadow = true}, nodes={'''
+position = 'before'
+payload = '''{n=G.UIT.R, config={id = 'skill_tree_button', align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.PURPLE, button = "your_skill_tree", shadow = true}, nodes={
+    {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+        {n=G.UIT.T, config={text = localize('b_skill_tree_1'), scale = 1.2*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+    }},
+    {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+        {n=G.UIT.T, config={text = localize('b_skill_tree_2'), scale = 1*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = G.F_GUIDE and 'guide' or 'back', orientation = 'bm'}, func = 'set_button_pip'}}
+    }}
+}},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''return {n=G.UIT.ROOT, config = {align = "cm", padding = 0.03, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
+position = 'before'
+payload = '''for i, j in ipairs(contents.buttons[1].nodes) do
+    if j.config and j.config.minh then
+        j.config.minh = 1.2
+    end
+end'''
 match_indent = true

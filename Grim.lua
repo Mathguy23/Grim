@@ -924,18 +924,65 @@ end
 
 G.FUNCS.learn_skill = function(e)
     learn_skill(e.config.ref_table)
-    if G.OVERLAY_MENU then
-        local tab_but = G.OVERLAY_MENU:get_UIE_by_ID("tab_but_" .. localize('b_skills'))
-        use_page = true
-        G.FUNCS.change_tab(tab_but)
-        use_page = nil
+    -- if G.OVERLAY_MENU then
+    --     use_page = true
+    --     G.FUNCS.overlay_menu{
+    --       definition = create_UI_learned_skills(),
+    --     }
+    --     use_page = nil
+    -- end
+    local shown_skills = get_skils()
+    if skills_page then
+        skills_page = math.min(skills_page, math.ceil(math.max(1, math.ceil(#shown_skills/15))))
     end
+    for j = 1, #G.areas do
+        for i = #G.areas[j].cards,1, -1 do
+            local c = G.areas[j]:remove_card(G.areas[j].cards[i])
+            c:remove()
+            c = nil
+        end
+    end
+    for i = 1, 5 do
+        for j = 1, 3 do
+            local adding = 3  * ((skills_page or 1) - 1)
+            local center = shown_skills[i+(j-1)*5 + 5 * adding]
+            if not center then break end
+            local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center[1])
+            G.areas[j]:emplace(card)
+        end
+    end
+    local skill_ui = G.OVERLAY_MENU:get_UIE_by_ID("skill_tree_ui")
+    local text = localize{type = 'variable', key = 'skill_xp', vars = {number_format(G.GAME.skill_xp)}, nodes = text}
+    skill_ui.children[1].children[1].config.object.config.string[1] = text
+    skill_ui.children[1].children[1].config.object:update_text(true)
+    local skill_pages = G.OVERLAY_MENU:get_UIE_by_ID("skill_tree_pages")
+    local disabled = (#shown_skills <= 15)
+    local skill_options = {}
+    for i = 1, math.ceil(math.max(1, math.ceil(#shown_skills/15))) do
+        table.insert(skill_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(math.max(1, math.ceil(#shown_skills/15)))))
+    end
+    skill_pages.children[1].config.hover = not disabled
+    skill_pages.children[1].config.colour = not disabled and G.C.ORANGE or G.C.BLACK
+    skill_pages.children[1].config.shadow = not disabled
+    skill_pages.children[1].config.button = not disabled and 'option_cycle' or nil
+    skill_pages.children[1].children[1].config.colour = not disabled and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
+    skill_pages.children[1].config.ref_table.options = skill_options
+    skill_pages.children[1].config.ref_table.current_option_val = skill_options[(skills_page or 1)]
+    skill_pages.children[1].config.ref_table.current_option = (skills_page or 1)
+    skill_pages.children[3].config.hover = not disabled
+    skill_pages.children[3].config.colour = not disabled and G.C.ORANGE or G.C.BLACK
+    skill_pages.children[3].config.shadow = not disabled
+    skill_pages.children[3].config.button = not disabled and 'option_cycle' or nil
+    skill_pages.children[3].children[1].config.colour = not disabled and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
+    skill_pages.children[2].children[1].children[1].children[1].config.object:update_text()
+    G.OVERLAY_MENU:recalculate()
+    
 end
 
 G.FUNCS.do_nothing = function(e)
 end
 
-function G.UIDEF.learned_skills()
+function create_UI_learned_skills()
     local shown_skills = get_skils()
     if not use_page then
         skills_page = nil
@@ -952,7 +999,7 @@ function G.UIDEF.learned_skills()
     end
     G.areas = {}
     area_table = {}
-    for j = 1, math.max(1,math.min(3, math.ceil(#shown_skills/5))) do
+    for j = 1, 3 do
         G.areas[j] = CardArea(
             G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
             (5.25)*G.CARD_W,
@@ -985,13 +1032,13 @@ function G.UIDEF.learned_skills()
 
     local text2 = localize{type = 'variable', key = 'legendary_tokens', vars = {number_format(G.GAME.legendary_tokens)}, nodes = text}
 
-    local t = {n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes = {
-        {n=G.UIT.R, config={align = "cm"}, nodes={
+    local t = {n=G.UIT.R, config={align = "cm", id = 'skill_tree_ui', colour = G.C.CLEAR, paddng = 0.1, minw = 2.5,}, nodes = {
+        {n=G.UIT.R, config={align = "cm", paddng = 0.3}, nodes={
             {n=G.UIT.O, config={object = DynaText({string = text, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
         }},
         {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=area_table},
         {n=G.UIT.R, config={align = "cm"}, nodes={
-            create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true})
+            create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true, id = 'skill_tree_pages'})
         }},
       }}
     if G.GAME.skills["sk_grm_cl_astronaut"] then
@@ -1007,7 +1054,15 @@ function G.UIDEF.learned_skills()
             {n=G.UIT.O, config={object = DynaText({string = text2, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
         }})
     end
-    return t
+    local skill_ui = create_UIBox_generic_options({ contents = {t}})
+    return skill_ui
+end
+
+G.FUNCS.your_skill_tree = function(e)
+    G.SETTINGS.paused = true
+    G.FUNCS.overlay_menu{
+        definition = create_UI_learned_skills(),
+    }
 end
 
 function calculate_skill(skill, context)
@@ -4737,6 +4792,8 @@ function SMODS.current_mod.process_loc_text()
     G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
     G.localization.misc.dictionary['k_ex_decay'] = "Decayed!"
     G.localization.misc.dictionary['lunar_stats'] = "Lunar Stats"
+    G.localization.misc.dictionary['b_skill_tree_1'] = "Skill"
+    G.localization.misc.dictionary['b_skill_tree_2'] = "Tree"
     G.localization.misc.labels['skill'] = "Skill"
     G.localization.misc.dictionary['b_skills'] = "Skills"
     G.localization.misc.dictionary['b_draw'] = "Draw"
@@ -5009,12 +5066,12 @@ function create_UIBox_current_lunar_stats()
         nullified_blinds_sect()
     }}
   
-    return create_UIBox_generic_options({ back_func = 'skills_page_direct', contents = {t}})
+    return create_UIBox_generic_options({ back_func = 'your_skill_tree', contents = {t}})
 end
 
 function nullified_blinds_sect()
     if not use_page then
-        skills_page = nil
+        blinds_page = nil
     end
     local blind_matrix = {
         {},{},{}
@@ -5027,7 +5084,7 @@ function nullified_blinds_sect()
 
     table.sort(blind_tab, function (a, b) return a.order < b.order end)
     local blind_tab2 = {}
-    for i = ((skills_page or 1) - 1) * 12 + 1, (skills_page or 1) * 12 do
+    for i = ((blinds_page or 1) - 1) * 12 + 1, (blinds_page or 1) * 12 do
         blind_tab2[#blind_tab2+1] = blind_tab[i]
     end
 
@@ -5102,7 +5159,7 @@ function nullified_blinds_sect()
           {n=G.UIT.R, config={align = "cm"}, nodes=blind_matrix[3]},
         }},
         {n=G.UIT.R, config={align = "cm"}, nodes={
-            create_option_cycle({options = blind_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_nullified_blinds_page', focus_args = {snap_to = true, nav = 'wide'},current_option = skills_page or 1, colour = G.C.RED, no_pips = true})
+            create_option_cycle({options = blind_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_nullified_blinds_page', focus_args = {snap_to = true, nav = 'wide'},current_option = blinds_page or 1, colour = G.C.RED, no_pips = true})
         }}
     }}
     return t
@@ -5146,16 +5203,9 @@ G.FUNCS.your_lunar_stats = function(e)
     }
 end
 
-G.FUNCS.skills_page_direct = function(e)
-    G.SETTINGS.paused = true
-    G.FUNCS.overlay_menu{
-        definition = G.UIDEF.run_info(),
-    }
-end
-
 G.FUNCS.your_nullified_blinds_page = function(args)
     if not args or not args.cycle_config then return end
-    skills_page = args.cycle_config.current_option
+    blinds_page = args.cycle_config.current_option
     G.SETTINGS.paused = true
     use_page = true
     G.FUNCS.overlay_menu{
