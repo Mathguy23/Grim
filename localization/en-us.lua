@@ -1475,7 +1475,7 @@ return {
             legendary_tokens = "Legendary Tokens: #1#",
             gain_xp = "+#1# XP",
             minus_xp = "-#1# XP",
-            area_indicator = "Area: #1#"
+            area_indicator = "Area: #1#",
             xp_interest = "#1# interest per #2# XP (#3# max)"
         },
         challenge_names = {
