@@ -28,21 +28,9 @@ table.insert(IncantationAddons.BulkUse, "Stellar")
 
 local areaType = SMODS.ConsumableType {
     key = 'Area',
+    loc_txt = {},
     primary_colour = G.C.GREEN,
     secondary_colour = G.C.GREEN,
-    loc_txt = {
-        name = 'Area',
-        collection = 'Area Cards',
-        undiscovered = {
-            name = "Not Discovered",
-            text = {
-                "use this card",
-                "in an unseeded",
-                "run to learn",
-                "what it does"
-            }
-        }
-    },
     collection_rows = { 4, 4 },
     shop_rate = 0,
     default = "c_grm_classic"
@@ -50,21 +38,9 @@ local areaType = SMODS.ConsumableType {
 
 local lunarType = SMODS.ConsumableType {
     key = 'Lunar',
+    loc_txt = {},
     primary_colour = HEX('505A8D'),
     secondary_colour = HEX('7F82C4'),
-    loc_txt = {
-        name = 'Lunar',
-        collection = 'Lunar Cards',
-        undiscovered = {
-            name = "Not Discovered",
-            text = {
-                "Purchase or use",
-                "this card in an",
-                "unseeded run to",
-                "learn what it does"
-            }
-        }
-    },
     collection_rows = { 3, 3 },
     shop_rate = 0,
     default = "c_grm_moon"
@@ -72,21 +48,9 @@ local lunarType = SMODS.ConsumableType {
 
 local stellarType = SMODS.ConsumableType {
     key = 'Stellar',
+    loc_txt = {},
     primary_colour = HEX('AAA65B'),
     secondary_colour = HEX('D2CE84'),
-    loc_txt = {
-        name = 'Stellar',
-        collection = 'Stellar Cards',
-        undiscovered = {
-            name = "Not Discovered",
-            text = {
-                "Purchase or use",
-                "this card in an",
-                "unseeded run to",
-                "learn what it does"
-            }
-        }
-    },
     collection_rows = { 2, 2 },
     shop_rate = 0,
     default = "c_grm_sun"
@@ -94,21 +58,9 @@ local stellarType = SMODS.ConsumableType {
 
 local elementType = SMODS.ConsumableType {
     key = 'Elemental',
+    loc_txt = {},
     primary_colour = HEX('e9e4d3'),
     secondary_colour = HEX('e9e4d3'),
-    loc_txt = {
-        name = 'Elemental',
-        collection = 'Elemental Cards',
-        undiscovered = {
-            name = "Not Discovered",
-            text = {
-                "Purchase or use",
-                "this card in an",
-                "unseeded run to",
-                "learn what it does"
-            }
-        }
-    },
     collection_rows = { 4, 4 },
     shop_rate = 0,
     default = "c_grm_m_lead"
@@ -116,21 +68,9 @@ local elementType = SMODS.ConsumableType {
 
 local attackType = SMODS.ConsumableType {
     key = 'Attack',
+    loc_txt = {},
     primary_colour = HEX('E9D3D3'),
     secondary_colour = HEX('E9D3D3'),
-    loc_txt = {
-        name = 'Attack',
-        collection = 'Attack Cards',
-        undiscovered = {
-            name = "Not Discovered",
-            text = {
-                "Recieve this",
-                "attack in an",
-                "unseeded run to",
-                "learn what it does"
-            }
-        }
-    },
     collection_rows = { 4, 4 },
     shop_rate = 0,
     default = "c_grm_debuff"
@@ -138,21 +78,9 @@ local attackType = SMODS.ConsumableType {
 
 local lootType = SMODS.ConsumableType {
     key = 'Loot',
+    loc_txt = {},
     primary_colour = HEX('7190A6'),
     secondary_colour = HEX('7190A6'),
-    loc_txt = {
-        name = 'Loot',
-        collection = 'Loot Cards',
-        undiscovered = {
-            name = "Not Discovered",
-            text = {
-                "Purchase or use",
-                "this card in an",
-                "unseeded run to",
-                "learn what it does"
-            }
-        }
-    },
     collection_rows = { 4, 4 },
     shop_rate = 0,
     default = "c_grm_hand_refresh"
@@ -1777,14 +1705,6 @@ SMODS.Shader {
 
 SMODS.Tarot {
     key = 'craft',
-    loc_txt = {
-        name = "The Craft",
-        text = {
-            "Enhances {C:attention}#1#",
-            "selected cards to",
-            "{C:attention}#2#s"
-        }
-    },
     atlas = "tarots",
     pos = {x = 0, y = 0},
     config = {mod_conv = 'm_grm_rpg', max_highlighted = 3},
@@ -1819,14 +1739,6 @@ SMODS.Tarot {
 SMODS.Joker {
     key = 'jack_of_all_trades',
     name = "Jack of All Trades",
-    loc_txt = {
-        name = "Jack of All Trades",
-        text = {
-            "{C:attention}Sell{} this card to",
-            "{C:attention}learn{} an unlearned",
-            "{C:attention}Class{}"
-        }
-    },
     rarity = 3,
     atlas = 'jokers',
     pos = {x = 0, y = 1},
@@ -1862,13 +1774,6 @@ SMODS.Joker {
 
 SMODS.Attack {
     key = 'debuff',
-    loc_txt = {
-        name = "Debuffer",
-        text = {
-            "{C:red}Debuff{} cards",
-            "in hand."
-        }
-    },
     pos = {x = 0, y = 0},
     config = {},
     atlas = "attack",
@@ -1879,13 +1784,6 @@ SMODS.Attack {
 
 SMODS.Attack {
     key = 'hide',
-    loc_txt = {
-        name = "Hide",
-        text = {
-            "Draw cards",
-            "{C:attention}face down{}"
-        }
-    },
     pos = {x = 1, y = 1},
     config = {},
     atlas = "attack",
@@ -1896,13 +1794,6 @@ SMODS.Attack {
 
 SMODS.Attack {
     key = 'up',
-    loc_txt = {
-        name = "Up",
-        text = {
-            "Raise",
-            "{C:attention}blind size{}"
-        }
-    },
     pos = {x = 2, y = 0},
     config = {},
     atlas = "attack",
@@ -1913,13 +1804,6 @@ SMODS.Attack {
 
 SMODS.Attack {
     key = 'ring',
-    loc_txt = {
-        name = "Ring",
-        text = {
-            "Force {C:attention}cards{}",
-            "to be selected"
-        }
-    },
     pos = {x = 0, y = 1},
     config = {},
     atlas = "attack",
@@ -1930,20 +1814,9 @@ SMODS.Attack {
 
 SMODS.Attack {
     key = 'snatch',
-    loc_txt = {
-        name = "Snatch",
-        text = {
-            "{C:red}Discard{} cards",
-            "in hand"
-        }
-    },
     pos = {x = 1, y = 0},
     config = {},
     atlas = "attack",
-    -- loc_vars = function(self, info_queue, card)
-    --     info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_package']
-    --     return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_package')}}}
-    -- end,
     in_pool = function(self)
         return false, {allow_duplicates = false}
     end,
@@ -1951,13 +1824,6 @@ SMODS.Attack {
 
 SMODS.Attack {
     key = 'collapse',
-    loc_txt = {
-        name = "Collapse",
-        text = {
-            "{C:red}Downgrade{} a",
-            "{C:attention}poker hand{}"
-        }
-    },
     pos = {x = 2, y = 1},
     config = {},
     atlas = "attack",
@@ -1968,12 +1834,6 @@ SMODS.Attack {
 
 SMODS.Loot {
     key = 'hand_refresh',
-    loc_txt = {
-        name = "Hand Refresh",
-        text = {
-            "Refresh {C:blue}Hands{}",
-        }
-    },
     pos = {x = 1, y = 0},
     config = {},
     atlas = "loot",
@@ -1987,12 +1847,6 @@ SMODS.Loot {
 
 SMODS.Loot {
     key = 'discard_refresh',
-    loc_txt = {
-        name = "Discard Refresh",
-        text = {
-            "Refresh {C:red}Discards{}",
-        }
-    },
     pos = {x = 2, y = 0},
     config = {discards = 2},
     atlas = "loot",
@@ -2006,12 +1860,6 @@ SMODS.Loot {
 
 SMODS.Loot {
     key = 'dollar_gain',
-    loc_txt = {
-        name = "Dollar Gain",
-        text = {
-            "{C:money}+$#1#{}",
-        }
-    },
     pos = {x = 0, y = 1},
     config = {money = 6},
     atlas = "loot",
@@ -2025,14 +1873,6 @@ SMODS.Loot {
 
 SMODS.Loot {
     key = 'joker_create',
-    loc_txt = {
-        name = "Joker Maker",
-        text = {
-            "Create an",
-            "{C:green}Uncommon{} {C:attention}Joker",
-            "{C:inactive}(Must have room)"
-        }
-    },
     pos = {x = 1, y = 1},
     config = {},
     atlas = "loot",
@@ -2052,16 +1892,8 @@ SMODS.Loot {
 }
 
 SMODS.Booster {
-    key = 'area_loot_1',
+    key = 'loot_normal_1',
     group_key = 'k_loot_pack',
-    loc_txt = {
-        name = "Loot Pack",
-        text = {
-            "Choose {C:attention}#1#{} of up to",
-            "{C:attention}#2# Loot{} cards to",
-            "be used immediately"
-        }
-    },
     weight = 0,
     cost = 0,
     name = "Loot Pack",
@@ -2078,10 +1910,6 @@ SMODS.Booster {
 }
 
 SMODS.Blind	{
-    loc_txt = {
-        name = 'The Monday',
-        text = { 'Cards drawn debuffed', 'after each hand' }
-    },
     key = 'monday',
     config = {},
     boss = {min = 1, max = 10, astronaut = true}, 
@@ -2137,10 +1965,6 @@ SMODS.Blind	{
 }
 
 SMODS.Blind	{
-    loc_txt = {
-        name = 'The Ganymede',
-        text = { 'Cards only drawn face', 'up after each discard' }
-    },
     key = 'ganymede',
     config = {},
     boss = {min = 1, max = 10, astronaut = true}, 
@@ -2173,10 +1997,6 @@ SMODS.Blind	{
 }
 
 SMODS.Blind	{
-    loc_txt = {
-        name = 'The Titan',
-        text = { 'Only final hand', 'allowed' }
-    },
     key = 'titan',
     config = {},
     boss = {min = 2, max = 10, astronaut = true}, 
@@ -2200,10 +2020,6 @@ SMODS.Blind	{
 }
 
 SMODS.Blind	{
-    loc_txt = {
-        name = 'The Triton',
-        text = { 'Discarding sets', "money to $-100" }
-    },
     key = 'triton',
     config = {},
     boss = {min = 1, max = 10, astronaut = true}, 
@@ -2221,10 +2037,6 @@ SMODS.Blind	{
 }
 
 SMODS.Blind	{
-    loc_txt = {
-        name = 'Coral Well',
-        text = { 'Convert all discards', 'to hands' }
-    },
     key = 'coral_well',
     config = {},
     boss = {showdown = true, min = 2, max = 10, astronaut = true},
@@ -2264,14 +2076,6 @@ SMODS.Blind	{
 
 SMODS.Element {
     key = 'm_lead',
-    loc_txt = {
-        name = "Lead",
-        text = {
-            "Enhances {C:attention}#1#",
-            "selected cards to",
-            "{C:attention}#2#s"
-        }
-    },
     atlas = "metal",
     pos = {x = 1, y = 0},
     config = {mod_conv = 'm_grm_lead', max_highlighted = 2},
@@ -2286,14 +2090,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_radium',
-    loc_txt = {
-        name = "Radium",
-        text = {
-            "Enhances a",
-            "selected {C:attention}Common Card",
-            "to a {C:attention}#1#"
-        }
-    },
     atlas = "metal",
     m_type = "Modern",
     pos = {x = 3, y = 0},
@@ -2317,14 +2113,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_gold',
-    loc_txt = {
-        name = "Gold",
-        text = {
-            "Enhances a",
-            "selected {C:attention}Common Card",
-            "to a {C:attention}#1#"
-        }
-    },
     atlas = "metal",
     m_type = "Precious",
     pos = {x = 2, y = 0},
@@ -2348,14 +2136,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_platinum',
-    loc_txt = {
-        name = "Platinum",
-        text = {
-            "Enhances a",
-            "selected {C:attention}Common Card",
-            "to a {C:attention}#1#"
-        }
-    },
     atlas = "metal",
     m_type = "Precious",
     pos = {x = 4, y = 0},
@@ -2379,14 +2159,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_fire',
-    loc_txt = {
-        name = "Fire",
-        text = {
-            "Adds a {C:attention}Flint",
-            "{C:green}Status{} to a",
-            "{C:attention}selected card"
-        }
-    },
     atlas = "metal",
     status = "flint",
     pos = {x = 0, y = 1},
@@ -2406,14 +2178,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_water',
-    loc_txt = {
-        name = "Water",
-        text = {
-            "Adds a {C:attention}Subzero",
-            "{C:green}Status{} to a",
-            "{C:attention}selected card"
-        }
-    },
     atlas = "metal",
     status = "subzero",
     pos = {x = 1, y = 1},
@@ -2433,14 +2197,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_rock',
-    loc_txt = {
-        name = "Rock",
-        text = {
-            "Adds a {C:attention}Rocky",
-            "{C:green}Status{} to a",
-            "{C:attention}selected card"
-        }
-    },
     atlas = "metal",
     status = "rocky",
     pos = {x = 2, y = 1},
@@ -2460,14 +2216,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_air',
-    loc_txt = {
-        name = "Air",
-        text = {
-            "Adds a {C:attention}Gust",
-            "{C:green}Status{} to a",
-            "{C:attention}selected card"
-        }
-    },
     atlas = "metal",
     status = "gust",
     pos = {x = 3, y = 1},
@@ -2487,14 +2235,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_silver',
-    loc_txt = {
-        name = "Silver",
-        text = {
-            "Enhances a",
-            "selected {C:attention}Common Card",
-            "to a {C:attention}#1#"
-        }
-    },
     atlas = "metal",
     m_type = "Precious",
     pos = {x = 0, y = 2},
@@ -2518,14 +2258,6 @@ SMODS.Element {
 
 SMODS.Element {
     key = 'm_iron',
-    loc_txt = {
-        name = "Iron",
-        text = {
-            "Enhances {C:attention}#1#",
-            "selected cards to",
-            "{C:attention}#2#s"
-        }
-    },
     atlas = "metal",
     pos = {x =4, y = 1},
     config = {mod_conv = 'm_grm_iron', max_highlighted = 2},
@@ -2540,13 +2272,6 @@ SMODS.Element {
 
 SMODS.Spectral {
     key = 'philosophy',
-    loc_txt = {
-        name = "Philosphy",
-        text = {
-            "{C:attention}Adds{} a {C:green}status{} to",
-            "all {C:attention}cards in hand{}",
-        }
-    },
     name = "Philosphy",
     atlas = "metal",
     soul_set = 'Elemental',
@@ -2604,15 +2329,6 @@ SMODS.Spectral {
 SMODS.Enhancement {
     key = 'radium',
     name = "Radium Card",
-    loc_txt = {
-        name = 'Radium Card',
-        text = {
-            "{C:green}#2# in #3#{} chance to",
-            "destroy this card if held",
-            "in hand at end of round",
-            "Otherwise {C:purple}+#1#{} XP"
-        }
-    },
     atlas = 'enhance',
     config = {h_xp = 12, base_odds = 226, odds = 1600, m_type = "Modern"},
     pos = {x = 0, y = 1},
@@ -2627,13 +2343,6 @@ SMODS.Enhancement {
 SMODS.Enhancement {
     key = 'lead',
     name = "Lead Card",
-    loc_txt = {
-        name = 'Lead Card',
-        text = {
-            "Tends to be shuffled",
-            "lower in the deck",
-        }
-    },
     atlas = 'enhance',
     config = {m_type = "Common"},
     pos = {x = 1, y = 1},
@@ -2645,14 +2354,6 @@ SMODS.Enhancement {
 SMODS.Enhancement {
     key = 'platinum',
     name = "Platinum Card",
-    loc_txt = {
-        name = 'Platinum Card',
-        text = {
-            "{C:blue}+#1#{} Chips",
-            "while this card",
-            "stays in hand"
-        }
-    },
     atlas = 'enhance',
     config = {h_chips = 50, m_type = "Precious"},
     pos = {x = 2, y = 0},
@@ -2667,12 +2368,6 @@ SMODS.Enhancement {
 SMODS.Enhancement {
     key = 'iron',
     name = "Iron Card",
-    loc_txt = {
-        name = 'Iron Card',
-        text = {
-            "{X:red,C:white} X#1# {} Mult",
-        }
-    },
     atlas = 'enhance',
     config = {x_mult = 1.2, m_type = "Common"},
     pos = {x = 0, y = 2},
@@ -2687,12 +2382,6 @@ SMODS.Enhancement {
 SMODS.Enhancement {
     key = 'silver',
     name = "Silver Card",
-    loc_txt = {
-        name = 'Silver Card',
-        text = {
-            "{C:money}+$#1#{}",
-        }
-    },
     atlas = 'enhance',
     config = {p_dollars = 2, m_type = "Precious"},
     pos = {x = 2, y = 1},
@@ -2708,14 +2397,6 @@ SMODS.Booster {
     key = 'ancient_normal_1',
     atlas = 'boosters',
     group_key = 'k_ancient_pack',
-    loc_txt = {
-        name = "Ancient Pack",
-        text = {
-            "Choose {C:attention}#1#{} of up to",
-            "{C:attention}#2#{C:attention} Element{} cards to",
-            "be used immediately"
-        }
-    },
     weight = 3,
     cost = 4,
     name = "Ancient Pack",
@@ -2734,14 +2415,6 @@ SMODS.Booster {
     key = 'ancient_normal_2',
     atlas = 'boosters',
     group_key = 'k_ancient_pack',
-    loc_txt = {
-        name = "Ancient Pack",
-        text = {
-            "Choose {C:attention}#1#{} of up to",
-            "{C:attention}#2#{C:attention} Element{} cards to",
-            "be used immediately"
-        }
-    },
     weight = 3,
     cost = 4,
     name = "Ancient Pack",
@@ -2760,14 +2433,6 @@ SMODS.Booster {
     key = 'ancient_jumbo_1',
     atlas = 'boosters',
     group_key = 'k_ancient_pack',
-    loc_txt = {
-        name = "Jumbo Ancient Pack",
-        text = {
-            "Choose {C:attention}#1#{} of up to",
-            "{C:attention}#2#{C:attention} Element{} cards to",
-            "be used immediately"
-        }
-    },
     weight = 3,
     cost = 6,
     name = "Ancient Pack",
@@ -2786,14 +2451,6 @@ SMODS.Booster {
     key = 'ancient_mega_1',
     atlas = 'boosters',
     group_key = 'k_ancient_pack',
-    loc_txt = {
-        name = "Mega Ancient Pack",
-        text = {
-            "Choose {C:attention}#1#{} of up to",
-            "{C:attention}#2#{C:attention} Element{} cards to",
-            "be used immediately"
-        }
-    },
     weight = 1,
     cost = 8,
     name = "Ancient Pack",
@@ -2811,13 +2468,6 @@ SMODS.Booster {
 SMODS.Tag {
     key = 'philosopher',
     atlas = 'tags',
-    loc_txt = {
-        name = "Philosopher's Tag",
-        text = {
-            "Gives a free",
-            "{C:attention}Mega Ancient Pack"
-        }
-    },
     pos = {x = 2, y = 0},
     min_ante = 2,
     apply = function(tag, context)
@@ -2852,14 +2502,6 @@ SMODS.Tag {
 SMODS.Joker {
     key = 'cohesion',
     name = "Cohesion",
-    loc_txt = {
-        name = "Cohesion",
-        text = {
-            "{C:red}+#1#{} Mult if hand contains",
-            "{C:attention}#2#{} scoring cards of",
-            "the same {C:green}status{}"
-        }
-    },
     rarity = 1,
     atlas = 'jokers',
     pos = {x = 0, y = 2},
@@ -2899,13 +2541,6 @@ SMODS.Joker {
 SMODS.Joker {
     key = 'absolute_zero',
     name = "Absolute Zero",
-    loc_txt = {
-        name = "Absolute Zero",
-        text = {
-            "{C:attention}Subzero{} cards draw",
-            "an additional card",
-        }
-    },
     rarity = 1,
     atlas = 'jokers',
     pos = {x = 1, y = 2},
@@ -2924,15 +2559,6 @@ SMODS.Joker {
 SMODS.Joker {
     key = 'precious_joker',
     name = "Precious Joker",
-    loc_txt = {
-        name = "Precious Joker",
-        text = {
-            "Earn {C:money}$#1#{} at {C:attention}end of",
-            "{C:attention}round{} for each {C:attention}Precious",
-            "{C:attention}Card{} in your {C:attention}full deck",
-            "{C:inactive}(Currently {C:money}$#2#{C:inactive})",
-        }
-    },
     rarity = 2,
     atlas = 'jokers',
     pos = {x = 2, y = 2},
@@ -2957,15 +2583,6 @@ SMODS.Joker {
 
 SMODS.Lunar {
     key = 'moon',
-    loc_txt = {
-        name = "Moon",
-        text = {
-            "Level {C:attention}#1#{}",
-            "{C:attention}Debuffed{} cards gain",
-            "{C:red}+#2#{} Mult when {C:attention}held{}",
-            "{C:attention}in hand{}"
-        }
-    },
     atlas = "lunar",
     special_level = "debuff",
     pos = {x = 0, y = 0},
@@ -2979,15 +2596,6 @@ SMODS.Lunar {
 
 SMODS.Lunar {
     key = 'callisto',
-    loc_txt = {
-        name = "Callisto",
-        text = {
-            "Level {C:attention}#1#{}",
-            "{C:attention}Face down{} cards",
-            "give {X:red,C:white} X#2# {} Mult when",
-            "{C:attention}scored{}"
-        }
-    },
     atlas = "lunar",
     special_level = "face_down",
     pos = {x = 1, y = 0},
@@ -3001,16 +2609,6 @@ SMODS.Lunar {
 
 SMODS.Lunar {
     key = 'rhea',
-    loc_txt = {
-        name = "Rhea",
-        text = {
-            "Level {C:attention}#1#{}",
-            "{C:attention}Disallowed{} hands have a",
-            "{C:green}#2# in #3#{} chance to",
-            "upgrade {C:attention}#4#{} levels,",
-            "otherwise upgrades {C:attention}#5#{} levels"
-        }
-    },
     atlas = "lunar",
     special_level = "not_allowed",
     pos = {x = 2, y = 0},
@@ -3027,16 +2625,6 @@ SMODS.Lunar {
 
 SMODS.Lunar {
     key = 'oberon',
-    loc_txt = {
-        name = "Oberon",
-        text = {
-            "Level {C:attention}#1#{}",
-            "Create a {C:attention}#2#{}",
-            "when defeating a {C:attention}Boss{}",
-            "{C:attention}Blind{}, scoring chips within",
-            "{C:attention}#3#%{} of the {C:attention}requirement{}"
-        }
-    },
     atlas = "lunar",
     special_level = "overshoot",
     pos = {x = 3, y = 0},
@@ -3052,15 +2640,6 @@ SMODS.Lunar {
 
 SMODS.Lunar {
     key = 'proteus',
-    loc_txt = {
-        name = "Proteus",
-        text = {
-            "Level {C:attention}#1#{}",
-            "Refund {C:money}#2#%{} of lost",
-            "{C:money}dollars{} during {C:attention}Boss Blinds{}",
-            "{C:inactive}(rounds up){}",
-        }
-    },
     atlas = "lunar",
     special_level = "money",
     pos = {x = 0, y = 1},
@@ -3074,13 +2653,6 @@ SMODS.Lunar {
 
 SMODS.Lunar {
     key = 'nix',
-    loc_txt = {
-        name = "Nix",
-        text = {
-            "{C:red}Nullify{} a random",
-            "{C:attention}Boss Blind{}",
-        }
-    },
     atlas = "lunar",
     pos = {x = 1, y = 1},
     loc_vars = function(self, info_queue, card)
@@ -3105,17 +2677,6 @@ SMODS.Lunar {
 
 SMODS.Lunar {
     key = 'dysnomia',
-    loc_txt = {
-        name = "Dysnomia",
-        text = {
-            "Level {C:attention}#1#{}",
-            "After defeating each",
-            "{C:attention}Boss Blind{}, create {C:attention}#2#{}",
-            "{C:dark_edition}Negative{} {C:blue}Lunar{}, {C:money}Stellar{},",
-            "or {C:planet}Planet{} cards with",
-            "{C:money}$1{} {C:attention}sell value{}"
-        }
-    },
     atlas = "lunar",
     special_level = "grind",
     pos = {x = 3, y = 1},
@@ -3132,14 +2693,6 @@ SMODS.Lunar {
 
 SMODS.Spectral {
     key = 'moon_x',
-    loc_txt = {
-        name = "Moon X",
-        text = {
-            "Increase every",
-            "{C:legendary,E:1}lunar level",
-            "by {C:attention}1{} level"
-        }
-    },
     atlas = "lunar",
     soul_set = 'Lunar',
     hidden = true,
@@ -3165,16 +2718,6 @@ SMODS.Spectral {
 
 SMODS.Stellar {
     key = 'sun',
-    loc_txt = {
-        name = "Sun",
-        text = {
-            "{C:attention}Upgrade{} {C:hearts}#1#{}",
-            "{C:mult}+#3#{} Mult and",
-            "{C:chips}+#4#{} chips",
-            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
-            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
-        }
-    },
     atlas = "stellar",
     special_level = "heart",
     pos = {x = 0, y = 0},
@@ -3183,16 +2726,6 @@ SMODS.Stellar {
 
 SMODS.Stellar {
     key = 'sirius',
-    loc_txt = {
-        name = "Sirius",
-        text = {
-            "{C:attention}Upgrade{} {C:diamonds}#1#{}",
-            "{C:mult}+#3#{} Mult and",
-            "{C:chips}+#4#{} chips",
-            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
-            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
-        }
-    },
     atlas = "stellar",
     special_level = "diamond",
     pos = {x = 1, y = 0},
@@ -3201,16 +2734,6 @@ SMODS.Stellar {
 
 SMODS.Stellar {
     key = 'canopus',
-    loc_txt = {
-        name = "Canopus",
-        text = {
-            "{C:attention}Upgrade{} {C:spades}#1#{}",
-            "{C:mult}+#3#{} Mult and",
-            "{C:chips}+#4#{} chips",
-            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
-            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
-        }
-    },
     atlas = "stellar",
     special_level = "spade",
     pos = {x = 2, y = 0},
@@ -3219,16 +2742,6 @@ SMODS.Stellar {
 
 SMODS.Stellar {
     key = 'alpha',
-    loc_txt = {
-        name = "Alpha Centauri",
-        text = {
-            "{C:attention}Upgrade{} {C:spades}#1#{}",
-            "{C:mult}+#3#{} Mult and",
-            "{C:chips}+#4#{} chips",
-            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
-            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
-        }
-    },
     atlas = "stellar",
     special_level = "club",
     pos = {x = 3, y = 0},
@@ -3237,16 +2750,6 @@ SMODS.Stellar {
 
 SMODS.Stellar {
     key = 'lp_944_20',
-    loc_txt = {
-        name = "LP 944-20",
-        text = {
-            "{C:attention}Upgrade{} {C:inactive}Nothing?{}",
-            "{C:mult}+#3#{} Mult and",
-            "{C:chips}+#4#{} chips",
-            "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
-            "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
-        }
-    },
     atlas = "stellar",
     special_level = "nothing",
     pos = {x = 1, y = 1},
@@ -3258,14 +2761,6 @@ SMODS.Stellar {
 
 SMODS.Spectral {
     key = 'iron_core',
-    loc_txt = {
-        name = "Iron Core",
-        text = {
-            "{C:legendary,E:1}Upgrade{} a",
-            "{C:attention}random suit{}",
-            "by {C:attention}3{} levels"
-        }
-    },
     name = "Iron Core",
     atlas = "stellar",
     soul_set = 'Stellar',
@@ -3299,13 +2794,6 @@ SMODS.Spectral {
 
 SMODS.Area {
     key = 'classic',
-    loc_txt = {
-        name = "Classic",
-        text = {
-            "Return to",
-            "normal gameplay",
-        }
-    },
     area = "Classic",
     atlas = "areas",
     pos = {x = 0, y = 0},
@@ -3318,13 +2806,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'graveyard',
-    loc_txt = {
-        name = "Graveyard",
-        text = {
-            "{C:spectral}Spectral{} cards may",
-            "appear in the shop,",
-        }
-    },
     area = "Graveyard",
     region = "Spooky",
     atlas = "areas",
@@ -3338,14 +2819,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'plains',
-    loc_txt = {
-        name = "Plains",
-        text = {
-            "{C:money}-$#1#{} per remaining {C:blue}Hand{},",
-            "{C:money}+$#2#{} per remaining {C:red}Discard",
-            "at end of {C:attention}round{}"
-        }
-    },
     area = "Plains",
     atlas = "areas",
     pos = {x = 2, y = 0},
@@ -3365,14 +2838,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'market',
-    loc_txt = {
-        name = "Market",
-        text = {
-            "{C:attention}+#1#{} shop slots",
-            "All cards and packs in",
-            "shop cost {C:attention}#2#%{} more"
-        }
-    },
     area = "Market",
     atlas = "areas",
     pos = {x = 3, y = 0},
@@ -3392,13 +2857,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'landfill',
-    loc_txt = {
-        name = "Landfill",
-        text = {
-            "{C:red}+#1#{} discards per {C:attention}round{}",
-            "{C:blue}-#2#{} hands per {C:attention}round{}",
-        }
-    },
     area = "Landfill",
     atlas = "areas",
     pos = {x = 4, y = 0},
@@ -3418,13 +2876,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'metro',
-    loc_txt = {
-        name = "Metro",
-        text = {
-            "Earn {C:purple}#1#%{} more XP",
-            "No {C:attention}Shops{}"
-        }
-    },
     area = "Metro",
     region = "Metro",
     atlas = "areas",
@@ -3446,14 +2897,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'ghost_town',
-    loc_txt = {
-        name = "Ghost Town",
-        text = {
-            "{C:green}#1# in #2#{} chance to",
-            "earn {C:money}$#3#{} at cashout",
-            "Earn no XP",
-        }
-    },
     area = "Ghost Town",
     region = "Spooky",
     atlas = "areas",
@@ -3475,15 +2918,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'midnight',
-    loc_txt = {
-        name = "Midnight",
-        text = {
-            "Cards {C:attention}may{} be drawn",
-            "{C:attention}face down{}, {C:attention}face down{}",
-            "cards give {X:red,C:white} X#1# {} Mult on",
-            "{C:attention}final hand{}",
-        }
-    },
     area = "Midnight",
     region = "Spooky",
     atlas = "areas",
@@ -3503,13 +2937,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'dungeon',
-    loc_txt = {
-        name = "Dungeon",
-        text = {
-            "Every {C:attention}Boss Blind{}",
-            "is a {C:attention}Showdown Blind{}",
-        }
-    },
     area = "Dungeon",
     region = "Sewer",
     atlas = "areas",
@@ -3528,14 +2955,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'tunnel',
-    loc_txt = {
-        name = "Tunnel",
-        text = {
-            "On {C:attention}first hand{} of round, {C:attention}upgrade{}",
-            "your {C:attention}most played hand{} if it is",
-            "played, otherwise {C:attention}half{} its level"
-        }
-    },
     area = "Tunnel",
     region = "Sewer",
     atlas = "areas",
@@ -3554,13 +2973,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'toxic_waste',
-    loc_txt = {
-        name = "Toxic Waste",
-        text = {
-            "{C:red}+#1#{} discards per round",
-            "On {C:attention}Play{}, {C:red}-#2#{} discard",
-        }
-    },
     area = "Toxic Waste",
     region = "Sewer",
     atlas = "areas",
@@ -3581,14 +2993,6 @@ SMODS.Area {
 
 SMODS.Area {
     key = 'aether',
-    loc_txt = {
-        name = "Aether",
-        text = {
-            "All cards and packs in",
-            "shop are {C:attention}#1#%{} off,",
-            "Earn {C:purple}#2#%{} more XP"
-        }
-    },
     area = "Aether",
     region = "Aether",
     atlas = "areas",
@@ -3614,13 +3018,6 @@ SMODS.Booster {
     key = 'area_normal_1',
     atlas = 'boosters',
     group_key = 'k_area_pack',
-    loc_txt = {
-        name = "Area Pack",
-        text = {
-            "Enter {C:attention}#1#{} of up to",
-            "{C:attention}#2#{C:green} Areas{}"
-        }
-    },
     weight = 0,
     cost = 1,
     name = "Area Pack",
@@ -3640,13 +3037,6 @@ SMODS.Booster {
 SMODS.Tag {
     key = 'grid',
     atlas = 'tags',
-    loc_txt = {
-        name = "Grid Tag",
-        text = {
-            "Gives a free",
-            "{C:red}Area Pack"
-        }
-    },
     pos = {x = 1, y = 0},
     apply = function(tag, context)
         if context.type == 'new_blind_choice' then
@@ -3680,12 +3070,6 @@ SMODS.Tag {
 SMODS.Joker {
     key = 'hyperspace',
     name = "Hyperspace",
-    loc_txt = {
-        name = "Hyperspace",
-        text = {
-            "{X:red,C:white} X#1# {} Mult"
-        }
-    },
     rarity = 2,
     atlas = 'jokers',
     pos = {x = 2, y = 0},
@@ -3714,15 +3098,6 @@ SMODS.Joker {
 SMODS.Joker {
     key = 'tourist',
     name = "Tourist",
-    loc_txt = {
-        name = "Tourist",
-        text = {
-            "This Joker gains {X:mult,C:white} X#1# {} Mult",
-            "for every {C:attention}unique",
-            "{C:attention}Area{} visited",
-            "{C:inactive}(Currently {X:mult,C:white} X#2# {C:inactive} Mult)",
-        }
-    },
     rarity = 2,
     atlas = 'jokers',
     pos = {x = 1, y = 1},
@@ -3757,13 +3132,6 @@ SMODS.Joker {
 SMODS.Joker {
     key = 'brochure',
     name = "Brochure",
-    loc_txt = {
-        name = "Brochure",
-        text = {
-            "{C:attention}+#1#{} option in",
-            "{C:attention}Area Packs{}",
-        }
-    },
     rarity = 1,
     atlas = 'jokers',
     blueprint_compat = false,
@@ -3783,12 +3151,6 @@ SMODS.Joker {
 SMODS.Tag {
     key = 'xp',
     atlas = 'tags',
-    loc_txt = {
-        name = "XP Tag",
-        text = {
-            "{C:purple}+#1#{} XP"
-        }
-    },
     pos = {x = 0, y = 0},
     config = {type = 'immediate', amount = 100},
     apply = function(tag, context)
@@ -3812,14 +3174,6 @@ SMODS.Tag {
 SMODS.Joker {
     key = 'energy_bar',
     name = "Energy Bar",
-    loc_txt = {
-        name = "Energy Bar",
-        text = {
-            "{C:purple}+#1#{} XP at end of",
-            "{C:attention}round{}, loses {C:purple}#2#{} XP",
-            "per hand played"
-        }
-    },
     rarity = 2,
     atlas = 'jokers',
     pos = {x = 0, y = 0},
@@ -3870,13 +3224,6 @@ SMODS.Joker {
 SMODS.Joker {
     key = 'showdown',
     name = "Showdown",
-    loc_txt = {
-        name = "Showdown",
-        text = {
-            "{C:green}Packed cards{} count towards",
-            "played {C:attention}poker hand{}"
-        }
-    },
     rarity = 3,
     atlas = 'jokers',
     pos = {x = 1, y = 0},
@@ -3890,12 +3237,6 @@ SMODS.Joker {
 
 SMODS.Enhancement {
     key = 'rpg',
-    loc_txt = {
-        name = 'RPG Card',
-        text = {
-            "{C:purple}+#1#{} XP",
-        }
-    },
     atlas = 'enhance',
     config = {xp = 5},
     pos = {x = 0, y = 0},
@@ -3927,14 +3268,6 @@ SMODS.Enhancement {
 
 SMODS.Voucher {
     key = 'progress',
-    loc_txt = {
-        name = "Progression",
-        text = {
-            "{C:purple}+#1#{} XP for every {C:purple}#2#{} XP you",
-            "have at end of round",
-            "{C:inactive}(Max of {C:purple}#3#{C:inactive} XP)"
-        }
-    },
     config = {extra = {xp = 1, interest = 12}, max = 30},
     atlas = 'vouchers',
     pos = {x = 0, y = 0},
@@ -3955,14 +3288,6 @@ SMODS.Voucher {
 
 SMODS.Voucher {
     key = 'complete',
-    loc_txt = {
-        name = "Completion",
-        text = {
-            "Raise the cap on",
-            "{C:purple}XP{} interest earned in",
-            "each round to {C:purple}#1#{}"
-        }
-    },
     config = {max = 75},
     atlas = 'vouchers',
     pos = {x = 1, y = 0},
@@ -3986,21 +3311,6 @@ SMODS.Stake {
     atlas = "stakes",
     pos = {x = 0, y = 0},
     applied_stakes = {},
-	loc_txt = {
-        name = "Turbo Stake",
-        text = {
-            "After defeating each",
-            "{C:attention}Boss Blind{}, {C:purple}+150{} XP"
-        },
-        sticker = {
-            name = "Turbo Sticker",
-            text = {
-                "Used this Joker",
-                "to win on {C:attention}Turbo",
-                "{C:attention}Stake{} difficulty"
-            }
-        }
-    },
     modifiers = function()
         G.GAME.modifiers.force_stake_xp = 150
     end,
@@ -4015,21 +3325,6 @@ SMODS.Stake {
     atlas = "stakes",
     pos = {x = 1, y = 0},
     applied_stakes = {"gold"},
-	loc_txt = {
-        name = "Bismuth Stake",
-        text = {
-            "No shop after",
-            "each {C:attention}Big Blind{}"
-        },
-        sticker = {
-            name = "Bismuth Sticker",
-            text = {
-                "Used this Joker",
-                "to win on {C:attention}Bismuth",
-                "{C:attention}Stake{} difficulty"
-            }
-        }
-    },
     modifiers = function()
         G.GAME.modifiers.no_big_shop = true
     end,
@@ -4040,13 +3335,6 @@ SMODS.Stake {
 
 SMODS.Back {
     key = 'talent',
-    loc_txt = {
-        name = "Talented Deck",
-        text = {
-            "The {C:attention}first{} learned",
-            "skill requires {C:attention}0{} XP",
-        }
-    },
     name = "Talented Deck",
     pos = { x = 0, y = 0 },
     atlas = 'decks',
@@ -4129,680 +3417,6 @@ function Card:calculate_xp_bonus()
             return obj:calc_xp_bonus(self)
         end
     end
-end
-
-function SMODS.current_mod.process_loc_text()
-    G.localization.misc.dictionary["b_learn"] = "LEARN"
-    G.localization.misc.challenge_names["c_astro_dungeon"] = "Astro Dungeon"
-    G.localization.misc.v_text.ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."}
-    G.localization.misc.v_text.ch_c_blind_attack = {"Blinds may use {C:attention}Attack{} cards"}
-    G.localization.misc.v_text.ch_c_astro_blinds = {"Only {C:attention}Astronaut{} blinds may show up."}
-    G.localization.misc.v_text.ch_c_force_astronaut = {"You must play on the {C:attention}Astronaut{} class."}
-    G.localization.misc.v_text.ch_c_loot_pack = {"Each shop has a free {C:attention}Loot Pack{}."}
-    G.localization.misc.v_text.ch_m_force_stake_xp = {"{C:purple}#1#{} XP per Ante"}
-    G.localization.descriptions.Other.ch_m_force_stake_xp2 = {name = "", text = {"{s:0.8,C:purple}#1#{s:0.8} XP per Ante"}}
-    
-    G.localization.descriptions.Skill = {
-        sk_grm_chime_1 = {
-            name = "Chime I",
-            text = {
-                "{C:attention}-1{} Ante every {C:attention}8th{}",
-                "Ante",
-                "{C:inactive}(once per ante){}"
-            }
-        },
-        sk_grm_chime_2 = {
-            name = "Chime II",
-            text = {
-                "{C:attention}-1{} Ante every {C:attention}4th{}",
-                "Ante",
-                "{C:inactive}(once per ante){}"
-            }
-        },
-        sk_grm_chime_3 = {
-            name = "Chime III",
-            text = {
-                "{C:attention}-1{} Ante every {C:attention}3rd{}",
-                "Ante",
-                "{C:blue}-1{} hand",
-                "{C:inactive}(once per ante){}"
-            },
-            unlock = {
-                "Reach Ante",
-                "level {E:1,C:attention}17"
-            }
-        },
-        sk_grm_ease_1 = {
-            name = "Ease I",
-            text = {
-                "{C:blue}x0.9{} Blind Size",
-            }
-        },
-        sk_grm_ease_2 = {
-            name = "Ease II",
-            text = {
-                "{C:blue}x0.8{} Blind Size",
-            }
-        },
-        sk_grm_mystical_1 = {
-            name = "Mystical I",
-            text = {
-                "All {C:tarot}Arcana Packs{} have {C:attention}+1{}",
-                "option and choice"
-            }
-        },
-        sk_grm_mystical_2 = {
-            name = "Mystical II",
-            text = {
-                "All {C:tarot}Arcana Packs{} and {C:tarot}Tarot{}",
-                "cards are free."
-            }
-        },
-        sk_grm_mystical_3 = {
-            name = "Mystical III",
-            text = {
-                "{C:green}30%{} chance to create a",
-                "{C:dark_edition}Negative{} {C:tarot}The Fool{} when",
-                "a {C:tarot}Tarot{} is used",
-                "{C:inactive}({C:tarot}The Fool{C:inactive} excluded)"
-            }
-        },
-        sk_grm_hexahedron_1 = {
-            name = "Hexahedron I",
-            text = {
-                "Rerolls cost",
-                "{C:money}$1{} less"
-            }
-        },
-        sk_grm_ocean_1 = {
-            name = "Ocean I",
-            text = {
-                "{C:attention}+1{} hand size",
-            }
-        },
-        sk_grm_strike_1 = {
-            name = "Strike I",
-            text = {
-                "{C:red}+2{} base mult",
-            }
-        },
-        sk_grm_strike_2 = {
-            name = "Strike II",
-            text = {
-                "{C:blue}+50{} base chips",
-            }
-        },
-        sk_grm_strike_3 = {
-            name = "Strike III",
-            text = {
-                "Balance base {C:blue}Chips{} and",
-                "base {C:red}Mult{}",
-                "{C:red}X1.2{} Blind Size",
-            },
-            unlock = {
-                "Level a {C:attention}poker hand{} to",
-                "level {C:attention}40{} or more"
-            }
-        },
-        sk_grm_hexahedron_2 = {
-            name = "Hexahedron II",
-            text = {
-                "Earn {C:money}$1{} per {C:attention}reroll{}",
-                "in the shop",
-            }
-        },
-        sk_grm_hexahedron_3 = {
-            name = "Hexahedron III",
-            text = {
-                "+{C:attention}1{} free {C:green}reroll",
-                "in the shop per {C:money}$11{} spent",
-                "on {C:green}reroll"
-            },
-            unlock = {
-                "{C:green}Reroll{} {C:attention}15{} or more",
-                "times in the {C:attention}shop{}"
-            }
-        },
-        sk_grm_ocean_2 = {
-            name = "Ocean II",
-            text = {
-                "{C:blue}+1{} hand on",
-                "{C:attention}final discard{}"
-            }
-        },
-        sk_grm_ocean_3 = {
-            name = "Ocean III",
-            text = {
-                "{C:red}+2{} discards on",
-                "{C:attention}first hand{}"
-            },
-            unlock = {
-                "Have {C:red}10{} or more",
-                "discards"
-            }
-        },
-        sk_grm_stake_1 = {
-            name = "Stake I",
-            text = {
-                "{C:attention}+1{} win ante",
-                "{C:attention}+1{} hand size"
-            }
-        },
-        sk_grm_stake_2 = {
-            name = "Stake II",
-            text = {
-                "{C:attention}+2{} win ante",
-                "{C:attention}+1{} joker slot"
-            }
-        },
-        sk_grm_skillful_1 = {
-            name = "Skillful I",
-            text = {
-                "{C:purple}+30{} XP at",
-                "end of {C:attention}round{}"
-            }
-        },
-        sk_grm_skillful_2 = {
-            name = "Skillful II",
-            text = {
-                "Adds the number of levels",
-                "on played {C:attention}poker hand{} ",
-                "to XP, on {C:attention}play{}",
-                "{C:inactive}(max of {C:purple}40{C:inactive}){}",
-            }
-        },
-        sk_grm_skillful_3 = {
-            name = "Skillful III",
-            text = {
-                "{X:purple,C:white} X2 {} to all",
-                "XP sources",
-            }
-        },
-        sk_grm_stake_3 = {
-            name = "Stake III",
-            text = {
-                "{C:blue}x1.3{} Blind Size for ",
-                "each {C:attention}Ante{}.",
-                "{C:attention}+3{} joker slots",
-                "{C:inactive}(Currently {C:blue}#1#{C:inactive}){}",
-            }
-        },
-        sk_grm_ease_3 = {
-            name = "Ease III",
-            text = {
-                "Prevents Death",
-                "if chips scored",
-                "are at least {C:attention}85%",
-                "of required chips",
-            }
-        },
-        sk_grm_motley_1 = {
-            name = "Motley I",
-            text = {
-                "{C:attention}Wild Cards{} cannot",
-                "be {C:attention}debuffed{}"
-            }
-        },
-        sk_grm_fortunate_1 = {
-            name = "Fortunate I",
-            text = {
-                "{C:attention}The Wheel of Fortune{}",
-                "can create the {C:dark_edition}Negative{}",
-                "edition"
-            }
-        },
-        sk_grm_fortunate_2 = {
-            name = "Fortunate II",
-            text = {
-                "{C:attention}The Wheel of Fortune{}",
-                "can't create the {C:dark_edition}Foil{}",
-                "edition"
-            },
-            unlock = {
-                "Add the {C:dark_edition}Negative{} edition",
-                "to a {C:attention}Joker{} using",
-                "{C:attention}The Wheel of Fortune{}",
-            }
-        },
-        sk_grm_fortunate_3 = {
-            name = "Fortunate III",
-            text = {
-                "{C:attention}The Wheel of Fortune{}",
-                "is {C:green}guarenteed{} to apply",
-                "an {C:attention}edition{}"
-            }
-        },
-        sk_grm_motley_2 = {
-            name = "Motley II",
-            text = {
-                "{C:tarot}Arcana Packs{} have",
-                "2 {C:tarot}The Lovers{}"
-            }
-        },
-        sk_grm_motley_3 = {
-            name = "Motley III",
-            text = {
-                "{C:attention}Enhanced Cards{} are",
-                "considered {C:attention}Wild Cards{}",
-                "All {C:tarot}Arcana Packs{} have",
-                "{C:attention}-1{} option",
-            }
-        },
-        sk_grm_scarce_1 = {
-            name = "Scarce I",
-            text = {
-                "{C:attention}Jokers{} and {C:attention}Buffoon Packs{}",
-                "do not appear in {C:attention}shop{}"
-            }
-        },
-        sk_grm_gravity_1 = {
-            name = "Gravity I",
-            text = {
-                "All {C:planet}Celestial Packs{} have",
-                "{C:attention}+2{} options",
-            }
-        },
-        sk_grm_gravity_2 = {
-            name = "Gravity II",
-            text = {
-                "{X:red,C:white} X2 {} base mult when",
-                "playing your {C:attention}most played{}",
-                "{C:attention}poker hand{}"
-            }
-        },
-        sk_grm_gravity_3 = {
-            name = "Gravity III",
-            text = {
-                "{C:attention}Retrigger{} used",
-                "{C:planet}Planet{} cards"
-            }
-        },
-        sk_grm_ghost_1 = {
-            name = "Ghost I",
-            text = {
-                "Create a {C:spectral}Spectral{} card",
-                "every {C:purple}200{} gained XP",
-                "{C:red}-1{} hand size",
-                "{C:inactive}(Must have room)"
-            }
-        },
-        sk_grm_ghost_2 = {
-            name = "Ghost II",
-            text = {
-                "Gain an {C:attention}Ethereal Tag",
-                "at the end of each {C:attention}shop",
-                "{C:red}-2{} hand size"
-            }
-        },
-        sk_grm_ghost_3 = {
-            name = "Ghost III",
-            text = {
-                "All {C:spectral}Spectral Packs{} have",
-                "{C:attention}+4{} options and {C:attention}+2{} choices",
-                "{X:purple,C:white} X0.5 {} to all XP sources",
-            }
-        },
-        sk_grm_receipt_1 = {
-            name = "Receipt I",
-            text = {
-                "Earn {C:money}$1{} for every",
-                "{C:money}$7{} earned at {C:attention}cash out{}",
-            }
-        },
-        sk_grm_receipt_2 = {
-            name = "Receipt II",
-            text = {
-                "{C:attention}Vouchers{} and {C:attention}Booster Packs{}",
-                "in shop are {C:attention}30%{} off"
-            }
-        },
-        sk_grm_receipt_3 = {
-            name = "Receipt III",
-            text = {
-                "Go up to",
-                "{C:red}-$25{} in debt"
-            }
-        },
-        sk_grm_dash_1 = {
-            name = "Dash I",
-            text = {
-                "Each shop has",
-                "a {C:attention}Standard Pack{}"
-            }
-        },
-        sk_grm_dash_2 = {
-            name = "Dash II",
-            text = {
-                "All {C:attention}Standard Packs{} have",
-                "{X:attention,C:white} X2 {} options",
-            }
-        },
-        sk_grm_cl_hoarder = {
-            name = "Hoarder",
-            text = {
-                "{C:red}-1{} Hand Size",
-                "You may {C:green}Pack{}",
-                "cards."
-            },
-            unlock = {
-                "Have {C:purple}2,000{} or",
-                "more {C:attention}XP{}",
-            }
-        },
-        sk_grm_cl_astronaut = {
-            name = "Astronaut",
-            text = {
-                "{C:money}Stellar{} cards and {C:blue}Lunar{}",
-                "cards can appear in",
-                "{C:planet}Celestial{} packs",
-            },
-            unlock = {
-                "Learn",
-                "{C:planet}Gravity III{}",
-            }
-        },
-        sk_grm_orbit_1 = {
-            name = "Orbit I",
-            text = {
-                "{C:money}Stellar{} cards and {C:blue}Lunar{}",
-                "cards can appear in",
-                "the {C:attention}shop{}",
-            }
-        },
-        sk_grm_orbit_2 = {
-            name = "Orbit II",
-            text = {
-                "{C:attention}Dysnomia{} and {C:attention}LP 944-20{}",
-                "can appear"
-            }
-        },
-        sk_grm_cl_alchemist = {
-            name = "Alchemist",
-            text = {
-                "{C:attention}Elements{} and",
-                "{C:green}Statuses{} enabled",
-            },
-            unlock = {
-                "Have at least {E:1,C:attention}52",
-                "{E:1,C:attention}Wild Cards{} in",
-                "your deck"
-            }
-        },
-        sk_grm_cl_explorer = {
-            name = "Explorer",
-            text = {
-                "After defeating each",
-                "{C:attention}Boss Blind{}, gain a",
-                "{C:attention}Grid Tag{}"
-            },
-            unlock = {
-                "Win a run with",
-                "{C:attention}10 skills{} learned",
-            }
-        },
-        sk_grm_sticky_1 = {
-            name = "Sticky I",
-            text = {
-                "{C:attention}Eternal Jokers{} cost",
-                "{C:purple}100 XP{} to sell"
-            }
-        },
-        sk_grm_sticky_2 = {
-            name = "Sticky II",
-            text = {
-                "{C:attention}Perishable Jokers{} last",
-                "{C:attention}3{} extra rounds"
-            }
-        },
-        sk_grm_sticky_3 = {
-            name = "Sticky III",
-            text = {
-                "{C:attention}Rental Jokers{} give",
-                "{C:money}$3{} instead of {C:red}-$3{}"
-            }
-        },
-        sk_grm_shelf_1 = {
-            name = "Shelf I",
-            text = {
-                "{C:red}-1{} shop slot",
-                "{C:attention}+2{} booster slots"
-            }
-        },
-        sk_grm_shelf_2 = {
-            name = "Shelf II",
-            text = {
-                "{C:attention}+1{} shop slot each",
-                "shop until an item is",
-                "{C:attention}purchased"
-            }
-        },
-        sk_grm_prestige_1 = {
-            name = "Prestige I",
-            text = {
-                "{C:attention}Unlearn{} all other skills",
-                "{C:dark_edition}+1{} Legendary Token",
-                "Must have {C:purple}2,500{} XP spent this run",
-                "{C:inactive}({C:purple}#1#{C:inactive} XP spent this run)"
-            },
-            unlock = {
-                "Learn a {C:red}Tier{}",
-                "{C:red}III{} skill",
-            }
-        },
-        sk_grm_blind_breaker = {
-            name = "Blind Breaker",
-            text = {
-                "After {C:attention}main scoring{}, Gives",
-                "{X:red,C:white} XMult {} equal to {C:blue}scored chips^0.15{}",
-                "{C:inactive}(Minimum of {X:red,C:white} X1 {C:inactive})"
-            }
-        },
-        sk_grm_spectral_shard = {
-            name = "Spectral Shard",
-            text = {
-                "{C:legendary,E:1}Legendary{} {C:attention}Jokers{} may appear",
-                "in shops and packs",
-            }
-        }
-    }
-    G.localization.descriptions.Other["flint"] = {
-        name = "Flint",
-        text = {
-            "gains {C:red}+1{} Mult, when {C:attention}played{}",
-            "{C:red}Expires when discarded!{}"
-        }
-    }
-    G.localization.descriptions.Other["subzero"] = {
-        name = "Subzero",
-        text = {
-            "{C:attention}+1{} drawn card this ",
-            "{C:attention}hand{} when {C:attention}played{}",
-            "{C:red}Expires when scored!{}"
-        }
-    }
-    G.localization.descriptions.Other["rocky"] = {
-        name = "Rocky",
-        text = {
-            "{C:attention}Scored{} cards permanently",
-            "gain {C:blue}+3{} Chips",
-            "{C:red}Expires when held in hand!{}"
-        }
-    }
-    G.localization.descriptions.Other["gust"] = {
-        name = "Gust",
-        text = {
-            "{C:dark_edition}+1{} play size",
-            "{C:red}Expires when debuffed!{}"
-        }
-    }
-    G.localization.descriptions.Other["aether"] = {
-        name = "Ultimate",
-        text = {
-            "Statuses cannot expire",
-        }
-    }
-    G.localization.descriptions.Other["undiscovered_skill"] = {
-        name = "Not Discovered",
-        text = {
-            "Learn this skill",
-            "in an unseeded",
-            "run to learn",
-            "what it does"
-        }
-    }
-    G.localization.descriptions.Other["nullified"] = {
-        name = "Nullified",
-        text = {
-            "Instantly disables",
-        }
-    }
-    G.localization.descriptions.Other["unlearned_skill"] = {
-        text = {
-            "XP Needed:",
-            "{C:purple}#1#{} XP",
-        }
-    }
-    G.localization.descriptions.Other["unlearned_skill_free"] = {
-        text = {
-            "XP Needed:",
-            "{C:purple}0{} XP {C:inactive}(#1#){}",
-        }
-    }
-    G.localization.descriptions.Other["leg_unlearned_skill"] = {
-        text = {
-            "Tokens Needed:",
-            "{C:dark_edition}#1#{} Legendary Token",
-        }
-    }
-    G.localization.descriptions.Other["star_tooltip"] = {
-        name = "Stellar Bonus",
-        text = {
-            "{C:mult}+#2#{} Mult and",
-            "{C:chips}+#1#{} Chips",
-        }
-    }
-    G.localization.descriptions.Other["card_extra_mult"] = 
-        {
-        text = {
-            "{C:red}+#1#{} extra mult"
-        }
-    }
-    for i = 0, 8 do
-        G.localization.descriptions.Other["ante_" .. tostring(i) .. "_sticker"] = {
-            name = "Ante " .. tostring(i) .. " Banner",
-            text = {
-                "Learned this Skill",
-                "on {C:attention}Ante " .. tostring(i) .. "{}",
-                "then won"
-            }
-        }
-    end
-    G.localization.descriptions.Other["ante_9_sticker"] = {
-        name = "Banner",
-        text = {
-            "Learned this Skill",
-            "then won"
-        }
-    }
-    G.localization.descriptions.Other["ante_-1_sticker"] = {
-        name = "Negative Banner",
-        text = {
-            "Learned this Skill",
-            "on a {C:attention}negative{}",
-            "{C:attention}Ante{} then won"
-        }
-    }
-    G.localization.descriptions.Other["moon_level_desc"] = {
-        text = {
-            "Debuffed cards gain",
-            "+#1# Mult when held",
-            "in hand",
-        }
-    }
-    G.localization.descriptions.Other["callisto_level_desc"] = {
-        text = {
-            "Face down cards",
-            "give X#1# Mult when",
-            "scored"
-        }
-    }
-    G.localization.descriptions.Other["rhea_level_desc"] = {
-        text = {
-            "Disallowed hands upgrade",
-            "#1# times on average",
-        }
-    }
-    G.localization.descriptions.Other["oberon_level_desc"] = {
-        text = {
-            "Create a #1#",
-            "when defeating a Boss",
-            "Blind, scoring chips within",
-            "#2#% of the requirement"
-        }
-    }
-    G.localization.descriptions.Other["proteus_level_desc"] = {
-        text = {
-            "Refund #1#% of lost",
-            "dollars during Boss Blinds",
-        }
-    }
-    G.localization.descriptions.Other["dysnomia_level_desc"] = {
-        text = {
-            "After defeating each",
-            "Boss Blind, create {C:attention}#1#{}",
-            "Negative Lunar, Stellar,",
-            "or Planet cards with",
-            "{C:money}$1{} {C:attention}sell value{}"
-        }
-    }
-    G.localization.descriptions.Other["common_metal"] = 
-        {
-        name = "Common",
-        text = {
-            "Card with a",
-            "Common Enhancement"
-        }
-    }
-    G.localization.descriptions.Other["precious_metal"] = 
-        {
-        name = "Precious",
-        text = {
-            "Card with",
-            "a Precious",
-            "Enhancement"
-        }
-    }
-    G.localization.descriptions.Other["modern_metal"] = 
-        {
-        name = "Modern",
-        text = {
-            "Card with a",
-            "Modern Enhancement",
-        }
-    }
-    G.localization.misc.v_dictionary["skill_xp"] = "XP: #1#"
-    G.localization.misc.v_dictionary["legendary_tokens"] = "Legendary Tokens: #1#"
-    G.localization.misc.v_dictionary["gain_xp"] = "+#1# XP"
-    G.localization.misc.v_dictionary["minus_xp"] = "-#1# XP"
-    G.localization.misc.v_dictionary["area_indicator"] = "Area: #1#"
-    G.localization.misc.dictionary['k_skill'] = "Skill"
-    G.localization.misc.dictionary['k_class'] = "Class"
-    G.localization.misc.dictionary['k_inactive'] = "inactive"
-    G.localization.misc.dictionary['nullified'] = "Nullified!"
-    G.localization.misc.dictionary['k_ex_expired'] = "Expired!"
-    G.localization.misc.dictionary['k_ex_decay'] = "Decayed!"
-    G.localization.misc.dictionary['lunar_stats'] = "Lunar Stats"
-    G.localization.misc.dictionary['b_skill_tree_1'] = "Skill"
-    G.localization.misc.dictionary['b_skill_tree_2'] = "Tree"
-    G.localization.misc.labels['skill'] = "Skill"
-    G.localization.misc.dictionary['b_skills'] = "Skills"
-    G.localization.misc.dictionary['b_draw'] = "Draw"
-    G.localization.misc.dictionary['b_pack'] = "Pack"
-    G.localization.misc.dictionary['k_new_area'] = "New Area!"
-    G.localization.misc.dictionary['k_area_pack'] = "Area Pack"
-    G.localization.misc.dictionary['k_loot_pack'] = "Loot Pack"
-    G.localization.misc.dictionary['k_ancient_pack'] = "Ancient Pack"
-    G.localization.misc.v_dictionary["xp_interest"] = "#1# interest per #2# XP (#3# max)"
 end
 
 function set_skill_win()
