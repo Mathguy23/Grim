@@ -1460,7 +1460,6 @@ return {
             k_area_pack = "Area Pack",
             k_loot_pack = "Loot Pack",
             k_ancient_pack = "Ancient Pack",
-            xp_interest = "#1# interest per #2# XP (#3# max)"
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."},
@@ -1477,6 +1476,7 @@ return {
             gain_xp = "+#1# XP",
             minus_xp = "-#1# XP",
             area_indicator = "Area: #1#"
+            xp_interest = "#1# interest per #2# XP (#3# max)"
         },
         challenge_names = {
             c_astro_dungeon = "Astro Dungeon"
