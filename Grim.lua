@@ -41,7 +41,7 @@ local lunarType = SMODS.ConsumableType {
     loc_txt = {},
     primary_colour = HEX('505A8D'),
     secondary_colour = HEX('7F82C4'),
-    collection_rows = { 3, 3 },
+    collection_rows = { 4, 4 },
     shop_rate = 0,
     default = "c_grm_moon"
 }
@@ -51,7 +51,7 @@ local stellarType = SMODS.ConsumableType {
     loc_txt = {},
     primary_colour = HEX('AAA65B'),
     secondary_colour = HEX('D2CE84'),
-    collection_rows = { 2, 2 },
+    collection_rows = { 3, 2 },
     shop_rate = 0,
     default = "c_grm_sun"
 }
@@ -282,7 +282,7 @@ end
 
 SMODS.current_mod.custom_collection_tabs = function()
 	return { UIBox_button {
-        count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS['Skill']), --Returns nil outside of G.ACTIVE_MOD_UI but we don't use it anyways
+        count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS['Skill']),
         button = 'your_collection_skills', label = {"Skills"}, count = G.ACTIVE_MOD_UI and modsCollectionTally(G.P_CENTER_POOLS['Skill']), minw = 5, id = 'your_collection_skills'
     }}
 end
@@ -2595,6 +2595,21 @@ SMODS.Lunar {
 }
 
 SMODS.Lunar {
+    key = 'deimos',
+    atlas = "lunar",
+    special_level = "boss",
+    pos = {x = 2, y = 2},
+    loc_vars = function(self, info_queue, card)
+        info_queue[#info_queue+1] = G.P_CENTERS['m_glass']
+        return {vars = {
+            G.GAME.special_levels[self.special_level] + 1, 
+            G.GAME.special_levels[self.special_level] + 1, 
+            localize{type = 'name_text', set = 'Enhanced', key = 'm_glass'},
+        }}
+    end
+}
+
+SMODS.Lunar {
     key = 'callisto',
     atlas = "lunar",
     special_level = "face_down",
@@ -2700,7 +2715,7 @@ SMODS.Spectral {
     pos = {x = 0, y = 2},
     soul_pos = {x = 1, y = 2},
     use = function(self, card, area, copier)
-        for i, j in ipairs({'debuff', 'face_down', 'not_allowed', 'overshoot', 'money'}) do
+        for i, j in ipairs({'debuff', 'face_down', 'not_allowed', 'overshoot', 'money', 'boss'}) do
             G.GAME.special_levels[j] = G.GAME.special_levels[j] + 1
         end
         if G.GAME.skills.sk_grm_orbit_2 then
@@ -3605,6 +3620,16 @@ function moon_row(moon)
         stat_text = "X" .. loc_vars[1]
         stat_color = G.C.RED
         level = G.GAME.special_levels["face_down"] + 1
+    elseif moon == 'c_grm_deimos' then
+        loc_vars = {
+            (G.GAME.special_levels and G.GAME.special_levels["boss"] or 0),
+            localize{type = 'name_text', set = 'Enhanced', key = 'm_glass'},
+        }
+        desc_nodes = localize{type = 'raw_descriptions', key = 'deimos_level_desc', set = "Other", vars = loc_vars}
+        moon_name = localize{type = 'name_text', key = moon, set = "Lunar"}
+        stat_text = loc_vars[1]
+        stat_color = G.C.SET.Tarot
+        level = G.GAME.special_levels["boss"] + 1
     elseif moon == 'c_grm_rhea' then
         loc_vars = {
             string.format("%.1f",0.5 * (G.GAME.special_levels and G.GAME.special_levels["not_allowed"] or 0))
@@ -3664,6 +3689,7 @@ end
 function create_UIBox_current_lunar_stats()
     local moons = {
         moon_row("c_grm_moon"),
+        moon_row("c_grm_deimos"),
         moon_row("c_grm_callisto"),
         moon_row("c_grm_rhea"),
         moon_row("c_grm_oberon"),

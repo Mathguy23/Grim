@@ -769,6 +769,14 @@ return {
                     "scored"
                 }
             },
+            deimos_level_desc = {
+                text = {
+                    "#1# cards in Full",
+                    "Deck enchanced into",
+                    "#2#s, when a",
+                    "Showdown Blind is defeated"
+                }
+            },
             rhea_level_desc = {
                 text = {
                     "Disallowed hands upgrade",
@@ -978,6 +986,16 @@ return {
                     "{C:attention}Debuffed{} cards gain",
                     "{C:red}+#2#{} Mult when {C:attention}held{}",
                     "{C:attention}in hand{}"
+                }
+            },
+            c_grm_deimos = {
+                name = "Deimos",
+                text = {
+                    "Level {C:attention}#1#{}",
+                    "Enhances {C:attention}#2#{} cards in {C:attention}Full Deck{}",
+                    "into {C:attention}#3#s{} when",
+                    "a {C:blue}Showdown Blind{} is",
+                    "defeated"
                 }
             },
             c_grm_callisto = {

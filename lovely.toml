@@ -45,6 +45,7 @@ special_levels = {
     diamond = 0,
     nothing = 0,
     debuff = 0,
+    boss = 0,
     face_down = 0,
     not_allowed = 0,
     overshoot = 0,
@@ -485,6 +486,27 @@ if (G.GAME.blind_on_deck == "Boss") and G.GAME.special_levels and (G.GAME.specia
         add_tag(Tag("tag_negative"))
     end
 end
+if (G.GAME.special_levels) and (G.GAME.special_levels["boss"] > 0) and (G.GAME.blind_on_deck == "Boss") and G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
+    local glass = {}
+    local pool = {}
+    for i = 1, #G.playing_cards do
+        if not G.playing_cards[i].ability.name ~= 'Glass Card' then
+            table.insert(pool, G.playing_cards[i])
+        end
+    end
+    if #pool > G.GAME.special_levels["boss"] then
+        for i = 1, G.GAME.special_levels["boss"] do
+            local card, index = pseudorandom_element(pool, pseudoseed('deimos'))
+            table.insert(glass, card)
+            table.remove(pool, index)
+        end
+    else
+        glass = pool
+    end
+    for i, j in ipairs(glass) do
+        j:set_ability(G.P_CENTERS["m_glass"])
+    end
+end
 if G.GAME.skills["sk_grm_cl_explorer"] and (G.GAME.blind_on_deck == "Boss") then
     add_tag(Tag("tag_grm_grid"))
 end
@@ -888,6 +910,7 @@ if (G.GAME.blind_on_deck == "Boss") then
         stake_cry_bronze = 300,
         stake_cry_quartz = 300,
         stake_cry_ruby = 300,
+        stake_cry_glass = 300,
         stake_cry_sapphire = 300,
         stake_cry_emerald = 300,
         stake_cry_platinum = 300,
@@ -2256,8 +2279,13 @@ payload = '''   if not self.grim_retrigger then
         end
         if self.grim_retrigger > 0 then
             for i = 1, self.grim_retrigger do
-                self:use_consumeable(area, copier)
+                if self:can_use_consumeable(true, true) or (i == 1) then
+                    self:use_consumeable(area, copier)
+                end
                 card_eval_status_text(self, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_again_ex')})
+            end
+            if not self:can_use_consumeable(true, true) then
+                return
             end
         end
     end'''
