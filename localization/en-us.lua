@@ -461,6 +461,27 @@ return {
                     "{C:legendary,E:1}Legendary{} {C:attention}Jokers{} may appear",
                     "in shops and packs",
                 }
+            },
+            sk_cry_ace_1 = {
+                name = "ACE I",
+                text = {
+                    "Reroll {C:cry_code,E:1}Crash's{} payload",
+                    "for this run",
+                }
+            },
+            sk_cry_ace_2 = {
+                name = "ACE II",
+                text = {
+                    "{C:tarot}The Fool{} can",
+                    "create {C:cry_code,E:1}Code Cards{}",
+                }
+            },
+            sk_cry_ace_3 = {
+                name = "ACE III",
+                text = {
+                    "All {C:cry_code,E:1}Program Packs{}",
+                    "contain {C:spectral}POINTER://{}",
+                }
             }
         },
         Other = {

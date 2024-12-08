@@ -728,6 +728,12 @@ function learn_skill(card, direct_)
         if G.GAME.xp_spent >= 2500 then
             G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
         end
+    elseif key == "sk_grm_dash_1" then
+        if G.GAME.force_grm_packs then
+            table.insert(G.GAME.force_grm_packs, "Standard")
+        end
+    elseif key == "sk_cry_ace_1" then
+        pseudoseed("cry_crash")
     end
 end
 
@@ -863,26 +869,15 @@ G.FUNCS.learn_skill = function(e)
     if skills_page then
         skills_page = math.min(skills_page, math.ceil(math.max(1, math.ceil(#shown_skills/15))))
     end
-    for j = 1, #G.areas do
-        for i = #G.areas[j].cards,1, -1 do
-            local c = G.areas[j]:remove_card(G.areas[j].cards[i])
-            c:remove()
-            c = nil
-        end
-    end
-    for i = 1, 5 do
-        for j = 1, 3 do
-            local adding = 3  * ((skills_page or 1) - 1)
-            local center = shown_skills[i+(j-1)*5 + 5 * adding]
-            if not center then break end
-            local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center[1])
-            G.areas[j]:emplace(card)
-        end
-    end
     local skill_ui = G.OVERLAY_MENU:get_UIE_by_ID("skill_tree_ui")
     local text = localize{type = 'variable', key = 'skill_xp', vars = {number_format(G.GAME.skill_xp)}, nodes = text}
     skill_ui.children[1].children[1].config.object.config.string[1] = text
     skill_ui.children[1].children[1].config.object:update_text(true)
+    if skill_ui.children[2].config.id == 'legenary_tokens' then
+        local text2 = localize{type = 'variable', key = 'legendary_tokens', vars = {number_format(G.GAME.legendary_tokens)}, nodes = text2}
+        skill_ui.children[2].children[1].config.object.config.string[1] = text2
+        skill_ui.children[2].children[1].config.object:update_text(true)
+    end
     local skill_pages = G.OVERLAY_MENU:get_UIE_by_ID("skill_tree_pages")
     local disabled = (#shown_skills <= 15)
     local skill_options = {}
@@ -904,6 +899,22 @@ G.FUNCS.learn_skill = function(e)
     skill_pages.children[3].children[1].config.colour = not disabled and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
     skill_pages.children[2].children[1].children[1].children[1].config.object:update_text()
     G.OVERLAY_MENU:recalculate()
+    for j = 1, #G.areas do
+        for i = #G.areas[j].cards,1, -1 do
+            local c = G.areas[j]:remove_card(G.areas[j].cards[i])
+            c:remove()
+            c = nil
+        end
+    end
+    for i = 1, 5 do
+        for j = 1, 3 do
+            local adding = 3  * ((skills_page or 1) - 1)
+            local center = shown_skills[i+(j-1)*5 + 5 * adding]
+            if not center then break end
+            local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center[1])
+            G.areas[j]:emplace(card)
+        end
+    end
     
 end
 
@@ -958,7 +969,7 @@ function create_UI_learned_skills()
 
     local text = localize{type = 'variable', key = 'skill_xp', vars = {number_format(G.GAME.skill_xp)}, nodes = text}
 
-    local text2 = localize{type = 'variable', key = 'legendary_tokens', vars = {number_format(G.GAME.legendary_tokens)}, nodes = text}
+    local text2 = localize{type = 'variable', key = 'legendary_tokens', vars = {number_format(G.GAME.legendary_tokens)}, nodes = text2}
 
     local t = {n=G.UIT.R, config={align = "cm", id = 'skill_tree_ui', colour = G.C.CLEAR, paddng = 0.1, minw = 2.5,}, nodes = {
         {n=G.UIT.R, config={align = "cm", paddng = 0.3}, nodes={
@@ -978,7 +989,7 @@ function create_UI_learned_skills()
         }})
     end
     if G.GAME.legendary_tokens and (G.GAME.legendary_tokens > 0) then
-        table.insert(t.nodes, 2, {n=G.UIT.R, config={align = "cm", padding = 0.2}, nodes={
+        table.insert(t.nodes, 2, {n=G.UIT.R, config={align = "cm", padding = 0.2, id = 'legenary_tokens'}, nodes={
             {n=G.UIT.O, config={object = DynaText({string = text2, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
         }})
     end
