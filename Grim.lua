@@ -2128,6 +2128,9 @@ SMODS.Joker {
 		end
 	end,
 	atlas = "jolly_jimball",
+    in_pool = function(self)
+        return false, {allow_duplicates = false}
+    end,
 }
 
 -----Alchemist Stuff---------
