@@ -7,3 +7,5 @@ Suggestions:
   Helped with Alchemist Class Insiration Brainstorming - tyuugy, https://github.com/tyuugy
   Taented Sleeve - Batolol
   Spectral Shard - SMG9000
+Code:
+  Some of the Jimball code for Jolly Jimball - MathisFun_
