@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 9999999999,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -2461,4 +2461,19 @@ payload = '''if G.GAME.make_jolly then
     G.GAME.make_jolly = nil
     return card
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''function find_joker(name, non_debuff)'''
+position = 'after'
+payload = '''  if name == "cry-Jimball" then
+    local a = find_joker("Jimball2")
+    local b = find_joker("JollyJimball")
+    return (next(a) and a) or (next(b) and b) or {}
+  end
+  if name == "Jimball2" then
+    name = "cry-Jimball"
+  end'''
 match_indent = true

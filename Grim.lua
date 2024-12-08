@@ -2131,6 +2131,11 @@ SMODS.Joker {
     in_pool = function(self)
         return false, {allow_duplicates = false}
     end,
+	add_to_deck = function(self, card, from_debuff)
+		if not from_debuff then
+			create_cryptid_notif_overlay("jimball")
+		end
+	end,
 }
 
 -----Alchemist Stuff---------
