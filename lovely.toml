@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 9999999999,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -69,9 +69,16 @@ match_indent = true
 target = 'card.lua'
 pattern = '''if center.name == "Wee Joker" and (center.discovered or self.bypass_discovery_center) then'''
 position = 'before'
-payload = '''if center.set == "Skill" then 
+payload = '''if (center.set == "Skill") then 
     H = W
     self.T.h = H
+elseif (center.name == "JollyJimball") then
+    H = W
+    self.T.h = H
+    H = H*57/69
+    W = W*57/69
+    self.T.h = H
+    self.T.w = W
 end
 '''
 match_indent = true
@@ -211,7 +218,10 @@ payload = '''self.P_SKILLS = {
     sk_grm_spectral_shard = {order = 56, key = 'sk_grm_spectral_shard', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Spectral Shard", xp_req = 0, token_req = 1, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Spectral Shard"},
     sk_cry_ace_1 = {order = 57, key = 'sk_cry_ace_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE I", xp_req = 250, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
     sk_cry_ace_2 = {order = 58, key = 'sk_cry_ace_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE II", xp_req = 600, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_1'}, tier = 2, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
-    sk_cry_ace_3 = {order = 59, key = 'sk_cry_ace_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE III", xp_req = 1000, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_2'}, tier = 3, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_ace_3 = {order = 59, key = 'sk_cry_ace_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE III", xp_req = 0, token_req = 1, pos = {x=0,y=1}, soul_pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_2', 'sk_grm_prestige_1'}, tier = 3, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_1 = {order = 60, key = 'sk_cry_m_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M I", xp_req = 300, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_2 = {order = 61, key = 'sk_cry_m_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M II", xp_req = 400, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_1'}, tier = 2, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_3 = {order = 62, key = 'sk_cry_m_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M III", xp_req = 800, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_2'}, tier = 3, branch = "M", grm_mod_reqs = {"Cryptid"}},
 }'''
 match_indent = true
 
@@ -239,8 +249,12 @@ match_indent = true
 target = 'card.lua'
 pattern = '''if _center.name == 'Square Joker' and (_center.discovered or self.bypass_discovery_center) then'''
 position = 'before'
-payload = '''if _center.set == 'Skill' then
+payload = '''if (_center.set == 'Skill') then
     self.children.center.scale.y = self.children.center.scale.x
+elseif (_center.name == "JollyJimball") then
+    self.children.center.scale.y = self.children.center.scale.x
+    self.children.center.scale.y = self.children.center.scale.y*57/69
+    self.children.center.scale.x = self.children.center.scale.x*57/69
 end'''
 match_indent = true
 
@@ -249,10 +263,14 @@ match_indent = true
 target = 'card.lua'
 pattern = '''elseif self.config.center.name == "Square Joker" then'''
 position = 'before'
-payload = '''elseif self.config.center.set == "Skill" then
+payload = '''elseif (self.config.center.set == "Skill") then
     H = W 
     self.T.h = H*scale
-    self.T.w = W*scale'''
+    self.T.w = W*scale
+elseif (self.config.center.name == "JollyJimball") then
+    H = W 
+    self.T.h = H*scale*57/69*scale
+    self.T.w = W*scale*57/69*scale'''
 match_indent = true
 
 [[patches]]
@@ -354,6 +372,8 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
     elseif _c.name == "ACE III" then
         info_queue[#info_queue+1] = G.P_CENTERS["c_cry_pointer"]
+    elseif _c.name == "M III" then
+        info_queue[#info_queue+1] = G.P_CENTERS["j_grm_jolly_jimball"]
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -636,7 +656,7 @@ target = 'functions/state_events.lua'
 pattern = '''mult, hand_chips, modded = G.GAME.blind:modify_hand(G.play.cards, poker_hands, text, mult, hand_chips)'''
 position = 'after'
 payload = '''mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
-for j, i in ipairs({'sk_grm_strike_1', 'sk_grm_strike_2', 'sk_grm_gravity_2', 'sk_grm_strike_3'}) do
+for j, i in ipairs({'sk_grm_strike_1', 'sk_grm_strike_2', 'sk_cry_m_1', 'sk_grm_gravity_2', 'sk_grm_strike_3'}) do
     if G.GAME.skills[i] then
         hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult, scoring_name = text})
         if modded then
@@ -1784,7 +1804,10 @@ payload = '''if G.GAME.area == "Metro" then
     G.STATE = G.STATES.BLIND_SELECT
 elseif G.GAME.modifiers and G.GAME.modifiers.no_big_shop and (G.GAME.blind_on_deck == "Big") then
     G.STATE = G.STATES.BLIND_SELECT
-else'''
+else
+if G.GAME.skills["sk_cry_m_2"] then
+    G.GAME.make_jolly = true
+end'''
 match_indent = true
 
 [[patches]]
@@ -2418,3 +2441,24 @@ payload = '''if G.GAME.skills["sk_cry_ace_2"] and (card.config.center.set == 'Co
       end'''
 match_indent = true
 
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local forced_tag = nil'''
+position = 'after'
+payload = '''if G.GAME.make_jolly then
+    card = SMODS.create_card {key = 'j_jolly'}
+    create_shop_card_ui(card, 'Joker', G.shop_jokers)
+    card.states.visible = false
+    if G.GAME.modifiers.cry_force_edition and not G.GAME.modifiers.cry_force_random_edition then
+        card:set_edition(nil, true, true)
+    elseif G.GAME.modifiers.cry_force_random_edition then
+        local edition = cry_poll_random_edition()
+        card:set_edition(edition, true, true)
+    end
+    card:start_materialize()
+    card:set_cost()
+    G.GAME.make_jolly = nil
+    return card
+end'''
+match_indent = true

@@ -734,6 +734,12 @@ function learn_skill(card, direct_)
         end
     elseif key == "sk_cry_ace_1" then
         pseudoseed("cry_crash")
+    elseif key == "sk_cry_m_3" then
+        if #G.jokers.cards < G.jokers.config.card_limit then
+            local card = SMODS.create_card { key = "j_grm_jolly_jimball" }
+            card:add_to_deck()
+            G.jokers:emplace(card)
+        end
     end
 end
 
@@ -1065,6 +1071,9 @@ function calculate_skill(skill, context)
         elseif skill == "sk_grm_strike_3" then
             local balance = math.floor((context.chips + context.mult) / 2)
             return balance, balance, true
+        elseif skill == "sk_cry_m_1" then
+            local bonus = 3 * G.GAME.hands["Pair"].played
+            return context.chips + bonus, context.mult, (bonus > 0)
         else
             return context.chips, context.mult, false
         end
@@ -1707,6 +1716,8 @@ SMODS.Atlas({ key = "sleeves", atlas_table = "ASSET_ATLAS", path = "Sleeves.png"
 
 SMODS.Atlas({ key = "blinds", atlas_table = "ANIMATION_ATLAS", path = "Blinds.png", px = 34, py = 34, frames = 21 })
 
+SMODS.Atlas({ key = "jolly_jimball", path = "JollyJimball.png", px = 71, py = 95 })
+
 SMODS.Atlas({key = "modicon", path = "grm_icon.png", px = 34, py = 34}):register()
 
 SMODS.Shader {
@@ -2081,6 +2092,42 @@ SMODS.Blind	{
         end
     end,
     discovered = true,
+}
+
+SMODS.Joker {
+	name = "JollyJimball",
+	key = "jolly_jimball",
+	pos = { x = 0, y = 0 },
+	config = { x_mult = 1, extra = 1.3, override_x_mult_check = true, type = "Pair"},
+    pools = {["Meme"] = true},
+    dependencies = {"Cryptid"},
+	loc_vars = function(self, info_queue, center)
+		return { vars = { center and center.ability.extra or 1.3, center and localize(center.ability.type, 'poker_hands') or "Pair", center and center.ability.x_mult or 1} }
+	end,
+	rarity = 3,
+	cost = 9,
+	blueprint_compat = true,
+	perishable_compat = false,
+	calculate = function(self, card, context)
+		if context.before and not context.blueprint then
+			if next(context.poker_hands[card.ability.type]) then
+				card.ability.x_mult = card.ability.x_mult + card.ability.extra
+				return {
+                    card = self,
+                    message = localize("k_upgrade_ex"),
+                }
+			else
+				if to_big(card.ability.x_mult) > to_big(1) then
+					card.ability.x_mult = 1
+					return {
+						card = self,
+						message = localize("k_reset"),
+					}
+				end
+			end
+		end
+	end,
+	atlas = "jolly_jimball",
 }
 
 -----Alchemist Stuff---------
@@ -3441,6 +3488,26 @@ function Card:calculate_xp_bonus()
         local obj = self.config.center
         if obj.calc_xp_bonus and type(obj.calc_xp_bonus) == 'function' then
             return obj:calc_xp_bonus(self)
+        end
+    end
+end
+
+local upd = Game.update
+grm_jimball_dt = 0
+function Game:update(dt)
+    upd(self, dt)
+    grm_jimball_dt = grm_jimball_dt + dt
+    if G.P_CENTERS and G.P_CENTERS.j_grm_jolly_jimball and grm_jimball_dt > 0.1 then
+        grm_jimball_dt = 0
+        local obj = G.P_CENTERS.j_grm_jolly_jimball
+        if obj.pos.x == 5 and obj.pos.y == 6 then
+            obj.pos.x = 0
+            obj.pos.y = 0
+        elseif obj.pos.x < 8 then
+            obj.pos.x = obj.pos.x + 1
+        elseif obj.pos.y < 6 then
+            obj.pos.x = 0
+            obj.pos.y = obj.pos.y + 1
         end
     end
 end

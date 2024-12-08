@@ -482,6 +482,27 @@ return {
                     "All {C:cry_code,E:1}Program Packs{}",
                     "contain {C:spectral}POINTER://{}",
                 }
+            },
+            sk_cry_m_1 = {
+                name = "M I",
+                text = {
+                    "{C:blue}+3{} base chips for each",
+                    "{C:attention}Pair{} played this run",
+                }
+            },
+            sk_cry_m_2 = {
+                name = "M II",
+                text = {
+                    "Place {C:attention}Jolly Joker{} in {C:attention}shop{}",
+                    "at the start of each {C:attention}shop{}",
+                }
+            },
+            sk_cry_m_3 = {
+                name = "M III",
+                text = {
+                    "Create {C:attention}Jolly Jimball{}",
+                    "{C:inactive}(Must have room)",
+                }
             }
         },
         Other = {
@@ -945,6 +966,15 @@ return {
                     "played {C:attention}poker hand{}"
                 }
             },
+            j_grm_jolly_jimball = {
+                name = "Jolly Jimball",
+                text = {
+                    "This Joker gains {X:mult,C:white} X#1# {} Mult",
+                    "per {C:attention}consecutive{} hand",
+                    "containing a {C:attention}#2#{}",
+                    "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
+                },
+            }
         },
         Voucher = {
             v_grm_progress = {
