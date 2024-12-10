@@ -503,6 +503,14 @@ return {
                     "Create {C:attention}Jolly Jimball{}",
                     "{C:inactive}(Must have room)",
                 }
+            },
+            sk_cry_sticky_4 = {
+                name = "Sticky IV",
+                text = {
+                    "{C:attention}Banana Cards{} have a",
+                    "{C:green}1 in 8{} chance to duplicate",
+                    "at end of {C:attention}round{}"
+                }
             }
         },
         Other = {

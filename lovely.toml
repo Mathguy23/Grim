@@ -211,17 +211,18 @@ payload = '''self.P_SKILLS = {
     sk_grm_sticky_1 = {order = 49, key = 'sk_grm_sticky_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky I", xp_req = 200, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}, tier = 1, branch = "Sticky"},
     sk_grm_sticky_2 = {order = 50, key = 'sk_grm_sticky_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky II", xp_req = 350, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_1'}, tier = 2, branch = "Sticky"},
     sk_grm_sticky_3 = {order = 51, key = 'sk_grm_sticky_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky III", xp_req = 650, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_2'}, tier = 3, branch = "Sticky"},
-    sk_grm_shelf_1 = {order = 52, key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 150, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Shelf"},
-    sk_grm_shelf_2 = {order = 53, key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 350, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
-    sk_grm_prestige_1 = {order = 54, key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
-    sk_grm_blind_breaker = {order = 55, key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Blind Breaker"},
-    sk_grm_spectral_shard = {order = 56, key = 'sk_grm_spectral_shard', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Spectral Shard", xp_req = 0, token_req = 1, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Spectral Shard"},
-    sk_cry_ace_1 = {order = 57, key = 'sk_cry_ace_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE I", xp_req = 250, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
-    sk_cry_ace_2 = {order = 58, key = 'sk_cry_ace_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE II", xp_req = 600, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_1'}, tier = 2, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
-    sk_cry_ace_3 = {order = 59, key = 'sk_cry_ace_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE III", xp_req = 0, token_req = 1, pos = {x=0,y=1}, soul_pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_2', 'sk_grm_prestige_1'}, tier = 3, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
-    sk_cry_m_1 = {order = 60, key = 'sk_cry_m_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M I", xp_req = 300, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "M", grm_mod_reqs = {"Cryptid"}},
-    sk_cry_m_2 = {order = 61, key = 'sk_cry_m_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M II", xp_req = 400, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_1'}, tier = 2, branch = "M", grm_mod_reqs = {"Cryptid"}},
-    sk_cry_m_3 = {order = 62, key = 'sk_cry_m_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M III", xp_req = 800, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_2'}, tier = 3, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_sticky_4 = {order = 52, key = 'sk_cry_sticky_4', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Sticky IV", xp_req = 800, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_3'}, tier = 4, branch = "Sticky", grm_mod_reqs = {"Cryptid"}},
+    sk_grm_shelf_1 = {order = 53, key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 150, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Shelf"},
+    sk_grm_shelf_2 = {order = 54, key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 350, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
+    sk_grm_prestige_1 = {order = 55, key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
+    sk_grm_blind_breaker = {order = 56, key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Blind Breaker"},
+    sk_grm_spectral_shard = {order = 57, key = 'sk_grm_spectral_shard', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Spectral Shard", xp_req = 0, token_req = 1, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Spectral Shard"},
+    sk_cry_ace_1 = {order = 58, key = 'sk_cry_ace_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE I", xp_req = 250, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_ace_2 = {order = 59, key = 'sk_cry_ace_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE II", xp_req = 600, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_1'}, tier = 2, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_ace_3 = {order = 60, key = 'sk_cry_ace_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE III", xp_req = 0, token_req = 1, pos = {x=0,y=1}, soul_pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_2', 'sk_grm_prestige_1'}, tier = 3, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_1 = {order = 61, key = 'sk_cry_m_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M I", xp_req = 300, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_2 = {order = 62, key = 'sk_cry_m_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M II", xp_req = 400, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_1'}, tier = 2, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_3 = {order = 63, key = 'sk_cry_m_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M III", xp_req = 800, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_2'}, tier = 3, branch = "M", grm_mod_reqs = {"Cryptid"}},
 }'''
 match_indent = true
 
@@ -374,6 +375,8 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_CENTERS["c_cry_pointer"]
     elseif _c.name == "M III" then
         info_queue[#info_queue+1] = G.P_CENTERS["j_grm_jolly_jimball"]
+    elseif _c.name == "Sticky IV" then
+        info_queue[#info_queue+1] = {key = "banana", set = "Other", vars = {G.GAME.probabilities.normal, 10}}
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -560,6 +563,26 @@ if (G.GAME.blind_on_deck == "Boss") and (G.GAME.special_levels) and (G.GAME.spec
         reward.ability.no_sell_value = true
         reward:set_cost()
         G.consumeables:emplace(reward)
+    end
+end
+if G.GAME.skills["sk_cry_sticky_4"] then
+    for j, k in ipairs({G.jokers, G.consumeables, G.hand, G.deck, G.discard}) do
+        local dupe_these = {}
+        for i = 1, #k.cards do
+            if k.cards[i].ability.banana and (pseudorandom('sticky') < 1/8) then
+                table.insert(dupe_these, k.cards[i])
+            end
+        end
+        for i = 1, math.min(((((k == G.jokers) or (k == G.consumeables)) and k.config.card_limit) or 1e15) - #k.cards, #dupe_these) do
+            card_eval_status_text(dupe_these[i], 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
+            local card = copy_card(dupe_these[i], nil, nil, nil, dupe_these[i].edition and dupe_these[i].edition.negative)
+            card:add_to_deck()
+            if k.cards[i].playing_card then
+                G.deck.config.card_limit = G.deck.config.card_limit + 1
+                table.insert(G.playing_cards, card)
+            end
+            k:emplace(card)
+        end
     end
 end'''
 match_indent = true
