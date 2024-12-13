@@ -2053,7 +2053,7 @@ payload = '''   if self.ability.eternal and G.GAME.skills["sk_grm_sticky_1"] the
         G.GAME.skill_xp = G.GAME.skill_xp - 100
         G.GAME.xp_spent = (G.GAME.xp_spent or 0) + 100
     end
-    if G.GAME.skills["sk_poke_energetic_2"] and (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or type_sticker_applied(self) then
+    if G.GAME.skills["sk_poke_energetic_2"] and (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or (type_sticker_applied and type_sticker_applied(self)) then
         if #G.consumeables.cards < G.consumeables.config.card_limit then
             local type = (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or type_sticker_applied(self)
             local card = SMODS.create_card {key = "c_poke_" .. type:lower() .. "_energy"}
