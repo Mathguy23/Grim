@@ -740,6 +740,8 @@ function learn_skill(card, direct_)
             card:add_to_deck()
             G.jokers:emplace(card)
         end
+    elseif key == "sk_poke_energetic_1" then
+        G.GAME.energy_plus = (G.GAME.energy_plus or 0) + 1
     end
 end
 
@@ -3890,6 +3892,38 @@ function nullified_blinds_sect()
     }}
     return t
 end
+
+-----Pokermon thing-------
+
+function pokermon_selected_joker(self)
+    if G.jokers.highlighted and (#G.jokers.highlighted ~= 0) then
+        return G.jokers.highlighted[1]
+    end
+    for k, v in pairs(G.jokers.cards) do
+        if (energy_matches(v, self.etype, true) or self.etype == "Trans") then
+            if type(v.ability.extra) == "table" then
+                if can_increase_energy(v) then
+                    for l, data in pairs(v.ability.extra) do
+                        if type(data) == "number" then
+                            for m, name in ipairs(energy_whitelist) do
+                                if l == name then
+                                    return v
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        elseif (type(v.ability.extra) == "number" or (v.ability.mult and v.ability.mult > 0) or (v.ability.t_mult and v.ability.t_mult > 0) or
+                (v.ability.t_chips and v.ability.t_chips > 0)) then
+            if can_increase_energy(v) then
+                return v
+            end
+        end
+    end
+end
+
+--------------------------
 
 function CardArea:dragLead()
     if self.cards and (self.config.type == 'deck') then

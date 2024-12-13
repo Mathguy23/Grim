@@ -223,6 +223,9 @@ payload = '''self.P_SKILLS = {
     sk_cry_m_1 = {order = 61, key = 'sk_cry_m_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M I", xp_req = 300, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "M", grm_mod_reqs = {"Cryptid"}},
     sk_cry_m_2 = {order = 62, key = 'sk_cry_m_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M II", xp_req = 400, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_1'}, tier = 2, branch = "M", grm_mod_reqs = {"Cryptid"}},
     sk_cry_m_3 = {order = 63, key = 'sk_cry_m_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M III", xp_req = 800, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_2'}, tier = 3, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_poke_energetic_1 = {order = 64, key = 'sk_poke_energetic_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic I", xp_req = 150, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
+    sk_poke_energetic_2 = {order = 65, key = 'sk_poke_energetic_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic II", xp_req = 350, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_poke_energetic_1'}, tier = 2, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
+    sk_poke_energetic_3 = {order = 66, key = 'sk_poke_energetic_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic III", xp_req = 500, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_poke_energetic_2'}, tier = 3, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
 }'''
 match_indent = true
 
@@ -2049,6 +2052,14 @@ position = 'after'
 payload = '''   if self.ability.eternal and G.GAME.skills["sk_grm_sticky_1"] then
         G.GAME.skill_xp = G.GAME.skill_xp - 100
         G.GAME.xp_spent = (G.GAME.xp_spent or 0) + 100
+    end
+    if G.GAME.skills["sk_poke_energetic_2"] and (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or type_sticker_applied(self) then
+        if #G.consumeables.cards < G.consumeables.config.card_limit then
+            local type = (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or type_sticker_applied(self)
+            local card = SMODS.create_card {key = "c_poke_" .. type:lower() .. "_energy"}
+            card:add_to_deck()
+            G.consumeables:emplace(card)
+        end
     end'''
 match_indent = true
 
@@ -2367,6 +2378,11 @@ payload = '''   if not self.grim_retrigger then
                 return
             end
         end
+    end
+    local joker = pokermon_selected_joker(self.config.center)
+    if joker and G.GAME.skills["sk_poke_energetic_3"] and (self.ability.set == "Energy") and not joker.edition and (pseudorandom('energy_edition_chance') < 1/5) then
+        local edition = poll_edition('energy_edition', nil, false, true, {'e_negative', 'e_polychrome'})
+        joker:set_edition(edition, true)
     end'''
 match_indent = true
 

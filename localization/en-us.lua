@@ -511,6 +511,28 @@ return {
                     "{C:green}1 in 8{} chance to duplicate",
                     "at end of {C:attention}round{}"
                 }
+            },
+            sk_poke_energetic_1 = {
+                name = "Energetic I",
+                text = {
+                    "{C:pink}+1{} Energy Limit"
+                },
+            },
+            sk_poke_energetic_2 = {
+                name = "Energetic II",
+                text = {
+                    "{C:attention}Jokers{} with a {C:attention}type{} create",
+                    "the coresponding {C:pink}Energy{} card",
+                    "when {C:attention}sold{}"
+                },
+            },
+            sk_poke_energetic_3 = {
+                name = "Energetic III",
+                text = {
+                    "{C:attention}Jokers{} have {C:green}1 in 5{} chance",
+                    "to gain a {C:dark_edition}Polychrome{} or",
+                    "{C:dark_edition}Negative{} edition when {C:pink}Energized{}",
+                },
             }
         },
         Other = {
