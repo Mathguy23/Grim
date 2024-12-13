@@ -1460,6 +1460,10 @@ return {
                 name = 'Coral Well',
                 text = { 'Convert all discards', 'to hands' }
             },
+            bl_grm_forgotten = {
+                name = 'The Forgotten',
+                text = { '1 Skill debuffed', 'each hand' }
+            },
         },
         Enhanced = {
             m_grm_radium = {

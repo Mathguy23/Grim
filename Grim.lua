@@ -288,7 +288,7 @@ SMODS.current_mod.custom_collection_tabs = function()
 end
 
 SMODS.current_mod.set_debuff = function(card)
-    if G.GAME.skills["sk_grm_motley_1"] and ((card.ability.name == 'Wild Card') or (G.GAME.skills["sk_grm_motley_3"] and (card.config.center ~= G.P_CENTERS.c_base))) then
+    if skill_active("sk_grm_motley_1") and ((card.ability.name == 'Wild Card') or (skill_active("sk_grm_motley_3") and (card.config.center ~= G.P_CENTERS.c_base))) then
         return 'prevent_debuff'
     end
     if card.ability.temp_debuff then
@@ -560,7 +560,7 @@ function fix_ante_scaling(do_blind)
     end
 end
 
-function learn_skill(card, direct_)
+function learn_skill(card, direct_, debuffing)
     local obj, key = "", ""
     if direct_ then
         obj = G.P_SKILLS[direct_]
@@ -569,17 +569,19 @@ function learn_skill(card, direct_)
         obj = card.config.center
         key = obj.key
     end
-    G.GAME.skills[key] = true
+    if not debuffing then
+        G.GAME.skills[key] = true
+    end
     if G.GAME.ante_banners and not G.GAME.ante_banners[key] then
         G.GAME.ante_banners[key] = G.GAME.round_resets.ante
     end
     if not obj.class and (G.GAME.free_skills and (G.GAME.free_skills > 0)) then
         G.GAME.free_skills = G.GAME.free_skills - 1
-    else
+    elseif not debuffing then
         G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
         G.GAME.xp_spent = (G.GAME.xp_spent or 0) + obj.xp_req
     end
-    if obj.token_req then
+    if obj.token_req and not debuffing then
         G.GAME.legendary_tokens = G.GAME.legendary_tokens - obj.token_req
     end
     check_for_unlock({type = 'skill_check', learned_skill = key, learned_tier = obj.tier})
@@ -588,10 +590,10 @@ function learn_skill(card, direct_)
         card:set_sprites(obj)
     end
     if key == "sk_grm_ease_1" then
-        G.GAME.scaling_multipliers.ease = 0.9
+        G.GAME.scaling_multipliers.ease1 = 0.9
         fix_ante_scaling()
     elseif key == "sk_grm_ease_2" then
-        G.GAME.scaling_multipliers.ease = 0.8
+        G.GAME.scaling_multipliers.ease2 = 0.8
         fix_ante_scaling()
     elseif key == "sk_grm_hexahedron_1" then
         G.E_MANAGER:add_event(Event({func = function()
@@ -651,21 +653,21 @@ function learn_skill(card, direct_)
     elseif key == "sk_grm_chime_1" and ((G.GAME.round_resets.ante) % 8 == 0) and not G.GAME.reset_antes[G.GAME.round_resets.ante] then
         G.GAME.reset_antes[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
-        if G.GAME.skills["sk_grm_stake_3"] then
+        if skill_active("sk_grm_stake_3") then
             G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
             fix_ante_scaling()
         end
     elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
         G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
-        if G.GAME.skills["sk_grm_stake_3"] then
+        if skill_active("sk_grm_stake_3") then
             G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
             fix_ante_scaling()
         end
     elseif key == "sk_grm_chime_3" and ((G.GAME.round_resets.ante) % 3 == 0) and not G.GAME.reset_antes3[G.GAME.round_resets.ante] then
         G.GAME.reset_antes3[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
-        if G.GAME.skills["sk_grm_stake_3"] then
+        if skill_active("sk_grm_stake_3") then
             G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
             fix_ante_scaling()
         end
@@ -745,14 +747,20 @@ function learn_skill(card, direct_)
     end
 end
 
-function unlearn_skill(direct_)
+function unlearn_skill(direct_, debuffing)
     local obj, key = G.P_SKILLS[direct_], direct_
-    G.GAME.skills[key] = nil
+    if not debuffing then
+        G.GAME.skills[key] = nil
+    end
+    if G.GAME.skill_debuffs[direct_] and not debuffing then
+        G.GAME.skill_debuffs[direct_] = nil
+        return
+    end
     if key == "sk_grm_ease_1" then
-        G.GAME.scaling_multipliers.ease = nil
+        G.GAME.scaling_multipliers.ease1 = nil
         fix_ante_scaling()
     elseif key == "sk_grm_ease_2" then
-        G.GAME.scaling_multipliers.ease = 0.9
+        G.GAME.scaling_multipliers.ease2 = nil
         fix_ante_scaling()
     elseif key == "sk_grm_hexahedron_1" then
         G.E_MANAGER:add_event(Event({func = function()
@@ -846,7 +854,43 @@ function unlearn_skill(direct_)
         if not G.GAME.grm_did_purchase then
             change_shop_size(-1)
         end
+    elseif key == "sk_cry_m_3" then
+        for i = 1, #G.jokers.cards do
+            local card = G.jokers.cards[i]
+            if (card.ability.name == "JollyJimball") and not card.ability.eternal then
+                card:start_dissolve()
+                return
+            end
+        end
+    elseif key == "sk_poke_energetic_1" then
+        G.GAME.energy_plus = (G.GAME.energy_plus or 0) - 1
     end
+end
+
+function debuff_skill(debuff_, direct_)
+    if debuff_ == nil then
+        debuff_ = true
+    end
+    if debuff_ == false then
+        debuff_ = nil
+    end
+    G.GAME.skill_debuffs = G.GAME.skill_debuffs or {}
+    if debuff_ and not G.GAME.skill_debuffs[direct_] then
+        unlearn_skill(direct_, true)
+    elseif not debuff_ and G.GAME.skill_debuffs[direct_] then
+        learn_skill(nil, direct_, true)
+    end
+    G.GAME.skill_debuffs[direct_] = debuff_
+end
+
+function skill_active(direct_)
+    if G.GAME.skill_debuffs and G.GAME.skill_debuffs[direct_] then
+        return false
+    end
+    if G.GAME.skills[direct_] then
+        return true
+    end
+    return false
 end
 
 G.FUNCS.can_learn = function(e)
@@ -970,6 +1014,9 @@ function create_UI_learned_skills()
                 local center = shown_skills[i+(j-1)*(5)+adding][1]
                 local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, nil, center)
                 card:start_materialize(nil, i>1 or j>1)
+                if G.GAME.skill_debuffs[center.key] then
+                    card.debuff = true
+                end
                 G.areas[j]:emplace(card)
             end
         end
@@ -988,10 +1035,10 @@ function create_UI_learned_skills()
             create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true, id = 'skill_tree_pages'})
         }},
       }}
-    if G.GAME.skills["sk_grm_cl_astronaut"] then
+    if skill_active("sk_grm_cl_astronaut") then
         table.insert(t.nodes, 4, UIBox_button{id = 'lunar_button', label = {localize("lunar_stats")}, button = "your_lunar_stats", minw = 5})
     end
-    if G.GAME.skills["sk_grm_cl_explorer"] then
+    if skill_active("sk_grm_cl_explorer") then
         table.insert(t.nodes, 2, {n=G.UIT.R, config={align = "cm", padding = 0.2}, nodes={
             {n=G.UIT.O, config={object = DynaText({string = localize{type='variable',key='area_indicator',vars={G.GAME.area or "Classic"}}, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
         }})
@@ -1023,21 +1070,21 @@ function calculate_skill(skill, context)
         if skill == "sk_grm_chime_1" and ((context.current_ante) % 8 == 0) and not G.GAME.reset_antes[context.current_ante] then
             G.GAME.reset_antes[context.current_ante] = true
             ease_ante(-1, true)
-            if G.GAME.skills["sk_grm_stake_3"] then
+            if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
                 fix_ante_scaling(true)
             end
         elseif skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
             G.GAME.reset_antes2[context.current_ante] = true
             ease_ante(-1, true)
-            if G.GAME.skills["sk_grm_stake_3"] then
+            if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
                 fix_ante_scaling(true)
             end
         elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
             G.GAME.reset_antes3[context.current_ante] = true
             ease_ante(-1, true)
-            if G.GAME.skills["sk_grm_stake_3"] then
+            if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
                 fix_ante_scaling(true)
             end
@@ -1113,7 +1160,7 @@ function add_skill_xp(amount, card, message_, no_mod)
     end
     G.GAME.skill_xp = G.GAME.skill_xp + amount
     check_for_unlock({type = 'skill_check', total_xp = G.GAME.skill_xp})
-    if G.GAME.skills["sk_grm_ghost_1"] then
+    if skill_active("sk_grm_ghost_1") then
         G.GAME.ghost_skill_xp = G.GAME.ghost_skill_xp + amount
         if G.GAME.ghost_skill_xp > 200 then
             local spectrals = math.floor(G.GAME.ghost_skill_xp / 200)
@@ -1147,10 +1194,10 @@ function get_modded_xp(amount)
         return 0
     end
     local new_amount = amount
-    if G.GAME.skills["sk_grm_skillful_3"] and (new_amount > 0) then
+    if skill_active("sk_grm_skillful_3") and (new_amount > 0) then
         new_amount = new_amount * 2
     end
-    if G.GAME.skills["sk_grm_ghost_3"] and (new_amount > 0) then
+    if skill_active("sk_grm_ghost_3") and (new_amount > 0) then
         new_amount = math.max(1 , math.floor(new_amount * 0.5))
     end
     if (G.GAME.area == "Metro") or (G.GAME.area == "Aether") then
@@ -1199,7 +1246,7 @@ function skill_unlock_check(card, args)
         if args.type == 'modify_deck' then
             local count = 0
             for _, v in pairs(G.playing_cards) do
-                if (v.ability.name == "Wild Card") or (G.GAME.skills and G.GAME.skills["sk_grm_motley_3"] and (v.config.center ~= G.P_CENTERS.c_base)) then count = count + 1 end
+                if (v.ability.name == "Wild Card") or (G.GAME.skills and skill_active("sk_grm_motley_3") and (v.config.center ~= G.P_CENTERS.c_base)) then count = count + 1 end
             end
             if count >= 52 then
                 return true
@@ -1727,6 +1774,11 @@ SMODS.Shader {
     path = 'dimmed.fs'
 }
 
+SMODS.Shader {
+    key = 'skill_debuff',
+    path = 'skill_debuff.fs'
+}
+
 SMODS.Tarot {
     key = 'craft',
     atlas = "tarots",
@@ -1929,6 +1981,79 @@ SMODS.Booster {
     end,
     in_pool = function(self)
         return false, {allow_duplicates = false}
+    end,
+    discovered = true,
+}
+
+SMODS.Blind	{
+    key = 'forgotten',
+    config = {},
+    boss = {min = 3, max = 10}, 
+    boss_colour = HEX("79458f"),
+    atlas = "blinds",
+    name = "The Forgotten",
+    pos = { x = 0, y = 5},
+    vars = {},
+    dollars = 5,
+    mult = 2,
+    discovered = true,
+    press_play = function(self)
+        if not G.GAME.blind.disabled then
+            G.GAME.blind.triggered = true
+            G.GAME.blind.prepped = true
+        end
+    end,
+    defeat = function(self)
+        if G.GAME.blind.debuffed_skills and G.GAME.blind.debuffed_skills[1] then
+            debuff_skill(false, G.GAME.blind.debuffed_skills[1], true)
+        end
+    end,
+    disable = function(self)
+        if G.GAME.blind.debuffed_skills and G.GAME.blind.debuffed_skills[1] then
+            debuff_skill(false, G.GAME.blind.debuffed_skills[1], true)
+        end
+    end,
+    set_blind = function(self, reset, silent)
+        if not reset then
+            G.GAME.blind.debuffed_skills = {}
+            local pool = {}
+            for i, j in pairs(G.GAME.skills) do
+                if not G.P_SKILLS[i].class then
+                    table.insert(pool, i)
+                end
+            end
+            if #pool > 0 then
+                local skill = pseudorandom_element(pool, pseudoseed('forgot'))
+                debuff_skill(true, skill)
+                G.GAME.blind.debuffed_skills = {skill}
+            end
+            G.GAME.blind.prepped = false
+        end
+    end,
+    drawn_to_hand = function(self)
+        if G.GAME.blind.prepped then
+            local old_skill = nil
+            if G.GAME.blind.debuffed_skills and G.GAME.blind.debuffed_skills[1] then
+                old_skill = G.GAME.blind.debuffed_skills[1]
+                debuff_skill(false, G.GAME.blind.debuffed_skills[1], true)
+            end
+            G.GAME.blind.debuffed_skills = {}
+            local pool = {}
+            for i, j in pairs(G.GAME.skills) do
+                if not G.P_SKILLS[i].class and (i ~= old_skill) then
+                    table.insert(pool, i)
+                end
+            end
+            if #pool > 0 then
+                local skill = pseudorandom_element(pool, pseudoseed('forgot'))
+                debuff_skill(true, skill)
+                G.GAME.blind.debuffed_skills = {skill}
+            elseif old_skill then
+                debuff_skill(true, old_skill)
+                G.GAME.blind.debuffed_skills = {old_skill}
+            end
+            G.GAME.blind.prepped = false
+        end
     end,
     discovered = true,
 }
@@ -3900,7 +4025,7 @@ function pokermon_selected_joker(self)
         return G.jokers.highlighted[1]
     end
     for k, v in pairs(G.jokers.cards) do
-        if (energy_matches(v, self.etype, true) or self.etype == "Trans") then
+        if self.etype and (energy_matches(v, self.etype, true) or self.etype == "Trans") then
             if type(v.ability.extra) == "table" then
                 if can_increase_energy(v) then
                     for l, data in pairs(v.ability.extra) do
