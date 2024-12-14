@@ -717,17 +717,21 @@ function learn_skill(card, direct_, debuffing)
             change_shop_size(1)
         end
     elseif key == "sk_grm_prestige_1" then
-        local pool = {}
-        for i, j in pairs(G.GAME.skills) do
-            if not G.P_SKILLS[i].class and (i ~= "sk_grm_prestige_1") then
-                table.insert(pool, i)
+        if not debuffing then
+            local pool = {}
+            for i, j in pairs(G.GAME.skills) do
+                if not G.P_SKILLS[i].class and (i ~= "sk_grm_prestige_1") then
+                    table.insert(pool, i)
+                end
             end
-        end
-        for i, j in ipairs(pool) do
-            unlearn_skill(j)
-        end
-        skills_page = nil
-        if G.GAME.xp_spent >= 2500 then
+            for i, j in ipairs(pool) do
+                unlearn_skill(j)
+            end
+            skills_page = nil
+            if G.GAME.xp_spent >= 2500 then
+                G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
+            end
+        else
             G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
         end
     elseif key == "sk_grm_dash_1" then
