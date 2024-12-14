@@ -864,6 +864,8 @@ function unlearn_skill(direct_, debuffing)
         end
     elseif key == "sk_poke_energetic_1" then
         G.GAME.energy_plus = (G.GAME.energy_plus or 0) - 1
+    elseif key == "sk_grm_prestige_1" then
+        G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) - 1
     end
 end
 
