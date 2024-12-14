@@ -4047,7 +4047,7 @@ function pokermon_selected_joker(self)
             end
         elseif (type(v.ability.extra) == "number" or (v.ability.mult and v.ability.mult > 0) or (v.ability.t_mult and v.ability.t_mult > 0) or
                 (v.ability.t_chips and v.ability.t_chips > 0)) then
-            if can_increase_energy(v) then
+            if can_increase_energy and can_increase_energy(v) then
                 return v
             end
         end
