@@ -523,15 +523,37 @@ return {
                 text = {
                     "{C:attention}Jokers{} with a {C:attention}type{} create",
                     "the coresponding {C:pink}Energy{} card",
-                    "when {C:attention}sold{}"
+                    "when {C:attention}sold{}",
+                    "{C:inactive}(Must have room)"
                 },
             },
             sk_poke_energetic_3 = {
                 name = "Energetic III",
                 text = {
-                    "{C:attention}Jokers{} have {C:green}1 in 5{} chance",
+                    "{C:attention}Jokers{} have {C:green}#1# in 5{} chance",
                     "to gain a {C:dark_edition}Polychrome{} or",
                     "{C:dark_edition}Negative{} edition when {C:pink}Energized{}",
+                },
+            },
+            sk_mf_painted_1 = {
+                name = "Painted I",
+                text = {
+                    "{C:colourcard}Colour{} cards gain {C:attention}2{}",
+                    "rounds when obtained",
+                },
+            },
+            sk_mf_painted_2 = {
+                name = "Painted II",
+                text = {
+                    "{C:attention}Upgrade{} a random {C:colourcard}Colour{} card",
+                    "after defeating the {C:attention}Boss Blind{}",
+                },
+            },
+            sk_mf_painted_3 = {
+                name = "Painted III",
+                text = {
+                    "{C:colourcard}Colour{} cards may",
+                    "be used twice",
                 },
             }
         },

@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 999999999999,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -227,6 +227,9 @@ payload = '''self.P_SKILLS = {
     sk_poke_energetic_1 = {order = 64, key = 'sk_poke_energetic_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic I", xp_req = 150, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
     sk_poke_energetic_2 = {order = 65, key = 'sk_poke_energetic_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic II", xp_req = 350, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_poke_energetic_1'}, tier = 2, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
     sk_poke_energetic_3 = {order = 66, key = 'sk_poke_energetic_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic III", xp_req = 500, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_poke_energetic_2'}, tier = 3, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
+    sk_mf_painted_1 = {order = 67, key = 'sk_mf_painted_1', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted I", xp_req = 250, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}, tier = 1, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
+    sk_mf_painted_2 = {order = 68, key = 'sk_mf_painted_2', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted II", xp_req = 300, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_mf_painted_1'}, tier = 2, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
+    sk_mf_painted_3 = {order = 69, key = 'sk_mf_painted_3', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted III", xp_req = 400, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_mf_painted_2'}, tier = 3, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
 }'''
 match_indent = true
 
@@ -381,6 +384,10 @@ payload = '''elseif _c.set == 'Skill' then
         info_queue[#info_queue+1] = G.P_CENTERS["j_grm_jolly_jimball"]
     elseif _c.name == "Sticky IV" then
         info_queue[#info_queue+1] = {key = "banana", set = "Other", vars = {G.GAME.probabilities.normal, 10}}
+    elseif _c.name == "Energetic III" then
+        info_queue[#info_queue+1] = G.P_CENTERS["e_polychrome"]
+        info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
+        loc_vars = {G.GAME.probabilities.normal}
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
         localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
@@ -587,6 +594,27 @@ if skill_active("sk_cry_sticky_4") then
             end
             k:emplace(card)
         end
+    end
+end
+if (G.GAME.blind_on_deck == "Boss") and skill_active("sk_mf_painted_2") then
+    local pool = {}
+    for i = 1, #G.consumeables.cards do
+        if G.consumeables.cards[i].ability and (G.consumeables.cards[i].ability.set == "Colour") then
+            table.insert(pool, G.consumeables.cards[i])
+        end
+    end
+    if #pool > 0 then
+        local card = pseudorandom_element(pool, pseudoseed('painted'))
+        card.ability.val = card.ability.val + 1
+        G.E_MANAGER:add_event(Event({
+        func = function() 
+            card_eval_status_text(card, 'extra', nil, nil, nil, {
+            message = localize('k_upgrade_ex'),
+            colour = G.C.SECONDARY_SET.ColourCard,
+            card = card
+            }) 
+            return true
+        end}))
     end
 end'''
 match_indent = true
@@ -2199,7 +2227,7 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = '''else draw_card(G.hand, G.play, 1, 'up', true, card, nil, mute) end'''
 position = 'before'
-payload = '''elseif card.attack_card then
+payload = '''elseif card.attack_card or dont_dissolve then
 '''
 match_indent = true
 
@@ -2543,4 +2571,42 @@ pattern = 'return blindTable'
 position = 'before'
 payload = '''blindTable.dbsk = self.debuffed_skills or {}
     '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = 'function Card:add_to_deck(from_debuff)'
+position = 'after'
+payload = '''   if skill_active("sk_mf_painted_1") and (self.ability.set == "Colour") and not self.ability.grm_coloured then
+        self.ability.grm_coloured = true
+        for i = 1, 2 do
+            trigger_colour_end_of_round(self)
+        end
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''if card.children.price then card.children.price:remove(); card.children.price = nil end'''
+position = 'after'
+payload = '''if card and skill_active("sk_mf_painted_3") and card.ability and (card.ability.set == "Colour") and not card.ability.grm_already_used then
+    card.ability.grm_saved = true
+    dont_dissolve = true
+    area:remove_from_highlighted(card)
+    play_sound('cardSlide2', nil, 0.3)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''function CardArea:remove_card(card, discarded_only)'''
+position = 'after'
+payload = '''if card and card.ability and card.ability.grm_saved then
+    card.ability.grm_saved = nil
+    card.ability.grm_already_used = true
+    return
+end'''
 match_indent = true
