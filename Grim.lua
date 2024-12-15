@@ -633,6 +633,14 @@ function learn_skill(card, direct_, debuffing)
     elseif key == "sk_grm_chime_3" then
         G.GAME.round_resets.hands = G.GAME.round_resets.hands - 1
         ease_hands_played(-1)
+        if ((G.GAME.round_resets.ante) % 3 == 0) and not G.GAME.reset_antes3[G.GAME.round_resets.ante] then
+            G.GAME.reset_antes3[G.GAME.round_resets.ante] = true
+            ease_ante(-1, true)
+            if skill_active("sk_grm_stake_3") then
+                G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
+                fix_ante_scaling()
+            end
+        end
     elseif key == "sk_grm_strike_3" then
         G.GAME.scaling_multipliers.strike = 1.2
         fix_ante_scaling()
@@ -659,13 +667,6 @@ function learn_skill(card, direct_, debuffing)
         end
     elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
         G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
-        ease_ante(-1, true)
-        if skill_active("sk_grm_stake_3") then
-            G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-            fix_ante_scaling()
-        end
-    elseif key == "sk_grm_chime_3" and ((G.GAME.round_resets.ante) % 3 == 0) and not G.GAME.reset_antes3[G.GAME.round_resets.ante] then
-        G.GAME.reset_antes3[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
         if skill_active("sk_grm_stake_3") then
             G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante

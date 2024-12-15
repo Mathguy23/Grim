@@ -1370,9 +1370,9 @@ return {
             c_grm_midnight = {
                 name = "Midnight",
                 text = {
-                    "Cards {C:attention}may{} be drawn",
-                    "{C:attention}face down{}, {C:attention}face down{}",
-                    "cards give {X:red,C:white} X#1# {} Mult on",
+                    "Cards have a {C:green}30%{} chance to",
+                    "be drawn {C:attention}face down{}, {C:attention}face{}",
+                    "{C:attention}down{} cards give {X:red,C:white} X#1# {} Mult on",
                     "{C:attention}final hand{}",
                 }
             },
