@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro!
---- VERSION: 1.1.0
+--- VERSION: 1.0.0
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -2701,7 +2701,7 @@ SMODS.Tag {
     atlas = 'tags',
     pos = {x = 2, y = 0},
     min_ante = 2,
-    apply = function(tag, context)
+    apply = function(self, tag, context)
         if context.type == 'new_blind_choice' then
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
@@ -3284,7 +3284,7 @@ SMODS.Tag {
     key = 'grid',
     atlas = 'tags',
     pos = {x = 1, y = 0},
-    apply = function(tag, context)
+    apply = function(self, tag, context)
         if context.type == 'new_blind_choice' then
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
@@ -3399,7 +3399,7 @@ SMODS.Tag {
     atlas = 'tags',
     pos = {x = 0, y = 0},
     config = {type = 'immediate', amount = 100},
-    apply = function(tag, context)
+    apply = function(self, tag, context)
         if context.type == 'immediate' then
             local lock = tag.ID
             G.CONTROLLER.locks[lock] = true
