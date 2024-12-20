@@ -340,7 +340,7 @@ target = 'functions/common_events.lua'
 pattern = '''elseif _c.set == 'Joker' then'''
 position = 'before'
 payload = '''elseif _c.set == 'Skill' then
-    if card.discovered then
+    if card and card.config and G.P_SKILLS[card.config.center.key].discovered then
         if _c.name == "Mystical III" then
             info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
         elseif _c.name == "Stake III" then
@@ -410,7 +410,7 @@ payload = '''elseif _c.set == 'Skill' then
                 end
             end
         end
-        if validated or card.discovered then
+        if validated or G.P_SKILLS[card.config.center.key].discovered then
             localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
         else
             localize{type = 'descriptions', key = 'unknown_skill_ability', set = 'Other', nodes = desc_nodes}
