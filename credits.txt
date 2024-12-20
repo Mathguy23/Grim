@@ -9,3 +9,5 @@ Suggestions:
   Spectral Shard - SMG9000
 Code:
   Some of the Jimball code for Jolly Jimball - MathisFun_
+Translation:
+  Taiwanese Mandarin Translation - Mr. Clover
