@@ -3,7 +3,7 @@
 --- MOD_ID: GRM
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
---- MOD_DESCRIPTION: Skill trees in Balatro!
+--- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
 --- VERSION: 1.1.0
 ----------------------------------------------
 ------------MOD CODE -------------------------
