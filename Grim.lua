@@ -516,33 +516,89 @@ function SMODS.SAVE_UNLOCKS()
     end
 end
 
-local function get_skils()
+function get_skills(during_game)
     local shown_skills = {}
-    for i, j in pairs(G.P_CENTER_POOLS['Skill']) do
-        if j.prereq and j.unlocked then
+    for i, j in ipairs(G.P_CENTER_POOLS['Skill']) do
+        local layer = get_skill_layer(j.key)
+        j.layer = layer
+        if not shown_skills[layer] then
+            shown_skills[layer] = {offset = 0, tier = layer}
+        end
+        if during_game and not G.GAME.hide_unlearnable then
+            shown_skills[layer][#shown_skills[layer] + 1] = j.key
+        else
             local valid = true
-            for i2, j2 in pairs(j.prereq) do
-                if not G.GAME.skills[j2] then
-                    valid = false
-                    break
+            if j.prereq then
+                for i2, j2 in ipairs(j.prereq) do
+                    if not during_game or not G.GAME.skills[j2] then
+                        valid = false
+                    end
                 end
-            end
-            if j.class and G.GAME.grim_class.class then
-                valid = false
-            end
-            if G.GAME.skills[j.key] then
-                valid = true
             end
             if valid then
-                if G.GAME.skills[j] then
-                    shown_skills[#shown_skills + 1] = {j, true}
-                else
-                    shown_skills[#shown_skills + 1] = {j, false}
-                end
+                shown_skills[layer][#shown_skills[layer] + 1] = j.key
             end
         end
     end
     return shown_skills
+end
+
+function refresh_skill_menu_skills()
+    local offsets = {}
+    offsets[1] = G.GAME.skill_tree_data[1].offset
+    offsets[2] = G.GAME.skill_tree_data[2].offset
+    offsets[3] = G.GAME.skill_tree_data[3].offset
+    G.GAME.skill_tree_data = get_skills(true)
+    for i = 1, 3 do
+        if offsets[i] + 5 > #G.GAME.skill_tree_data[i] then
+            offsets[i] = math.max(0, #G.GAME.skill_tree_data[i] - 5)
+        end
+    end
+    G.GAME.skill_tree_data[1].offset = offsets[1]
+    G.GAME.skill_tree_data[2].offset = offsets[2]
+    G.GAME.skill_tree_data[3].offset = offsets[3]
+    for i = 1, 3 do
+        local offset = G.GAME.skill_tree_data[i].offset
+        skills = {offset = offset, tier = i}
+        for j = offset + 1, offset + 5 do
+            if G.GAME.skill_tree_data[i][j] then
+                table.insert(skills, G.GAME.skill_tree_data[i][j])
+            end
+        end
+        for j = 5, 1, -1 do
+            if G.areas[i].cards[j] then
+                G.areas[i].cards[j]:remove()
+            end
+        end
+        for k, j in ipairs(skills) do
+            local center = G.P_SKILLS[j]
+            local card = Card(G.areas[i].T.x + G.areas[i].T.w/2, G.areas[i].T.y, G.CARD_W, G.CARD_H, nil, center)
+            card:start_materialize()
+            if G.GAME.skill_debuffs[center.key] then
+                card.debuff = true
+            end
+            G.areas[i]:emplace(card)
+        end
+    end
+end
+
+function get_skill_layer(direct_)
+    local tier = 1
+    local skill = G.P_SKILLS[direct_]
+    if skill.layer then
+        return skill.layer
+    end
+    if skill then
+        for i, j in ipairs(skill.prereq) do
+            local skill2 = G.P_SKILLS[j]
+            if skill2.branch ~= skill.branch then
+                tier = math.max(get_skill_layer(j) + 1, tier)
+            else
+                tier = math.max(get_skill_layer(j), tier)
+            end
+        end
+    end
+    return math.min(3, tier)
 end
 
 function fix_ante_scaling(do_blind)
@@ -901,6 +957,20 @@ function skill_active(direct_)
 end
 
 G.FUNCS.can_learn = function(e)
+    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.prereq then
+        for i2, j2 in ipairs(e.config.ref_table.config.center.prereq) do
+            if not G.GAME.skills[j2] then
+                e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+                e.config.button = 'do_nothing'
+                return 
+            end
+        end
+    end
+    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.class and G.GAME.grim_class.class then
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = 'do_nothing'
+        return
+    end
     if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < e.config.ref_table.config.center.xp_req)) or (e.config.ref_table.config.center.token_req and (G.GAME.legendary_tokens < e.config.ref_table.config.center.token_req))) and (not G.GAME.free_skills or (G.GAME.free_skills <= 0)) then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = 'do_nothing'
@@ -917,17 +987,6 @@ end
 
 G.FUNCS.learn_skill = function(e)
     learn_skill(e.config.ref_table)
-    -- if G.OVERLAY_MENU then
-    --     use_page = true
-    --     G.FUNCS.overlay_menu{
-    --       definition = create_UI_learned_skills(),
-    --     }
-    --     use_page = nil
-    -- end
-    local shown_skills = get_skils()
-    if skills_page then
-        skills_page = math.min(skills_page, math.ceil(math.max(1, math.ceil(#shown_skills/15))))
-    end
     local skill_ui = G.OVERLAY_MENU:get_UIE_by_ID("skill_tree_ui")
     local text = localize{type = 'variable', key = 'skill_xp', vars = {number_format(G.GAME.skill_xp)}, nodes = text}
     skill_ui.children[1].children[1].config.object.config.string[1] = text
@@ -937,110 +996,70 @@ G.FUNCS.learn_skill = function(e)
         skill_ui.children[2].children[1].config.object.config.string[1] = text2
         skill_ui.children[2].children[1].config.object:update_text(true)
     end
-    local skill_pages = G.OVERLAY_MENU:get_UIE_by_ID("skill_tree_pages")
-    local disabled = (#shown_skills <= 15)
-    local skill_options = {}
-    for i = 1, math.ceil(math.max(1, math.ceil(#shown_skills/15))) do
-        table.insert(skill_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(math.max(1, math.ceil(#shown_skills/15)))))
-    end
-    skill_pages.children[1].config.hover = not disabled
-    skill_pages.children[1].config.colour = not disabled and G.C.ORANGE or G.C.BLACK
-    skill_pages.children[1].config.shadow = not disabled
-    skill_pages.children[1].config.button = not disabled and 'option_cycle' or nil
-    skill_pages.children[1].children[1].config.colour = not disabled and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
-    skill_pages.children[1].config.ref_table.options = skill_options
-    skill_pages.children[1].config.ref_table.current_option_val = skill_options[(skills_page or 1)]
-    skill_pages.children[1].config.ref_table.current_option = (skills_page or 1)
-    skill_pages.children[3].config.hover = not disabled
-    skill_pages.children[3].config.colour = not disabled and G.C.ORANGE or G.C.BLACK
-    skill_pages.children[3].config.shadow = not disabled
-    skill_pages.children[3].config.button = not disabled and 'option_cycle' or nil
-    skill_pages.children[3].children[1].config.colour = not disabled and G.C.UI.TEXT_LIGHT or G.C.UI.TEXT_INACTIVE
-    skill_pages.children[2].children[1].children[1].children[1].config.object:update_text()
     G.OVERLAY_MENU:recalculate()
-    for j = 1, #G.areas do
-        for i = #G.areas[j].cards,1, -1 do
-            local c = G.areas[j]:remove_card(G.areas[j].cards[i])
-            c:remove()
-            c = nil
-        end
+    if G.GAME.hide_unlearnable then
+        refresh_skill_menu_skills()
     end
-    for i = 1, 5 do
-        for j = 1, 3 do
-            local adding = 3  * ((skills_page or 1) - 1)
-            local center = shown_skills[i+(j-1)*5 + 5 * adding]
-            if not center then break end
-            local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center[1])
-            G.areas[j]:emplace(card)
-        end
-    end
-    
 end
 
 G.FUNCS.do_nothing = function(e)
 end
 
+function skill_tree_row_UI(tier)
+    local row = G.GAME.skill_tree_data[tier]
+    if not row then
+        G.GAME.skill_tree_data[tier] = {offset = 0, tier = tier}
+        row = G.GAME.skill_tree_data[tier]
+    end
+    local offset = row.offset
+    local skills = {offset = offset, tier = tier}
+    for i = offset + 1, offset + 5 do
+        if row[i] then
+            table.insert(skills, row[i])
+        end
+    end
+    G.areas[tier] = CardArea(
+        G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
+        (5.25)*G.CARD_W,
+        1*G.CARD_W, 
+    {card_limit = 5, type = 'joker', highlight_limit = 1, skill_table = true})
+    local t = {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true, id = 'skill_tree_tier_' .. tostring(tier)}, nodes={
+        UIBox_button{col = true, label = {"<"}, button = "grm_skill_tree_l", func = 'grm_can_skill_tree_l', minw = 0.5, minh = 1*G.CARD_W, ref_table = skills},
+        {n=G.UIT.C, config={align = "cm", padding = 0, minh = 0.8, minw = 0.4 + (5.25)*G.CARD_W}, nodes = {{n=G.UIT.O, config={object = G.areas[tier]}}}},
+        UIBox_button{col = true, label = {">"}, button = "grm_skill_tree_r", func = 'grm_can_skill_tree_r', minw = 0.5, minh = 1*G.CARD_W, ref_table = skills},
+    }}
+    for i, j in ipairs(skills) do
+        local center = G.P_SKILLS[j]
+        local card = Card(G.areas[tier].T.x + G.areas[tier].T.w/2, G.areas[tier].T.y, G.CARD_W, G.CARD_H, nil, center)
+        card:start_materialize()
+        if G.GAME.skill_debuffs[center.key] then
+            card.debuff = true
+        end
+        G.areas[tier]:emplace(card)
+    end
+    return t
+end
+
 function create_UI_learned_skills()
-    local shown_skills = get_skils()
     if not use_page then
         skills_page = nil
     end
-    local adding = 15  * ((skills_page or 1) - 1)
-    local rows = {}
-    for i = 1, 3 do
-        table.insert(rows, {})
-        for j = 0, 4 do
-            if shown_skills[j*5+i+adding] then
-                table.insert(rows[i], shown_skills[j*5+i+adding][1])
-            end
-        end
-    end
     G.areas = {}
     area_table = {}
-    for j = 1, 3 do
-        G.areas[j] = CardArea(
-            G.ROOM.T.x + 0.2*G.ROOM.T.w/2,G.ROOM.T.h,
-            (5.25)*G.CARD_W,
-            1*G.CARD_W, 
-            {card_limit = 5, type = 'joker', highlight_limit = 1, skill_table = true})
-        table.insert(area_table, 
-        {n=G.UIT.R, config={align = "cm", padding = 0, no_fill = true}, nodes={
-            {n=G.UIT.O, config={object = G.areas[j]}}
-        }}
-        )
-    end
-
-    local skill_options = {}
-    for i = 1, math.ceil(math.max(1, math.ceil(#shown_skills/15))) do
-        table.insert(skill_options, localize('k_page')..' '..tostring(i)..'/'..tostring(math.ceil(math.max(1, math.ceil(#shown_skills/15)))))
-    end
-
-    for j = 1, #G.areas do
-        for i = 1, 5 do
-            if (i+(j-1)*(5)+adding) <= #shown_skills then
-                local center = shown_skills[i+(j-1)*(5)+adding][1]
-                local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, nil, center)
-                card:start_materialize(nil, i>1 or j>1)
-                if G.GAME.skill_debuffs[center.key] then
-                    card.debuff = true
-                end
-                G.areas[j]:emplace(card)
-            end
-        end
+    for j = 3, 1, -1 do
+        table.insert(area_table, skill_tree_row_UI(j))
     end
 
     local text = localize{type = 'variable', key = 'skill_xp', vars = {number_format(G.GAME.skill_xp)}, nodes = text}
 
     local text2 = localize{type = 'variable', key = 'legendary_tokens', vars = {number_format(G.GAME.legendary_tokens)}, nodes = text2}
 
-    local t = {n=G.UIT.R, config={align = "cm", id = 'skill_tree_ui', colour = G.C.CLEAR, paddng = 0.1, minw = 2.5,}, nodes = {
+    local t = {n=G.UIT.R, config={align = "cm", id = 'skill_tree_ui', colour = G.C.CLEAR, paddng = 0.1}, nodes = {
         {n=G.UIT.R, config={align = "cm", paddng = 0.3}, nodes={
             {n=G.UIT.O, config={object = DynaText({string = text, colours = {G.C.UI.TEXT_LIGHT}, bump = true, scale = 0.6})}}
         }},
-        {n=G.UIT.R, config={align = "cm", minw = 2.5, padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=area_table},
-        {n=G.UIT.R, config={align = "cm"}, nodes={
-            create_option_cycle({options = skill_options, w = 4.5, cycle_shoulders = true, opt_callback = 'your_game_skill_page', focus_args = {snap_to = true, nav = 'wide'},current_option = (skills_page or 1), colour = G.C.ORANGE, no_pips = true, id = 'skill_tree_pages'})
-        }},
+        {n=G.UIT.R, config={align = "cm", padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes=area_table},
+        create_toggle({label = localize('b_hide_unavailiable_skills'), ref_table = G.GAME, ref_value = 'hide_unlearnable', callback = G.FUNCS.flip_hidden}),
       }}
     if skill_active("sk_grm_cl_astronaut") then
         table.insert(t.nodes, 4, UIBox_button{id = 'lunar_button', label = {localize("lunar_stats")}, button = "your_lunar_stats", minw = 5})
@@ -1060,7 +1079,6 @@ function create_UI_learned_skills()
 end
 
 G.FUNCS.your_skill_tree = function(e)
-    G.SETTINGS.paused = true
     G.FUNCS.overlay_menu{
         definition = create_UI_learned_skills(),
     }
@@ -1548,28 +1566,6 @@ function do_attack(context, extra)
     G.CONTROLLER.locks.blind_attack = nil
 end
 
-G.FUNCS.your_game_skill_page = function(args)
-    local shown_skills = get_skils()
-    if not args or not args.cycle_config then return end
-    skills_page = args.cycle_config.current_option
-    for j = 1, #G.areas do
-        for i = #G.areas[j].cards,1, -1 do
-            local c = G.areas[j]:remove_card(G.areas[j].cards[i])
-            c:remove()
-            c = nil
-        end
-    end
-    for i = 1, 5 do
-        for j = 1, 3 do
-            local adding = 3  * (args.cycle_config.current_option - 1)
-            local center = shown_skills[i+(j-1)*5 + 5 * adding]
-            if not center then break end
-            local card = Card(G.areas[j].T.x + G.areas[j].T.w/2, G.areas[j].T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, center[1])
-            G.areas[j]:emplace(card)
-        end
-    end
-end
-
 G.FUNCS.grm_discard_card = function(e)
     local card = e.config.ref_table
     if G.STATE == G.STATES.SELECTING_HAND then
@@ -1618,6 +1614,63 @@ G.FUNCS.grm_can_pack_card = function(e)
         e.config.colour = G.C.GREEN
         e.config.button = 'grm_pack_card'
     end
+end
+
+G.FUNCS.grm_skill_tree_r = function(e)
+    local tier = e.config.ref_table.tier
+    G.GAME.skill_tree_data[tier].offset = G.GAME.skill_tree_data[tier].offset + 1
+    local center = G.P_SKILLS[G.GAME.skill_tree_data[tier][5 + G.GAME.skill_tree_data[tier].offset]]
+    G.areas[tier].cards[1]:remove()
+    local card = Card(G.areas[tier].T.x + G.areas[tier].T.w/2, G.areas[tier].T.y, G.CARD_W, G.CARD_H, nil, center)
+    card:start_materialize()
+    if G.GAME.skill_debuffs[center.key] then
+        card.debuff = true
+    end
+    G.areas[tier]:emplace(card)
+end
+
+G.FUNCS.grm_can_skill_tree_r = function(e)
+    local tier = e.config.ref_table.tier
+    local offset = G.GAME.skill_tree_data[tier].offset
+    local length = #G.GAME.skill_tree_data[tier]
+    if (5 + offset >= length) then 
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.PURPLE
+        e.config.button = 'grm_skill_tree_r'
+    end
+end
+
+G.FUNCS.grm_skill_tree_l = function(e)
+    local tier = e.config.ref_table.tier
+    G.GAME.skill_tree_data[tier].offset = G.GAME.skill_tree_data[tier].offset - 1
+    local center = G.P_SKILLS[G.GAME.skill_tree_data[tier][1 + G.GAME.skill_tree_data[tier].offset]]
+    local a = G.areas[tier]
+    G.areas[tier].cards[#G.areas[tier].cards]:remove()
+    local card = Card(G.areas[tier].T.x + G.areas[tier].T.w/2, G.areas[tier].T.y, G.CARD_W, G.CARD_H, nil, center)
+    card:start_materialize(nil)
+    if G.GAME.skill_debuffs[center.key] then
+        card.debuff = true
+    end
+    G.areas[tier]:emplace(card, 'front')
+end
+
+G.FUNCS.grm_can_skill_tree_l = function(e)
+    local tier = e.config.ref_table.tier
+    local offset = G.GAME.skill_tree_data[tier].offset
+    local length = #e.config.ref_table
+    if (offset <= 0) then 
+        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+        e.config.button = nil
+    else
+        e.config.colour = G.C.PURPLE
+        e.config.button = 'grm_skill_tree_l'
+    end
+end
+
+G.FUNCS.flip_hidden = function(flipped)
+    refresh_skill_menu_skills()
 end
 
 SMODS.Atlas({ key = "skills", atlas_table = "ASSET_ATLAS", path = "skills.png", px = 71, py = 95})
@@ -2463,7 +2516,7 @@ SMODS.Element {
     config = {mod_conv = 'm_grm_iron', max_highlighted = 2},
     loc_vars = function(self, info_queue, card)
         info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_iron']
-        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_lead')}}}
+        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_iron')}}}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}

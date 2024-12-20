@@ -693,7 +693,7 @@ return {
             flint = {
                 name = "Flint",
                 text = {
-                    "gains {C:red}+1{} Mult, when {C:attention}played{}",
+                    "Gains {C:red}+1{} Mult, when {C:attention}played{}",
                     "{C:red}Expires when discarded!{}"
                 }
             },
@@ -732,22 +732,39 @@ return {
                     "Instantly disables",
                 }
             },
-            unlearned_skill = {
+            skill_req_heading = {
                 text = {
-                    "XP Needed:",
+                    "Requirements:",
+                }
+            },
+            met_skill_req = {
+                text = {
+                    "{C:green}#1#{}",
+                }
+            },
+            unmet_skill_req = {
+                text = {
+                    "{C:purple}#1#{}",
+                }
+            },
+            xp_req = {
+                text = {
                     "{C:purple}#1#{} XP",
                 }
             },
-            unlearned_skill_free = {
+            free_xp_req = {
                 text = {
-                    "XP Needed:",
                     "{C:purple}0{} XP {C:inactive}(#1#){}",
                 }
             },
-            leg_unlearned_skill = {
+            token_req = {
                 text = {
-                    "Tokens Needed:",
                     "{C:dark_edition}#1#{} Legendary Token",
+                }
+            },
+            unknown_skill_ability = {
+                text = {
+                    "???"
                 }
             },
             star_tooltip = {
@@ -1585,6 +1602,8 @@ return {
             k_area_pack = "Area Pack",
             k_loot_pack = "Loot Pack",
             k_ancient_pack = "Ancient Pack",
+            unknown_skill_name = "???????",
+            b_hide_unavailiable_skills = "Hide Unavailiable Skills",
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."},
