@@ -1850,28 +1850,6 @@ SMODS.Tarot {
     end
 }
 
-SMODS.Tarot {
-    key = 'tape',
-    loc_txt = {
-        name = "The Tape",
-        text = {
-            "Enhances {C:attention}#1#",
-            "selected cards to",
-            "{C:attention}#2#s"
-        }
-    },
-    atlas = "tarots",
-    pos = {x = 1, y = 0},
-    config = {mod_conv = 'm_grm_package', max_highlighted = 2},
-    loc_vars = function(self, info_queue, card)
-        info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_package']
-        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_package')}}}
-    end,
-    in_pool = function(self)
-        return false, {allow_duplicates = false}
-    end,
-}
-
 SMODS.Joker {
     key = 'jack_of_all_trades',
     name = "Jack of All Trades",
@@ -3514,24 +3492,6 @@ SMODS.Enhancement {
     set_ability = function(self, card, initial, delay_sprites)
         card.ability.xp = self.config.xp
     end
-}
-
-SMODS.Enhancement {
-    key = 'package',
-    loc_txt = {
-        name = 'Package Card',
-        text = {
-            "When selected,",
-            "You may {C:green}pack{}",
-            "this {C:attention}card"
-        }
-    },
-    atlas = 'enhance',
-    config = {},
-    pos = {x = 1, y = 0},
-    in_pool = function(self)
-        return false
-    end,
 }
 
 SMODS.Voucher {
