@@ -586,7 +586,30 @@ return {
                     "{C:loteria}The Rooster{} is used",
                     "{C:inactive}(Must have room)"
                 }
-            }
+            },
+            sk_ortalab_starry_1 = {
+                name = "Starry I",
+                text = {
+                    "{C:attention}+1{} temporary levels to",
+                    "all {C:zodiac}Zodiacs{} left {C:attention}unactivated{}",
+                    "each {C:attention}round{}, at end of round.",
+                }
+            },
+            sk_ortalab_starry_2 = {
+                name = "Starry II",
+                text = {
+                    "{C:zodiac}Zodiac{} cards can",
+                    "appear in {C:planet}Celestial{} packs",
+                }
+            },
+            sk_ortalab_starry_3= {
+                name = "Starry III",
+                text = {
+                    "{C:zodiac}Zodiacs{} never decay, {C:zodiac}Zodiacs{}",
+                    "have a {C:green}1 in 10{} chance to be",
+                    "destroyed at end of round"
+                }
+            },
         },
         Other = {
             undiscovered_skill = {

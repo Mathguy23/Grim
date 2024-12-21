@@ -236,6 +236,9 @@ payload = '''self.P_SKILLS = {
     sk_ortalab_magica_1 = {order = 71, key = 'sk_ortalab_magica_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica I", xp_req = 300, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_magica_2 = {order = 72, key = 'sk_ortalab_magica_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica II", xp_req = 400, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_1'}, tier = 2, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_magica_3 = {order = 73, key = 'sk_ortalab_magica_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica III", xp_req = 800, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_2'}, tier = 3, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_1 = {order = 74, key = 'sk_ortalab_starry_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry I", xp_req = 200, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_2 = {order = 75, key = 'sk_ortalab_starry_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry II", xp_req = 450, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_1'}, tier = 2, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_3 = {order = 76, key = 'sk_ortalab_starry_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry III", xp_req = 500, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_2'}, tier = 3, branch = "Starry", grm_mod_reqs = {"ortalab"}},
 }'''
 match_indent = true
 
@@ -397,6 +400,8 @@ payload = '''elseif _c.set == 'Skill' then
             loc_vars = {G.GAME.probabilities.normal}
         elseif _c.name == "Mágica III" then
             info_queue[#info_queue+1] = {set = 'Other', key = 'rooster_alt'}
+        elseif _c.name == "Starry III" then
+            loc_vars = {G.GAME.probabilities.normal}
         end
     else
         if _c.name == "Stake III" then
@@ -404,6 +409,8 @@ payload = '''elseif _c.set == 'Skill' then
         elseif _c.name == "Prestige I" then
             loc_vars = {number_format(G.GAME.xp_spent)}
         elseif _c.name == "Energetic III" then
+            loc_vars = {G.GAME.probabilities.normal}
+        elseif _c.name == "Starry III" then
             loc_vars = {G.GAME.probabilities.normal}
         end
     end
@@ -627,7 +634,7 @@ if skill_active("sk_cry_sticky_4") then
     for j, k in ipairs({G.jokers, G.consumeables, G.hand, G.deck, G.discard}) do
         local dupe_these = {}
         for i = 1, #k.cards do
-            if k.cards[i].ability.banana and (pseudorandom('sticky') < 1/8) then
+            if k.cards[i].ability.banana and (pseudorandom('sticky') < G.GAME.probabilities.normal/8) then
                 table.insert(dupe_these, k.cards[i])
             end
         end
@@ -662,6 +669,46 @@ if (G.GAME.blind_on_deck == "Boss") and skill_active("sk_mf_painted_2") then
             }) 
             return true
         end}))
+    end
+end
+if skill_active("sk_ortalab_starry_1") then
+    if G.zodiacs then
+        for i, j in pairs(G.zodiacs) do
+            if j.ability.grm_unactivated then
+                j.config.extra.temp_level = j.config.extra.temp_level + 1
+                G.E_MANAGER:add_event(Event({
+                    delay = 0.4,
+                    trigger = 'after',
+                    func = (function()
+                        attention_text({
+                            text = '+1',
+                            colour = G.C.WHITE,
+                            scale = 1, 
+                            hold = 1/G.SETTINGS.GAMESPEED,
+                            cover = j.HUD_zodiac,
+                            cover_colour = G.ARGS.LOC_COLOURS.Zodiac,
+                            align = 'cm',
+                            })
+                        play_sound('generic1', 0.9 + math.random()*0.1, 0.8)
+                        play_sound('holo1', 1.2 + math.random()*0.1, 0.4)
+                        return true
+                    end)
+                }))
+            end
+        end
+    end
+end
+if skill_active("sk_ortalab_starry_3") then
+    if G.zodiacs then
+        local delete_these = {}
+        for i, j in pairs(G.zodiacs) do
+            if pseudorandom('starry') <  G.GAME.probabilities.normal/10 then
+                table.insert(delete_these, j)
+            end
+        end
+        for i, j in ipairs(delete_these) do
+            j:remove_zodiac("X")
+        end
     end
 end'''
 match_indent = true
@@ -766,13 +813,26 @@ match_indent = true
 target = 'functions/state_events.lua'
 pattern = '''mult, hand_chips, modded = G.GAME.blind:modify_hand(G.play.cards, poker_hands, text, mult, hand_chips)'''
 position = 'after'
-payload = '''mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
+payload = '''if old_zodiac_effect then
+    G.GAME.Ortalab_Zodiac_Reduction = old_zodiac_effect
+    old_zodiac_effect = nil
+end
+mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
 for j, i in ipairs({'sk_grm_strike_1', 'sk_grm_strike_2', 'sk_cry_m_1', 'sk_grm_gravity_2', 'sk_grm_strike_3'}) do
     if skill_active(i) then
         hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult, scoring_name = text})
         if modded then
             mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
             update_hand_text({sound = 'chips2'}, {chips = hand_chips, mult = mult})
+        end
+    end
+end
+if G.zodiacs then
+    if skill_active("sk_ortalab_starry_1") then
+        for k1, i in pairs(G.zodiacs) do
+            if i.config.extra.hand_type == text then
+                i.ability.grm_unactivated = nil
+            end
         end
     end
 end'''
@@ -959,6 +1019,16 @@ end
 if self.ability.name:find('Arcana') and skill_active("sk_ortalab_magica_1") then
     if pseudorandom('magica') < 0.4 then
         card = create_card("Loteria", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    end
+end
+if self.ability.name:find('Celestial') and skill_active("sk_ortalab_starry_2") then
+    if pseudorandom('magica') < 0.4 then
+        card = create_card("Zodiac", G.pack_cards, nil, nil, true, true, nil, 'pl1')
         card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
         card.T.x = self.T.x + 0
         card.T.y = self.T.y
@@ -2209,6 +2279,11 @@ pattern = '''G.GAME.current_round.discards_left = math.max(0, G.GAME.round_reset
 position = 'before'
 payload = '''if G.GAME.modifiers["blind_attack"] then
     G.GAME.blind_attack = random_attack()
+end
+if G.zodiacs then
+    for _, zodiac in pairs(G.zodiacs) do
+        zodiac.ability.grm_unactivated = true
+    end
 end
 if not G.GAME.modifiers["no_hand_discard_reset"] then'''
 match_indent = true

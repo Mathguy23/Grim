@@ -810,6 +810,9 @@ function learn_skill(card, direct_, debuffing)
         end
         G.GAME.orig_tarot_rate = G.GAME.tarot_rate
         G.GAME.orig_planet_rate = G.GAME.planet_rate
+    elseif key == "sk_ortalab_starry_3" then
+        G.GAME.orig_Zodiac_Reduction = G.GAME.Ortalab_Zodiac_Reduction
+        G.GAME.Ortalab_Zodiac_Reduction = 0
     end
 end
 
@@ -944,6 +947,9 @@ function unlearn_skill(direct_, debuffing)
         G.GAME.orig_tarot_rate = nil
         G.GAME.planet_rate = G.GAME.orig_planet_rate
         G.GAME.orig_planet_rate = nil
+    elseif key == "sk_ortalab_starry_3" then
+        G.GAME.Ortalab_Zodiac_Reduction = G.GAME.orig_Zodiac_Reduction
+        G.GAME.orig_Zodiac_Reduction = nil
     end
 end
 
