@@ -238,7 +238,7 @@ payload = '''self.P_SKILLS = {
     sk_ortalab_magica_3 = {order = 73, key = 'sk_ortalab_magica_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica III", xp_req = 800, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_2'}, tier = 3, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_starry_1 = {order = 74, key = 'sk_ortalab_starry_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry I", xp_req = 200, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Starry", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_starry_2 = {order = 75, key = 'sk_ortalab_starry_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry II", xp_req = 450, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_1'}, tier = 2, branch = "Starry", grm_mod_reqs = {"ortalab"}},
-    sk_ortalab_starry_3 = {order = 76, key = 'sk_ortalab_starry_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry III", xp_req = 500, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_2'}, tier = 3, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_3 = {order = 76, key = 'sk_ortalab_starry_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry III", xp_req = 700, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_2'}, tier = 3, branch = "Starry", grm_mod_reqs = {"ortalab"}},
 }'''
 match_indent = true
 
@@ -695,19 +695,6 @@ if skill_active("sk_ortalab_starry_1") then
                     end)
                 }))
             end
-        end
-    end
-end
-if skill_active("sk_ortalab_starry_3") then
-    if G.zodiacs then
-        local delete_these = {}
-        for i, j in pairs(G.zodiacs) do
-            if pseudorandom('starry') <  G.GAME.probabilities.normal/10 then
-                table.insert(delete_these, j)
-            end
-        end
-        for i, j in ipairs(delete_these) do
-            j:remove_zodiac("X")
         end
     end
 end'''

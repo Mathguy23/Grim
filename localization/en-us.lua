@@ -605,9 +605,7 @@ return {
             sk_ortalab_starry_3= {
                 name = "Starry III",
                 text = {
-                    "{C:zodiac}Zodiacs{} never decay, {C:zodiac}Zodiacs{}",
-                    "have a {C:green}1 in 10{} chance to be",
-                    "destroyed at end of round"
+                    "{C:zodiac}Zodiacs{} never decay"
                 }
             },
         },
