@@ -682,6 +682,7 @@ function learn_skill(card, direct_, debuffing)
                 G.GAME.banned_keys[j] = 'grim'
             end
         end
+        G.GAME.orig_joker_rate = G.GAME.joker_rate
     elseif key == "sk_grm_ghost_1" then
         G.hand:change_size(-1)
     elseif key == "sk_grm_ghost_2" then
@@ -805,6 +806,14 @@ function learn_skill(card, direct_, debuffing)
         end
     elseif key == "sk_poke_energetic_1" then
         G.GAME.energy_plus = (G.GAME.energy_plus or 0) + 1
+    elseif key == "sk_ortalab_decay_1" then
+        for i, j in ipairs({'p_arcana_normal_1', 'p_arcana_normal_2', 'p_arcana_normal_3', 'p_arcana_normal_4', 'p_arcana_jumbo_1', 'p_arcana_jumbo_2', 'p_arcana_mega_1', 'p_arcana_mega_2', 'p_celestial_normal_1', 'p_celestial_normal_2', 'p_celestial_normal_3', 'p_celestial_normal_4', 'p_celestial_jumbo_1', 'p_celestial_jumbo_2', 'p_celestial_mega_1', 'p_celestial_mega_2'}) do
+            if not G.GAME.banned_keys[j] then
+                G.GAME.banned_keys[j] = 'grim'
+            end
+        end
+        G.GAME.orig_tarot_rate = G.GAME.tarot_rate
+        G.GAME.orig_planet_rate = G.GAME.planet_rate
     end
 end
 
@@ -854,6 +863,8 @@ function unlearn_skill(direct_, debuffing)
                 G.GAME.banned_keys[j] = nil
             end
         end
+        G.GAME.joker_rate = G.GAME.orig_joker_rate
+        G.GAME.orig_joker_rate = nil
     elseif key == "sk_grm_ghost_1" then
         G.hand:change_size(1)
     elseif key == "sk_grm_ghost_2" then
@@ -927,6 +938,16 @@ function unlearn_skill(direct_, debuffing)
         G.GAME.energy_plus = (G.GAME.energy_plus or 0) - 1
     elseif key == "sk_grm_prestige_1" then
         G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) - 1
+    elseif key == "sk_ortalab_decay_1" then
+        for i, j in ipairs({'p_arcana_normal_1', 'p_arcana_normal_2', 'p_arcana_normal_3', 'p_arcana_normal_4', 'p_arcana_jumbo_1', 'p_arcana_jumbo_2', 'p_arcana_mega_1', 'p_arcana_mega_2', 'p_celestial_normal_1', 'p_celestial_normal_2', 'p_celestial_normal_3', 'p_celestial_normal_4', 'p_celestial_jumbo_1', 'p_celestial_jumbo_2', 'p_celestial_mega_1', 'p_celestial_mega_2'}) do
+            if G.GAME.banned_keys[j] == 'grim' then
+                G.GAME.banned_keys[j] = nil
+            end
+        end
+        G.GAME.tarot_rate = G.GAME.orig_tarot_rate
+        G.GAME.orig_tarot_rate = nil
+        G.GAME.planet_rate = G.GAME.orig_planet_rate
+        G.GAME.orig_planet_rate = nil
     end
 end
 
