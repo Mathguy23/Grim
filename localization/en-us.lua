@@ -555,6 +555,37 @@ return {
                     "{C:colourcard}Colour{} cards may",
                     "be used twice",
                 },
+            },
+            sk_ortalab_decay_1 = {
+                name = "Decay I",
+                text = {
+                    "{C:planet}Planet{} cards, {C:planet}Celestial Packs{},",
+                    "{C:tarot}Tarot{} cards, and {C:tarot}Arcana Packs{}",
+                    "do not appear in {C:attention}shop{}"
+                }
+            },
+            sk_ortalab_magica_1 = {
+                name = "Mágica I",
+                text = {
+                    "{C:loteria}Loteria{} cards can",
+                    "appear in {C:tarot}Arcana{} packs",
+                }
+            },
+            sk_ortalab_magica_2 = {
+                name = "Mágica II",
+                text = {
+                    "All {C:loteria}Chalupa Packs{} have {X:attention,C:white} X2 {}",
+                    "options, choices, and cost",
+                }
+            },
+            sk_ortalab_magica_3 = {
+                name = "Mágica III",
+                text = {
+                    "{C:green}80%{} chance to create",
+                    "a {C:loteria}The Rooster{} when a",
+                    "{C:loteria}The Rooster{} is used",
+                    "{C:inactive}(Must have room)"
+                }
             }
         },
         Other = {
@@ -938,6 +969,16 @@ return {
                     "Card with a",
                     "Modern Enhancement",
                 }
+            },
+            rooster_alt = {
+                name = "The Rooster",
+                text = {
+                    "Creates a copy of a",
+                    "{C:loteria}Loteria{} or {C:Zodiac}Zodiac{} card",
+                    "used during this run",
+                    "{s:0.8,C:inactive}The Rooster excluded"
+                },
+
             }
         },
         Back = {

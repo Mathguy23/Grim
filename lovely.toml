@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 1e300,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -233,6 +233,9 @@ payload = '''self.P_SKILLS = {
     sk_mf_painted_2 = {order = 68, key = 'sk_mf_painted_2', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted II", xp_req = 300, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_mf_painted_1'}, tier = 2, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
     sk_mf_painted_3 = {order = 69, key = 'sk_mf_painted_3', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted III", xp_req = 400, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_mf_painted_2'}, tier = 3, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
     sk_ortalab_decay_1 = {order = 70, key = 'sk_ortalab_decay_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Decay I", xp_req = 300, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_2', 'sk_grm_strike_2'}, tier = 1, branch = "Decay", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_magica_1 = {order = 71, key = 'sk_ortalab_magica_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica I", xp_req = 300, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_magica_2 = {order = 72, key = 'sk_ortalab_magica_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica II", xp_req = 400, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_1'}, tier = 2, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_magica_3 = {order = 73, key = 'sk_ortalab_magica_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica III", xp_req = 800, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_2'}, tier = 3, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
 }'''
 match_indent = true
 
@@ -392,6 +395,8 @@ payload = '''elseif _c.set == 'Skill' then
             info_queue[#info_queue+1] = G.P_CENTERS["e_polychrome"]
             info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
             loc_vars = {G.GAME.probabilities.normal}
+        elseif _c.name == "Mágica III" then
+            info_queue[#info_queue+1] = {set = 'Other', key = 'rooster_alt'}
         end
     else
         if _c.name == "Stake III" then
@@ -669,6 +674,9 @@ position = 'after'
 payload = '''if skill_active("sk_grm_mystical_1") and self.ability.name:find('Arcana') then
     G.GAME.pack_choices = G.GAME.pack_choices + 1
 end
+if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') then
+G.GAME.pack_choices = G.GAME.pack_choices * 2
+end
 if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
     G.GAME.pack_choices = G.GAME.pack_choices + 2
 end'''
@@ -695,6 +703,9 @@ if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
     _size = _size + 4
 end
 if skill_active("sk_grm_dash_2") and self.ability.name:find('Standard') then
+    _size = _size * 2
+end
+if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') then
     _size = _size * 2
 end
 local lovers_indexes = nil
@@ -734,6 +745,9 @@ if self.ability.no_sell_value then
 end
 if skill_active("sk_grm_receipt_2") and ((self.ability.set == 'Voucher') or (self.ability.set == 'Booster')) and (self.cost > 0) then
     self.cost = math.max(1, math.floor(self.cost * 0.7))
+end
+if skill_active("sk_ortalab_magica_2") and (self.cost > 0) and (self.ability.set == 'Booster' and self.ability.name:find('loteria')) then
+    self.cost = 2 * self.cost
 end'''
 match_indent = true
 
@@ -942,6 +956,16 @@ if pointer_index and (pointer_index == i) and not pointer_found then
     pack_cards[i] = card or {}
     goto continue
 end
+if self.ability.name:find('Arcana') and skill_active("sk_ortalab_magica_1") then
+    if pseudorandom('magica') < 0.4 then
+        card = create_card("Loteria", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    end
+end
 if self.ability.name:find('Celestial') and G.GAME.used_vouchers.v_telescope and (i ~= 1) then
     local rng = pseudorandom('astro')
     if skill_active("sk_grm_cl_astronaut") and (rng <= 0.35) then
@@ -1016,25 +1040,6 @@ payload = '''   if skill_active("sk_grm_scarce_1") then
     if skill_active("sk_ortalab_decay_1") then
         G.GAME.planet_rate = 0
         G.GAME.tarot_rate = 0
-    end
-    if skill_active("sk_ortalab_decay_1") and skill_active("sk_grm_scarce_1") then
-        local valid = false
-        if G.GAME.spectral_rate > 0 then
-            valid = true
-        end
-        for _,v in ipairs(SMODS.ConsumableType.ctype_buffer) do
-            if G.GAME[v:lower()..'_rate'] > 0 then
-                valid = true
-            end
-        end
-        if not valid then
-            card = SMODS.create_card {key = 'j_joker'}
-            create_shop_card_ui(card, 'Joker', G.shop_jokers)
-            card.states.visible = false
-            card:start_materialize()
-            card.perma_debuff = true
-            card:set_cost()
-        end
     end'''
 match_indent = true
 

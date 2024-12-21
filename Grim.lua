@@ -92,10 +92,6 @@ SMODS.Lunar = SMODS.Consumable:extend {
         G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + 1
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
     end,
-    bulk_use = function(self, card, area, copier, number)
-        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
-        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
-    end,
     can_use = function(self, card)
         return true
     end,
@@ -1144,6 +1140,12 @@ function calculate_skill(skill, context)
             fool:set_edition('e_negative')
             fool:add_to_deck()
             G.consumeables:emplace(fool)
+        elseif skill == "sk_ortalab_magica_3" and (context.card.ability.set == 'Loteria') and (context.card.config.center.key == 'c_ortalab_lot_rooster') and (pseudorandom("magical") < 0.8) then
+            if (context.card.area == G.consumeables) or (#G.consumeables.cards < G.consumeables.config.card_limit) then
+                local rooster = SMODS.create_card {key = "c_ortalab_lot_rooster", no_edition = true}
+                rooster:add_to_deck()
+                G.consumeables:emplace(rooster)
+            end
         end
     elseif context.modify_base then
         if skill == "sk_grm_strike_1" then
@@ -2843,7 +2845,11 @@ SMODS.Lunar {
             G.GAME.special_levels[self.special_level] + 1, 
             string.format("%.1f",(G.GAME.special_levels and (G.GAME.special_levels[self.special_level] + 1) or 1) * 0.5)
         }}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Lunar {
@@ -2858,7 +2864,11 @@ SMODS.Lunar {
             G.GAME.special_levels[self.special_level] + 1, 
             localize{type = 'name_text', set = 'Enhanced', key = 'm_glass'},
         }}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Lunar {
@@ -2871,7 +2881,11 @@ SMODS.Lunar {
             G.GAME.special_levels[self.special_level] + 1,
             string.format("%.2f",1 + 0.15 * (G.GAME.special_levels[self.special_level] + 1)),
         }}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Lunar {
@@ -2887,7 +2901,11 @@ SMODS.Lunar {
             math.ceil((G.GAME.special_levels[self.special_level] + 1) / 2),
             math.floor((G.GAME.special_levels[self.special_level] + 1) / 2),
         }}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Lunar {
@@ -2902,7 +2920,11 @@ SMODS.Lunar {
             localize{type ='name_text', key = 'tag_negative', set = 'Tag'},
             1.5 * (G.GAME.special_levels[self.special_level] + 1),
         }}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Lunar {
@@ -2915,7 +2937,11 @@ SMODS.Lunar {
             G.GAME.special_levels[self.special_level] + 1,
             10 * (G.GAME.special_levels[self.special_level] + 1),
         }}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Lunar {
@@ -2955,7 +2981,11 @@ SMODS.Lunar {
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
-    end
+    end,
+    bulk_use = function(self, card, area, copier, number)
+        G.GAME.special_levels[self.special_level] = G.GAME.special_levels[self.special_level] + number
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.BLUE, message = localize('k_upgrade_ex')})
+    end,
 }
 
 SMODS.Spectral {
