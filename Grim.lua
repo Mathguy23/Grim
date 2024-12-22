@@ -156,6 +156,20 @@ SMODS.Area = SMODS.Consumable:extend {
     cost = 10,
     in_pool = function(self, card)
         return (self.area ~= G.GAME.area) and (G.GAME.area_data and G.GAME.area_data.adjacent and G.GAME.area_data.adjacent[self.region or 'Classic'])
+    end,
+    set_badges = function(self, card, badges)
+        local colours = {
+            Classic = HEX('115f15'),
+            Sewer =  HEX('9ae4b5'),
+            Spooky = HEX("6317a8"),
+            Metro = HEX("d8aeff"),
+            Aether = HEX("ffffd0"),
+        }
+        local len = string.len(card.config.center.region)
+        local size = 1.3 - (len > 5 and 0.02 * (len - 5) or 0)
+        if card.config.center.discovered then
+            badges[#badges + 1] = create_badge(localize("region_" .. card.config.center.region:lower()), colours[card.config.center.region], nil, size)
+        end
     end
 }
 

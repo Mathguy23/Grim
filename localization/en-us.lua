@@ -602,7 +602,7 @@ return {
                     "appear in {C:planet}Celestial{} packs",
                 }
             },
-            sk_ortalab_starry_3= {
+            sk_ortalab_starry_3 = {
                 name = "Starry III",
                 text = {
                     "{C:zodiac}Zodiacs{} never decay"
@@ -1666,6 +1666,11 @@ return {
             k_ancient_pack = "Ancient Pack",
             unknown_skill_name = "???????",
             b_hide_unavailiable_skills = "Hide Unavailiable Skills",
+            region_classic = "Classic",
+            region_metro = "Metro",
+            region_spooky = "Spooky",
+            region_sewer = "Sewer",
+            region_aether = "Aether",
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."},

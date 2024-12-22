@@ -1304,7 +1304,7 @@ pattern = '''rental = self.ability and self.ability.rental'''
 position = 'before'
 payload = '''xp = center.config.xp or 0,
 h_chips = center.h_chips or 0,
-m_type = center.m_type or ((name == "Gold Card") and "Precious") or "",'''
+m_type = center.m_type or ((name == "Gold Card") and "Precious") or ((name == "Steel Card") and "Common") or "",'''
 match_indent = true
 
 [[patches]]
