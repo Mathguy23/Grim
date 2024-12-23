@@ -239,6 +239,7 @@ payload = '''self.P_SKILLS = {
     sk_ortalab_starry_1 = {order = 74, key = 'sk_ortalab_starry_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry I", xp_req = 200, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Starry", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_starry_2 = {order = 75, key = 'sk_ortalab_starry_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry II", xp_req = 450, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_1'}, tier = 2, branch = "Starry", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_starry_3 = {order = 76, key = 'sk_ortalab_starry_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry III", xp_req = 700, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_2'}, tier = 3, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_grm_midas_touch = {order = 77, key = 'sk_grm_midas_touch', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Midas Touch", xp_req = 0, token_req = 1, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Midas Touch"},
 }'''
 match_indent = true
 
@@ -1680,6 +1681,9 @@ payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels a
     if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
         effects[#effects + 1] = {chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}
     end
+    if skill_active("sk_grm_midas_touch") and (G.GAME.skill_xp >= 150) then
+        effects[#effects + 1] = {dollars = math.floor(G.GAME.skill_xp / 150)}
+    end
     if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.rocky and not scoring_hand[i].debuff then
         effects[#effects + 1] = {extra = { func = function()
             for i, j in ipairs(scoring_hand) do
@@ -2493,6 +2497,15 @@ if self.ability.name == 'Spectral Shard' and (self.config.center.discovered or s
     G.skill_soul:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
     G.skill_soul:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
 end
+if self.ability.name == 'Midas Touch' and (self.config.center.discovered or self.bypass_discovery_center) then
+    local scale_mod = 0
+    local rotate_mod = 0.1*math.sin(1.219*G.TIMERS.REAL)
+
+    G.gold_bar.role.draw_major = self
+    G.gold_bar:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+    G.gold_bar:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+    G.gold_bar:draw_shader('grm_purple_shade', nil, self.ARGS.send_to_shader, nil, self.children.center, scale_mod, rotate_mod)
+end
 '''
 match_indent = true
 
@@ -2754,7 +2767,6 @@ payload = '''elseif self.config.skill_table then
 '''
 match_indent = true
 
-
 [[patches]]
 [patches.pattern]
 target = 'cardarea.lua'
@@ -2763,4 +2775,14 @@ position = 'after'
 payload = '''if self.config.skill_table and not card.config.center.unlocked then
     return false
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:set_ability(center, initial, delay_sprites)'''
+position = 'after'
+payload = '''   if skill_active("sk_grm_midas_touch") and (self.playing_card or (center.set == "Enhanced")) and next(self.config.card) then
+        center = G.P_CENTERS["c_base"]
+    end'''
 match_indent = true

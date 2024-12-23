@@ -462,6 +462,14 @@ return {
                     "in shops and packs",
                 }
             },
+            sk_grm_midas_touch = {
+                name = "Midas Touch",
+                text = {
+                    "All {C:attention}playing cards{} are {{C:attention}unenhanced{}",
+                    "and give {C:money}$1{} per {C:purple}150{} XP held",
+                    "when {C:attention}scored{}"
+                }
+            },
             sk_cry_ace_1 = {
                 name = "ACE I",
                 text = {

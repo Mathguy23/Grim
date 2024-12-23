@@ -806,6 +806,15 @@ function learn_skill(card, direct_, debuffing)
         if G.GAME.force_grm_packs then
             table.insert(G.GAME.force_grm_packs, "Standard")
         end
+    elseif key == "sk_grm_midas_touch" then
+        for i, j in ipairs(G.playing_cards) do
+            j:set_ability(G.P_CENTERS.m_gold)
+        end
+        if G.pack_cards and G.pack_cards.cards then
+            for i, j in ipairs(G.pack_cards.cards) do
+                j:set_ability(G.P_CENTERS.m_gold)
+            end
+        end
     elseif key == "sk_cry_ace_1" then
         pseudoseed("cry_crash")
     elseif key == "sk_cry_m_3" then
@@ -1738,6 +1747,7 @@ SMODS.Atlas({ key = "skills3", atlas_table = "ASSET_ATLAS", path = "skills3.png"
             { mipmaps = true, dpiscale = G.SETTINGS.GRAPHICS.texture_scaling })
         G[self.atlas_table][self.key_noloc or self.key] = self
         G.skill_soul = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 2,y = 0})
+        G.gold_bar = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 5})
     end
 })
 
@@ -1880,6 +1890,11 @@ SMODS.Shader {
 SMODS.Shader {
     key = 'skill_debuff',
     path = 'skill_debuff.fs'
+}
+
+SMODS.Shader {
+    key = 'purple_shade',
+    path = 'purple_shade.fs'
 }
 
 SMODS.Tarot {
