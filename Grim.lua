@@ -3638,6 +3638,7 @@ SMODS.Stake {
     name = "Bismuth Stake",
     atlas = "stakes",
     pos = {x = 1, y = 0},
+    prefix_config = { applied_stakes = { mod = false } },
     applied_stakes = {"gold"},
     modifiers = function()
         G.GAME.modifiers.no_big_shop = true
