@@ -451,7 +451,7 @@ return {
                 name = "Blind Breaker",
                 text = {
                     "After {C:attention}main scoring{}, Gives",
-                    "{X:red,C:white} XMult {} equal to {C:blue}scored chips^0.15{}",
+                    "{X:red,C:white} XMult {} equal to {C:blue}scored chips^0.2{}",
                     "{C:inactive}(Minimum of {X:red,C:white} X1 {C:inactive})"
                 }
             },
@@ -462,12 +462,11 @@ return {
                     "in shops and packs",
                 }
             },
-            sk_grm_midas_touch = {
-                name = "Midas Touch",
+            sk_grm_dexterity = {
+                name = "Dexterity",
                 text = {
-                    "All {C:attention}playing cards{} are {{C:attention}unenhanced{}",
-                    "and give {C:money}$1{} per {C:purple}150{} XP held",
-                    "when {C:attention}scored{}"
+                    "{C:blue}+1{} hand per {C:purple}100{} XP held,",
+                    "when {C:attention}Blind{} is selected",
                 }
             },
             sk_cry_ace_1 = {
@@ -980,8 +979,8 @@ return {
             common_metal = {
                 name = "Common",
                 text = {
-                    "Card with a",
-                    "Common Enhancement"
+                    "Card with a Common",
+                    "Metal Enhancement"
                 }
             },
             precious_metal = {
@@ -1673,7 +1672,7 @@ return {
             k_loot_pack = "Loot Pack",
             k_ancient_pack = "Ancient Pack",
             unknown_skill_name = "???????",
-            b_hide_unavailiable_skills = "Hide Unavailiable Skills",
+            b_hide_unavailiable_skills = "Hide Unavailable Skills",
             region_classic = "Classic",
             region_metro = "Metro",
             region_spooky = "Spooky",
