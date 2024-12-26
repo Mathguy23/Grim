@@ -465,8 +465,8 @@ return {
             sk_grm_dexterity = {
                 name = "Dexterity",
                 text = {
-                    "{C:blue}+1{} hand per {C:purple}100{} XP held,",
-                    "when {C:attention}Blind{} is selected",
+                    "When {C:attention}Blind{} is selected,",
+                    "Gain {C:blue}+1{} hand per {C:purple}100{} XP held,",
                 }
             },
             sk_cry_ace_1 = {
