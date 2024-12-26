@@ -580,7 +580,7 @@ end
 if game_over and skill_saved then
     game_over = false
 end
-if (G.GAME.special_levels) and (G.GAME.special_levels["money"] > 0) and G.GAME.dollars < G.GAME.grim_boss_dollars then
+if (G.GAME.special_levels) and (G.GAME.special_levels["money"] > 0) and (to_big and to_big(G.GAME.dollars) or (G.GAME.dollars)) < (to_big and to_big(G.GAME.grim_boss_dollars) or (G.GAME.grim_boss_dollars)) then
     ease_dollars(math.ceil(0.1 * G.GAME.special_levels["money"] * (G.GAME.grim_boss_dollars - G.GAME.dollars)))
 end
 if (G.GAME.blind_on_deck == "Boss") and G.GAME.special_levels and (G.GAME.special_levels["overshoot"] > 0) then

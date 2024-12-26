@@ -1214,7 +1214,7 @@ function calculate_skill(skill, context)
     elseif context.before then
         if skill == "sk_grm_skillful_2" then
             local level = G.GAME.hands[context.scoring_name].level
-            if level > 0 then
+            if (to_big and to_big(level) or level) > (to_big and to_big(0) or 0) then
                 add_skill_xp(math.min(40, level), G.deck)
             end
         elseif skill == "sk_grm_ocean_3" and (G.GAME.current_round.hands_played == 0) then
@@ -1294,7 +1294,7 @@ function skill_unlock_check(card, args)
             return true
         end
     elseif card.key == "sk_grm_strike_3" then
-        if (args.type == 'upgrade_hand') and (args.level >= 40) then
+        if (args.type == 'upgrade_hand') and ((to_big and to_big(args.level) or args.level) >= (to_big and to_big(40) or 40)) then
             return true
         end
     elseif card.key == "sk_grm_chime_3" then
@@ -1591,7 +1591,7 @@ function do_attack(context, extra)
         local result = nil
         local valid = false
         for i, j in pairs(G.GAME.hands) do
-            if (j.level > 1) and j.visible then
+            if ((to_big and to_big(j.level) or j.level) > (to_big and to_big(1) or 1)) and j.visible then
                 pool[i] = j.played
                 valid = true
                 total = total + j.played
