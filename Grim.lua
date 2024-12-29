@@ -118,7 +118,7 @@ SMODS.Stellar = SMODS.Consumable:extend {
     cost = 5,
     loc_vars = function(self, info_queue, card)
         return {vars = {
-            localize(self.config.suit, 'suits_plural'),
+            ((self.config.suit == "Fleurons") or (self.config.suit == "Halberds")) and (self.config.suit) or localize(self.config.suit, 'suits_plural'),
             G.GAME.special_levels[self.special_level] + 1,
             string.format("%.2f", self.config.mult),
             string.format("%.1f", self.config.chips),
@@ -3089,6 +3089,23 @@ SMODS.Stellar {
     in_pool = function(self)
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
     end
+}
+SMODS.Stellar {
+    key = 'arcturus',
+    atlas = "stellar",
+    special_level = "fleuron",
+    pos = {x = 0, y = 2},
+    config = {suit = "Fleurons", mult = 0.25, chips = 3},
+    dependencies = {"Bunco"}
+}
+
+SMODS.Stellar {
+    key = 'vega',
+    atlas = "stellar",
+    special_level = "halberd",
+    pos = {x = 1, y = 2},
+    config = {suit = "Halberds", mult = 0.4, chips = 1.4},
+    dependencies = {"Bunco"}
 }
 
 SMODS.Spectral {

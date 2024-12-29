@@ -44,6 +44,8 @@ special_levels = {
     spade = 0,
     diamond = 0,
     nothing = 0,
+    fleuron = 0,
+    halberd = 0,
     debuff = 0,
     boss = 0,
     face_down = 0,
@@ -57,6 +59,8 @@ stellar_levels = {
     diamonds = {chips = 0, mult = 0},
     clubs = {chips = 0, mult = 0},
     spades = {chips = 0, mult = 0},
+    fleurons = {chips = 0, mult = 0},
+    halberds = {chips = 0, mult = 0},
     nothings = {chips = 0, mult = 0},
 },
 nullified_blinds = {},
@@ -1600,8 +1604,8 @@ payload = '''if ((_c.set == 'Enhanced') or (_c.set == 'Default')) then
         localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
     end
     if card then
-        for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs"}) do
-            if card:is_suit(j) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
+        for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs", "Fleurons", "Halberds"}) do
+            if (card:is_suit(j) or card:is_suit("bunc_" .. j)) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
                 info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
             end
         end
@@ -1664,6 +1668,12 @@ payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels a
     end
     if scoring_hand[i]:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
         effects[#effects + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
+    end
+    if scoring_hand[i]:is_suit("bunc_Fleurons") and G.GAME.special_levels and (G.GAME.special_levels["fleuron"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}
+    end
+    if scoring_hand[i]:is_suit("bunc_Halberds") and G.GAME.special_levels and (G.GAME.special_levels["halberd"] > 0) then
+        effects[#effects + 1] = {chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}
     end
     if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
         effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}

@@ -1285,6 +1285,26 @@ return {
                     "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
                 }
             },
+            c_grm_arcturus = {
+                name = "Arcturus",
+                text = {
+                    "{C:attention}Upgrade{} {C:bunc_fleurons}#1#{}",
+                    "{C:mult}+#3#{} Mult and",
+                    "{C:chips}+#4#{} chips",
+                    "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+                    "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+                }
+            },
+            c_grm_vega = {
+                name = "Vega",
+                text = {
+                    "{C:attention}Upgrade{} {C:bunc_halberds}#1#{}",
+                    "{C:mult}+#3#{} Mult and",
+                    "{C:chips}+#4#{} chips",
+                    "{C:inactive}({C:red}+#5#{}, {C:blue}+#6#{C:inactive})",
+                    "{C:inactive}(LVL {C:attention}#2#{C:inactive})",
+                }
+            },
             c_grm_lp_944_20 = {
                 name = "LP 944-20",
                 text = {
