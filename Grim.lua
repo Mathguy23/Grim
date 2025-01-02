@@ -2644,13 +2644,13 @@ SMODS.Enhancement {
     key = 'platinum',
     name = "Platinum Card",
     atlas = 'enhance',
-    config = {h_chips = 50, m_type = "Precious"},
+    config = {grm_h_chips = 50, m_type = "Precious"},
     pos = {x = 2, y = 0},
     in_pool = function(self)
         return false
     end,
     loc_vars = function(self, info_queue, card)
-        return {vars = {card and card.ability.h_chips or 50}}
+        return {vars = {card and card.ability.grm_h_chips or 50}}
     end,
 }
 
@@ -4202,7 +4202,7 @@ end
 
 function Card:get_chip_h_chips()
     if self.debuff then return 0 end
-    return self.ability.h_chips or 0
+    return self.ability.grm_h_chips or 0
 end
 
 G.FUNCS.your_lunar_stats = function(e)
