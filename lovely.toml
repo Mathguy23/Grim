@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 0,
+skill_xp = 1000000,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
@@ -877,18 +877,6 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'
-pattern = '''if effects[ii].mult then'''
-position = 'before'
-payload = '''if effects[ii].xp then 
-    if effects[ii].card then juice_card(effects[ii].card) end
-    add_skill_xp(effects[ii].xp, scoring_hand[i])
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
 pattern = '''local hand_text_set = false'''
 position = 'before'
 payload = '''for i, j in pairs(G.GAME.skills) do
@@ -1378,45 +1366,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''if context.cardarea == G.play then'''
-position = 'before'
-payload = '''if (card.area == G.consumeables) and card.playing_card then
-    ret.playing_card = true
-    local chips = card:get_chip_bonus()
-    if chips > 0 then 
-        ret.chips = chips
-    end
-
-    local mult = card:get_chip_mult()
-    if mult > 0 then 
-        ret.mult = mult
-    end
-
-    local xp = card:get_chip_xp(context)
-    if xp > 0 then 
-        ret.xp = xp
-    end
-
-    local x_mult = card:get_chip_x_mult(context)
-    if x_mult > 0 then 
-        ret.x_mult = x_mult
-    end
-
-    local p_dollars = card:get_p_dollars()
-    if p_dollars > 0 then 
-        ret.p_dollars = p_dollars
-    end
-
-    local edition = card:get_edition(context)
-    if edition then 
-        ret.edition = edition
-    end
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = 'functions/UI_definitions.lua'
 pattern = '''if card.area and card.area.config.type == 'joker' then'''
 position = 'before'
@@ -1462,111 +1411,104 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'
-pattern = '''--Joker on Joker effects'''
+pattern = '''--Joker Effects'''
 position = 'before'
-payload = '''if effects.playing_card then
-    local reps = {1}
-    local j = 1
-    while j <= #reps do
-        if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
+payload = '''for i=1, #G.consumeables.cards do
+    local _card = G.consumeables.cards[i]
+    local effects = eval_card(_card, {cardarea = G.consumables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true})
+    if _card.playing_card then
+        local reps = {1}
+        local j = 1
+        while j <= #reps do
+            if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
 
-        if reps[j] == 1 then 
-            --Check for hand doubling
-            --From Red seal
-            local eval = eval_card(_card, {end_of_round = true,cardarea = G.consumeables, repetition = true, repetition_only = true})
-            if next(eval) then 
-                for h = 1, eval.seals.repetitions do
-                    reps[#reps+1] = eval
-                end
-            end
-
-            --from Jokers
-            for j=1, #G.jokers.cards do
-                --calculate the joker effects
-                local eval0 = eval_card(G.jokers.cards[j], {cardarea = G.consumeables, other_card = _card, repetition = true})
-                if next(eval0) then 
-                    for h = 1, eval0.jokers.repetitions do
+            if reps[j] == 1 then 
+                --Check for hand doubling
+                --From Red seal
+                local eval = eval_card(_card, {end_of_round = true,cardarea = G.consumeables, repetition = true, repetition_only = true})
+                if next(eval) and eval.seals then 
+                    for h = 1, eval.seals.repetitions do
                         reps[#reps+1] = eval
                     end
                 end
             end
-        end
-        if effects.chips then 
-            juice_card(_card)
-            hand_chips = mod_chips(hand_chips + effects.chips)
-            update_hand_text({delay = 0}, {chips = hand_chips})
-            card_eval_status_text(_card, 'chips', effects.chips, percent)
-        end
-
-        if effects.xp then
-            juice_card(_card)
-            add_skill_xp(effects.xp, _card)
-        end
-
-        if effects.mult then 
-            juice_card(_card)
-            mult = mod_mult(mult + effects.mult)
-            update_hand_text({delay = 0}, {mult = mult})
-            card_eval_status_text(_card, 'mult', effects.mult, percent)
-        end
-
-        if effects.p_dollars then 
-            juice_card(_card)
-            ease_dollars(effects.p_dollars)
-            card_eval_status_text(_card, 'dollars', effects.p_dollars, percent)
-        end
-
-        if effects.dollars then 
-            juice_card(_card)
-            ease_dollars(effects.dollars)
-            card_eval_status_text(_card, 'dollars', effects.dollars, percent)
-        end
-
-        if effects.extra then
-            juice_card(_card)
-            local extras = {mult = false, hand_chips = false}
-            if effects.extra.mult_mod then mult =mod_mult( mult + effects.extra.mult_mod);extras.mult = true end
-            if effects.extra.chip_mod then hand_chips = mod_chips(hand_chips + effects.extra.chip_mod);extras.hand_chips = true end
-            if effects.extra.swap then 
-                local old_mult = mult
-                mult = mod_mult(hand_chips)
-                hand_chips = mod_chips(old_mult)
-                extras.hand_chips = true; extras.mult = true
+            if effects.chips then 
+                juice_card(_card)
+                hand_chips = mod_chips(hand_chips + effects.chips)
+                update_hand_text({delay = 0}, {chips = hand_chips})
+                card_eval_status_text(_card, 'chips', effects.chips, percent)
             end
-            if effects.extra.func then effects.extra.func() end
-            update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
-            card_eval_status_text(_card, 'extra', nil, percent, nil, effects.extra)
-        end
 
-        --If x_mult added, do mult add event and mult the mult to the total
-        if effects.x_mult then
-            juice_card(_card)
-            mult = mod_mult(mult*effects.x_mult)
-            update_hand_text({delay = 0}, {mult = mult})
-            card_eval_status_text(_card, 'x_mult', effects.x_mult, percent)
-        end
+            if effects.xp then
+                juice_card(_card)
+                add_skill_xp(effects.xp, _card)
+            end
 
-        --calculate the card edition effects
-        if effects.edition then
-            juice_card(_card)
-            hand_chips = mod_chips(hand_chips + (effects.edition.chip_mod or 0))
-            mult = mult + (effects.edition.mult_mod or 0)
-            mult = mod_mult(mult*(effects.edition.x_mult_mod or 1))
-            update_hand_text({delay = 0}, {
-                chips = effects.edition.chip_mod and hand_chips or nil,
-                mult = (effects.edition.mult_mod or effects.edition.x_mult_mod) and mult or nil,
-            })
-            card_eval_status_text(_card, 'extra', nil, percent, nil, {
-                message = (effects.edition.chip_mod and localize{type='variable',key='a_chips',vars={effects.edition.chip_mod}}) or
-                        (effects.edition.mult_mod and localize{type='variable',key='a_mult',vars={effects.edition.mult_mod}}) or
-                        (effects.edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects.edition.x_mult_mod}}),
-                chip_mod =  effects.edition.chip_mod,
-                mult_mod =  effects.edition.mult_mod,
-                x_mult_mod =  effects.edition.x_mult_mod,
-                colour = G.C.DARK_EDITION,
-                edition = true})
+            if effects.mult then 
+                juice_card(_card)
+                mult = mod_mult(mult + effects.mult)
+                update_hand_text({delay = 0}, {mult = mult})
+                card_eval_status_text(_card, 'mult', effects.mult, percent)
+            end
+
+            if effects.p_dollars then 
+                juice_card(_card)
+                ease_dollars(effects.p_dollars)
+                card_eval_status_text(_card, 'dollars', effects.p_dollars, percent)
+            end
+
+            if effects.dollars then 
+                juice_card(_card)
+                ease_dollars(effects.dollars)
+                card_eval_status_text(_card, 'dollars', effects.dollars, percent)
+            end
+
+            if effects.extra then
+                juice_card(_card)
+                local extras = {mult = false, hand_chips = false}
+                if effects.extra.mult_mod then mult =mod_mult( mult + effects.extra.mult_mod);extras.mult = true end
+                if effects.extra.chip_mod then hand_chips = mod_chips(hand_chips + effects.extra.chip_mod);extras.hand_chips = true end
+                if effects.extra.swap then 
+                    local old_mult = mult
+                    mult = mod_mult(hand_chips)
+                    hand_chips = mod_chips(old_mult)
+                    extras.hand_chips = true; extras.mult = true
+                end
+                if effects.extra.func then effects.extra.func() end
+                update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
+                card_eval_status_text(_card, 'extra', nil, percent, nil, effects.extra)
+            end
+
+            --If x_mult added, do mult add event and mult the mult to the total
+            if effects.x_mult then
+                juice_card(_card)
+                mult = mod_mult(mult*effects.x_mult)
+                update_hand_text({delay = 0}, {mult = mult})
+                card_eval_status_text(_card, 'x_mult', effects.x_mult, percent)
+            end
+
+            --calculate the card edition effects
+            if effects.edition then
+                juice_card(_card)
+                hand_chips = mod_chips(hand_chips + (effects.edition.chip_mod or 0))
+                mult = mult + (effects.edition.mult_mod or 0)
+                mult = mod_mult(mult*(effects.edition.x_mult_mod or 1))
+                update_hand_text({delay = 0}, {
+                    chips = effects.edition.chip_mod and hand_chips or nil,
+                    mult = (effects.edition.mult_mod or effects.edition.x_mult_mod) and mult or nil,
+                })
+                card_eval_status_text(_card, 'extra', nil, percent, nil, {
+                    message = (effects.edition.chip_mod and localize{type='variable',key='a_chips',vars={effects.edition.chip_mod}}) or
+                            (effects.edition.mult_mod and localize{type='variable',key='a_mult',vars={effects.edition.mult_mod}}) or
+                            (effects.edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects.edition.x_mult_mod}}),
+                    chip_mod =  effects.edition.chip_mod,
+                    mult_mod =  effects.edition.mult_mod,
+                    x_mult_mod =  effects.edition.x_mult_mod,
+                    colour = G.C.DARK_EDITION,
+                    edition = true})
+            end
+            j = j + 1
         end
-        j = j + 1
     end
 end'''
 match_indent = true
@@ -1658,28 +1600,29 @@ target = 'functions/state_events.lua'
 pattern = '''scoring_hand[i].lucky_trigger = nil'''
 position = 'after'
 payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}}
     end
     if scoring_hand[i]:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}}
     end
     if scoring_hand[i]:is_suit("Spades") and G.GAME.special_levels and (G.GAME.special_levels["spade"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}}
+        print("Wait What")
     end
     if scoring_hand[i]:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}}
     end
     if scoring_hand[i]:is_suit("bunc_Fleurons") and G.GAME.special_levels and (G.GAME.special_levels["fleuron"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}}
     end
     if scoring_hand[i]:is_suit("bunc_Halberds") and G.GAME.special_levels and (G.GAME.special_levels["halberd"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}}
     end
     if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
-        effects[#effects + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}
+        effects[#effects + 1] = {{x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}}
     end
     if scoring_hand[i].grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
-        effects[#effects + 1] = {x_mult = G.GAME.area_data.midnight_mult}
+        effects[#effects + 1] = {{x_mult = G.GAME.area_data.midnight_mult}}
     end
     local has_suit = false
     for i0, j in pairs(SMODS.Suits) do
@@ -1689,7 +1632,7 @@ payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels a
         end
     end
     if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
-        effects[#effects + 1] = {chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}}
     end
     if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.rocky and not scoring_hand[i].debuff then
         effects[#effects + 1] = {extra = { func = function()
@@ -2112,21 +2055,6 @@ target = 'cardarea.lua'
 pattern = '''pseudoshuffle(self.cards, pseudoseed(_seed or 'shuffle'))'''
 position = 'after'
 payload = '''self:dragLead()'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''if effects[ii].h_mult then'''
-position = 'before'
-payload = '''
-if effects[ii].grm_h_chips then
-    mod_percent = true
-    hand_chips = mod_mult(hand_chips + effects[ii].grm_h_chips)
-    update_hand_text({delay = 0}, {chips = hand_chips})
-    card_eval_status_text(G.hand.cards[i], 'chips', effects[ii].grm_h_chips, percent)
-end
-'''
 match_indent = true
 
 [[patches]]

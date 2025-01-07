@@ -243,7 +243,6 @@ SMODS.Loot = SMODS.Consumable:extend {
     discovered = true,
 }
 
-
 SMODS.UndiscoveredSprite {
     key = 'Lunar',
     atlas = 'lunar',
@@ -4221,6 +4220,71 @@ G.FUNCS.your_nullified_blinds_page = function(args)
       definition = create_UIBox_current_lunar_stats(),
     }
     use_page = nil
+end
+
+local old_indiv = SMODS.calculate_individual_effect
+SMODS.calculate_individual_effect = function(effect, scored_card, percent, key, amount, from_edition)
+    local result = old_indiv(effect, scored_card, percent, key, amount, from_edition)
+    if (key == 'xp' or key == 'h_xp') and amount then 
+        add_skill_xp(amount, effect.card)
+        return true
+    end
+    if (key == 'grm_h_chips') and amount then 
+        hand_chips = mod_chips(hand_chips + amount)
+        update_hand_text({delay = 0}, {chips = hand_chips, mult = mult})
+        if not effect.remove_default_message then
+            if from_edition then
+                card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = localize{type = 'variable', key = amount > 0 and 'a_chips' or 'a_chips_minus', vars = {amount}}, chip_mod = amount, colour = G.C.EDITION, edition = true})
+            else
+                if key ~= 'chip_mod' then
+                    if effect.chip_message then
+                        card_eval_status_text(scored_card or effect.focus, 'extra', nil, percent, nil, effect.chip_message)
+                    else
+                        card_eval_status_text(scored_card or effect.focus, 'chips', amount, percent)
+                    end
+                end
+            end
+        end
+        return true
+    end
+end
+
+local old_eval_card = eval_card
+function eval_card(card, context)
+    local ret, post_trig = old_eval_card(card, context)
+    if (card.area == G.consumeables) and card.playing_card and context.joker_main and (type(ret) == "table") then
+        ret.playing_card = ret.playing_card or {}
+        local chips = card:get_chip_bonus()
+        if chips > 0 then 
+            ret.playing_card.chips = chips
+        end
+    
+        local mult = card:get_chip_mult()
+        if mult > 0 then 
+            ret.playing_card.mult = mult
+        end
+    
+        local xp = card:get_chip_xp(context)
+        if xp > 0 then 
+            ret.playing_card.xp = xp
+        end
+    
+        local x_mult = card:get_chip_x_mult(context)
+        if x_mult > 0 then 
+            ret.playing_card.x_mult = x_mult
+        end
+    
+        local p_dollars = card:get_p_dollars()
+        if p_dollars > 0 then 
+            ret.playing_card.p_dollars = p_dollars
+        end
+    
+        local edition = card:get_edition(context)
+        if edition then 
+            ret.playing_card.edition = edition
+        end
+    end
+    return ret, post_trig
 end
 
 ----------------------------------------------
