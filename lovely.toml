@@ -11,7 +11,7 @@ position = 'after'
 payload = '''base_ante_scaling = get_starting_params().ante_scaling,
 scaling_multipliers = {},
 skills = {},
-skill_xp = 1000000,
+skill_xp = 0,
 xp_spent = 0,
 legendary_tokens = 0,
 reset_antes = {},
