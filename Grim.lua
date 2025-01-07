@@ -4247,6 +4247,7 @@ SMODS.calculate_individual_effect = function(effect, scored_card, percent, key, 
         end
         return true
     end
+    return result
 end
 
 local old_eval_card = eval_card
@@ -4286,6 +4287,8 @@ function eval_card(card, context)
     end
     return ret, post_trig
 end
+
+table.insert(SMODS.calculation_keys, 'grm_h_chips')
 
 ----------------------------------------------
 ------------MOD CODE END----------------------
