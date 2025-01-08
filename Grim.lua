@@ -4252,8 +4252,9 @@ end
 
 local old_eval_card = eval_card
 function eval_card(card, context)
-    local ret, post_trig = old_eval_card(card, context)
+    local result_table = {old_eval_card(card, context)}
     if (card.area == G.consumeables) and card.playing_card and context.joker_main and (type(ret) == "table") then
+        local ret, post_trig = result_table[1], result_table[2]
         ret.playing_card = ret.playing_card or {}
         local chips = card:get_chip_bonus()
         if chips > 0 then 
@@ -4284,11 +4285,14 @@ function eval_card(card, context)
         if edition then 
             ret.playing_card.edition = edition
         end
+        return ret, post_trig
     end
-    return ret, post_trig
+    return unpack(result_table)
 end
 
 table.insert(SMODS.calculation_keys, 'grm_h_chips')
+table.insert(SMODS.calculation_keys, 'xp')
+table.insert(SMODS.calculation_keys, 'h_xp')
 
 ----------------------------------------------
 ------------MOD CODE END----------------------
