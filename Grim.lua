@@ -4226,7 +4226,7 @@ local old_indiv = SMODS.calculate_individual_effect
 SMODS.calculate_individual_effect = function(effect, scored_card, percent, key, amount, from_edition)
     local result = old_indiv(effect, scored_card, percent, key, amount, from_edition)
     if (key == 'xp' or key == 'h_xp') and amount then 
-        add_skill_xp(amount, effect.card)
+        add_skill_xp(amount, scored_card or effect.focus)
         return true
     end
     if (key == 'grm_h_chips') and amount then 
@@ -4253,7 +4253,7 @@ end
 local old_eval_card = eval_card
 function eval_card(card, context)
     local result_table = {old_eval_card(card, context)}
-    if (card.area == G.consumeables) and card.playing_card and context.joker_main and (type(ret) == "table") then
+    if (card.area == G.consumeables) and card.playing_card and context.joker_main and result_table[1] and (type(result_table[1]) == "table") then
         local ret, post_trig = result_table[1], result_table[2]
         ret.playing_card = ret.playing_card or {}
         local chips = card:get_chip_bonus()
@@ -4286,6 +4286,14 @@ function eval_card(card, context)
             ret.playing_card.edition = edition
         end
         return ret, post_trig
+    end
+    if (card.area == G.play) and card.playing_card and context.main_scoring and result_table[1] and (type(result_table[1]) == "table") then
+        local ret, post_trig = result_table[1], result_table[2]
+        ret.playing_card = ret.playing_card or {}
+        local xp = card:get_chip_xp()
+        if xp ~= 0 then 
+            ret.playing_card.xp = xp
+        end
     end
     return unpack(result_table)
 end
