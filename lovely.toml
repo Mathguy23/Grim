@@ -1582,8 +1582,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/common_events.lua'
-pattern = '''if context.cardarea == G.hand then'''
-position = 'after'
+pattern = '''local h_mult = card:get_chip_h_mult()'''
+position = 'before'
 payload = '''   if card.debuff and G.GAME.special_levels and (G.GAME.special_levels["debuff"] > 0) then
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
         card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + G.GAME.special_levels["debuff"] * 0.5
