@@ -864,18 +864,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'functions/common_events.lua'
-pattern = '''local x_mult = card:get_chip_x_mult(context)'''
-position = 'before'
-payload = '''local xp = card:get_chip_xp(context)
-if xp > 0 then 
-    ret.xp = xp
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = 'functions/state_events.lua'
 pattern = '''local hand_text_set = false'''
 position = 'before'
