@@ -1409,7 +1409,11 @@ payload = '''for i=1, #G.consumeables.cards do
         local reps = {1}
         local j = 1
         while j <= #reps do
-            if reps[j] ~= 1 then card_eval_status_text((reps[j].jokers or reps[j].seals).card, 'jokers', nil, nil, nil, (reps[j].jokers or reps[j].seals)) end
+            if reps[j] ~= 1 then 
+                local _, eff = next(reps[j])
+                card_eval_status_text(eff.card, 'jokers', nil, nil, nil, eff)
+                percent = percent + 0.08
+            end
 
             if reps[j] == 1 then 
                 --Check for hand doubling
@@ -1580,57 +1584,6 @@ payload = '''   if card.debuff and G.GAME.special_levels and (G.GAME.special_lev
     local h_chips = card:get_chip_h_chips()
     if h_chips > 0 then 
         ret.grm_h_chips = h_chips
-    end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'functions/state_events.lua'
-pattern = '''scoring_hand[i].lucky_trigger = nil'''
-position = 'after'
-payload = '''   if scoring_hand[i]:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}}
-    end
-    if scoring_hand[i]:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}}
-    end
-    if scoring_hand[i]:is_suit("Spades") and G.GAME.special_levels and (G.GAME.special_levels["spade"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}}
-        print("Wait What")
-    end
-    if scoring_hand[i]:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}}
-    end
-    if scoring_hand[i]:is_suit("bunc_Fleurons") and G.GAME.special_levels and (G.GAME.special_levels["fleuron"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}}
-    end
-    if scoring_hand[i]:is_suit("bunc_Halberds") and G.GAME.special_levels and (G.GAME.special_levels["halberd"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}}
-    end
-    if scoring_hand[i].grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
-        effects[#effects + 1] = {{x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}}
-    end
-    if scoring_hand[i].grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
-        effects[#effects + 1] = {{x_mult = G.GAME.area_data.midnight_mult}}
-    end
-    local has_suit = false
-    for i0, j in pairs(SMODS.Suits) do
-        if scoring_hand[i]:is_suit(j.key) then
-            has_suit = true
-            break
-        end
-    end
-    if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
-        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}}
-    end
-    if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.rocky and not scoring_hand[i].debuff then
-        effects[#effects + 1] = {extra = { func = function()
-            for i, j in ipairs(scoring_hand) do
-                j.ability.perma_bonus = j.ability.perma_bonus or 0
-                j.ability.perma_bonus = j.ability.perma_bonus + 3
-                card_eval_status_text(j, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_upgrade_ex')})
-            end
-        end}}
     end'''
 match_indent = true
 
@@ -2701,5 +2654,63 @@ pattern = '''function CardArea:can_highlight(card)'''
 position = 'after'
 payload = '''if self.config.skill_table and not card.config.center.unlocked then
     return false
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''local ret = {}'''
+position = 'after'
+payload = '''if context.main_scoring and not context.no_extra_grm then
+    local new_context = {no_extra_grm = true}
+    for i, j in pairs(context) do
+        new_context[i] = j
+    end
+    local effects = {eval_card(card, new_context)}
+    if card:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}}
+    end
+    if card:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}}
+    end
+    if card:is_suit("Spades") and G.GAME.special_levels and (G.GAME.special_levels["spade"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}}
+    end
+    if card:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}}
+    end
+    if card:is_suit("bunc_Fleurons") and G.GAME.special_levels and (G.GAME.special_levels["fleuron"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}}
+    end
+    if card:is_suit("bunc_Halberds") and G.GAME.special_levels and (G.GAME.special_levels["halberd"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}}
+    end
+    if card.grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
+        effects[#effects + 1] = {{x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}}
+    end
+    if card.grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
+        effects[#effects + 1] = {{x_mult = G.GAME.area_data.midnight_mult}}
+    end
+    local has_suit = false
+    for i0, j in pairs(SMODS.Suits) do
+        if card:is_suit(j.key) then
+            has_suit = true
+            break
+        end
+    end
+    if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
+        effects[#effects + 1] = {{chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}}
+    end
+    if card.ability and card.ability.grm_status and card.ability.grm_status.rocky and not card.debuff then
+        effects[#effects + 1] = {extra = { func = function()
+            for i, j in ipairs(context.scoring_hand) do
+                j.ability.perma_bonus = j.ability.perma_bonus or 0
+                j.ability.perma_bonus = j.ability.perma_bonus + 3
+                card_eval_status_text(j, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_upgrade_ex')})
+            end
+        end}}
+    end
+    return unpack(effects)
 end'''
 match_indent = true
