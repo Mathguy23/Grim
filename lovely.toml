@@ -1306,7 +1306,7 @@ payload = '''if G.GAME.modifiers["loot_pack"] and not G.GAME.current_round.used_
     card:set_cost()
 end
 if G.GAME.grm_modify_booster_slots or (G.GAME.force_grm_packs and (#G.GAME.force_grm_packs > 0)) then
-    for i0 = 1, math.max((G.GAME.force_grm_packs and #G.GAME.force_grm_packs) or 0, 2 + G.GAME.grm_modify_booster_slots) do
+    for i0 = 1, math.max((G.GAME.force_grm_packs and #G.GAME.force_grm_packs) or 0, 2 + (G.GAME.grm_modify_booster_slots or 0)) do
         if G.GAME.force_grm_packs and G.GAME.force_grm_packs[i0] and not G.GAME.current_round.used_packs[i0] then
             G.GAME.current_round.used_packs[i0] = get_pack('shop_pack', G.GAME.force_grm_packs[i0]).key
         end
