@@ -2643,14 +2643,19 @@ SMODS.Enhancement {
     key = 'platinum',
     name = "Platinum Card",
     atlas = 'enhance',
-    config = {grm_h_chips = 50, m_type = "Precious"},
+    config = {h_chips = 50, m_type = "Precious"},
     pos = {x = 2, y = 0},
     in_pool = function(self)
         return false
     end,
     loc_vars = function(self, info_queue, card)
-        return {vars = {card and card.ability.grm_h_chips or 50}}
+        return {vars = {card and card.ability.h_chips or 50}}
     end,
+    calculate = function(self, card, context)
+        if context.cardarea == G.hand and context.main_scoring then
+            return {chips = card and card.ability.h_chips or 50}
+        end
+    end
 }
 
 SMODS.Enhancement {
@@ -3593,6 +3598,11 @@ SMODS.Enhancement {
     end,
     set_ability = function(self, card, initial, delay_sprites)
         card.ability.xp = self.config.xp
+    end,
+    calculate = function(self, card, context)
+        if context.cardarea == G.play and context.main_scoring then
+            add_skill_xp(card and card.ability.xp or 5, card)
+        end
     end
 }
 
@@ -4201,7 +4211,7 @@ end
 
 function Card:get_chip_h_chips()
     if self.debuff then return 0 end
-    return self.ability.grm_h_chips or 0
+    return self.ability.h_chips or 0
 end
 
 G.FUNCS.your_lunar_stats = function(e)
@@ -4220,34 +4230,6 @@ G.FUNCS.your_nullified_blinds_page = function(args)
       definition = create_UIBox_current_lunar_stats(),
     }
     use_page = nil
-end
-
-local old_indiv = SMODS.calculate_individual_effect
-SMODS.calculate_individual_effect = function(effect, scored_card, percent, key, amount, from_edition)
-    local result = old_indiv(effect, scored_card, percent, key, amount, from_edition)
-    if (key == 'xp' or key == 'h_xp') and amount then 
-        add_skill_xp(amount, scored_card or effect.focus)
-        return true
-    end
-    if (key == 'grm_h_chips') and amount then 
-        hand_chips = mod_chips(hand_chips + amount)
-        update_hand_text({delay = 0}, {chips = hand_chips, mult = mult})
-        if not effect.remove_default_message then
-            if from_edition then
-                card_eval_status_text(scored_card, 'jokers', nil, percent, nil, {message = localize{type = 'variable', key = amount > 0 and 'a_chips' or 'a_chips_minus', vars = {amount}}, chip_mod = amount, colour = G.C.EDITION, edition = true})
-            else
-                if key ~= 'chip_mod' then
-                    if effect.chip_message then
-                        card_eval_status_text(scored_card or effect.focus, 'extra', nil, percent, nil, effect.chip_message)
-                    else
-                        card_eval_status_text(scored_card or effect.focus, 'chips', amount, percent)
-                    end
-                end
-            end
-        end
-        return true
-    end
-    return result
 end
 
 local old_eval_card = eval_card
@@ -4287,20 +4269,7 @@ function eval_card(card, context)
         end
         return ret, post_trig
     end
-    if (card.area == G.play) and card.playing_card and context.main_scoring and result_table[1] and (type(result_table[1]) == "table") then
-        local ret, post_trig = result_table[1], result_table[2]
-        ret.playing_card = ret.playing_card or {}
-        local xp = card:get_chip_xp()
-        if xp ~= 0 then 
-            ret.playing_card.xp = xp
-        end
-    end
     return unpack(result_table)
 end
-
-table.insert(SMODS.calculation_keys, 'grm_h_chips')
-table.insert(SMODS.calculation_keys, 'xp')
-table.insert(SMODS.calculation_keys, 'h_xp')
-
 ----------------------------------------------
 ------------MOD CODE END----------------------
