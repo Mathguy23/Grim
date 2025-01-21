@@ -3784,10 +3784,7 @@ function set_skill_win()
     if not G.PROFILES[G.SETTINGS.profile].skill_banners then
         G.PROFILES[G.SETTINGS.profile].skill_banners = {}
     end
-    if not grm_valid_mods() then
-        check_for_unlock({type = 'skill_check', grm_run_won = true})
-        return
-    end
+    check_for_unlock({type = 'skill_check', grm_run_won = true})
     for k, v in pairs(G.GAME.skills) do
         if G.GAME.ante_banners[k] then
             if G.PROFILES[G.SETTINGS.profile].skill_banners[k] and (G.PROFILES[G.SETTINGS.profile].skill_banners[k].ante > G.GAME.ante_banners[k]) then
@@ -3819,15 +3816,6 @@ function get_skill_win_banner(_center, ante)
         return "ante_" .. tostring(_w)
     end
     if ante then return -2 end
-end
-
-function grm_valid_mods()
-    for i, j in pairs(SMODS.Mods) do
-        if j.can_load and not j.disabled and (i ~= "GRM") and (i ~= "Talisman") and (i ~= "Steamodded") and (i ~= "nopeus") and (i ~= "Handy") then
-            return false
-        end
-    end
-    return true
 end
 
 function add_custom_round_eval_row(name, foot, intrest, the_colour)
