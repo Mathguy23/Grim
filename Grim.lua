@@ -1214,7 +1214,7 @@ function calculate_skill(skill, context)
         if skill == "sk_grm_skillful_2" then
             local level = G.GAME.hands[context.scoring_name].level
             if (to_big and to_big(level) or level) > (to_big and to_big(0) or 0) then
-                add_skill_xp(math.min(40, level), G.deck)
+                add_skill_xp(to_number and to_number(math.min(40, level)) or math.min(40, level), G.deck)
             end
         elseif skill == "sk_grm_ocean_3" and (G.GAME.current_round.hands_played == 0) then
             ease_discard(2)
