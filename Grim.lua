@@ -4348,5 +4348,114 @@ function Card:set_sprites(_center, _front)
         end
     end
 end
+
+local old_debuff = SMODS.DrawSteps['debuff'].func
+SMODS.DrawSteps['debuff'].func = function(self)
+    if self.debuff and self.ability and (self.ability.set == "Skill") then
+        self.children.center:draw_shader(self.ability and (self.ability.set == "Skill") and 'grm_skill_debuff' or 'debuff', nil, self.ARGS.send_to_shader)
+    else
+        old_debuff(self)
+    end
+end
+
+local old_soul = SMODS.DrawSteps['soul'].func
+SMODS.DrawSteps['soul'].func = function(self)
+    if self.ability.name == 'Iron Core' and (self.config.center.discovered or self.bypass_discovery_center) then
+        local scale_mod = 0.05 + 0.05*math.sin(3.6*G.TIMERS.REAL) + 0.07*math.sin((2*G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+        local rotate_mod = 0
+
+        G.iron_core.role.draw_major = self
+        G.iron_core:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+        G.iron_core:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+    end
+    if self.ability.name == 'Philosphy' and (self.config.center.discovered or self.bypass_discovery_center) then
+        local scale_mod = 0
+        local rotate_mod = (G.TIMERS.REAL - math.sin(G.TIMERS.REAL)) / 2
+
+        G.ultra_status.role.draw_major = self
+        G.ultra_status:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+        G.ultra_status:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+    end
+    if self.ability.name == 'Spectral Shard' and (self.config.center.discovered or self.bypass_discovery_center) then
+        local scale_mod = 0.05 + 0.05*math.sin(1.8*G.TIMERS.REAL) + 0.07*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
+        local rotate_mod = 0.1*math.sin(1.219*G.TIMERS.REAL) + 0.07*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
+
+        G.skill_soul.role.draw_major = self
+        G.skill_soul:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+        G.skill_soul:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+    end
+    if self.ability.name == 'Dexterity' and (self.config.center.discovered or self.bypass_discovery_center) then
+        local scale_mod = 0
+        local rotate_mod = 0.1*math.sin(1.219*G.TIMERS.REAL)
+
+        G.gold_bar.role.draw_major = self
+        G.gold_bar:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
+        G.gold_bar:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
+        G.gold_bar:draw_shader('grm_purple_shade', nil, self.ARGS.send_to_shader, nil, self.children.center, scale_mod, rotate_mod)
+    end
+    old_soul(self)
+end
+
+local old_seal = SMODS.DrawSteps['seal'].func
+SMODS.DrawSteps['seal'].func = function(self, layer)
+    old_seal(self, layer)
+    if self.ability and self.ability.grm_status then
+        if self.ability.grm_status.flint then
+            G.shared_stickers['sa_flint'].role.draw_major = self
+            G.shared_stickers['sa_flint']:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+        if self.ability.grm_status.subzero then
+            G.shared_stickers['sa_subzero'].role.draw_major = self
+            G.shared_stickers['sa_subzero']:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+        if self.ability.grm_status.rocky then
+            G.shared_stickers['sa_rocky'].role.draw_major = self
+            G.shared_stickers['sa_rocky']:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+        if self.ability.grm_status.gust or self.ability.grm_status.aether then
+            self.children.center:draw_shader('voucher', nil, self.ARGS.send_to_shader)
+        end
+        if self.ability.grm_status.aether then
+            G.shared_stickers['sa_aether'].role.draw_major = self
+            G.shared_stickers['sa_aether']:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+    end
+end
+
+local old_stickers = SMODS.DrawSteps['stickers'].func
+SMODS.DrawSteps['stickers'].func = function(self, layer)
+    if self.no_shader then
+        if self.sticker and G.shared_stickers[self.sticker] then
+            G.shared_stickers[self.sticker].role.draw_major = self
+            G.shared_stickers[self.sticker]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        elseif (self.sticker_run and G.shared_stickers[self.sticker_run]) and G.SETTINGS.run_stake_stickers then
+            G.shared_stickers[self.sticker_run].role.draw_major = self
+            G.shared_stickers[self.sticker_run]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+        end
+
+        for k, v in pairs(SMODS.Stickers) do
+            if self.ability[v.key] then
+                if v and v.draw and type(v.draw) == 'function' then
+                    v:draw(self, layer)
+                else
+                    G.shared_stickers[v.key].role.draw_major = self
+                    G.shared_stickers[v.key]:draw_shader('dissolve', nil, nil, nil, self.children.center)
+                end
+            end
+        end
+    else
+        old_stickers(self, layer)
+    end
+end
+
+local old_center = SMODS.DrawSteps['center'].func
+SMODS.DrawSteps['center'].func = function(self, layer)
+    old_center(self, layer)
+    if (self.ability.set == 'Skill') and self and self.area and self.area.config.skill_table and self.config.center and not G.GAME.skills[self.config.center.key] then
+        if self:should_draw_base_shader() then
+            self.children.center:draw_shader('grm_dimmed', nil, self.ARGS.send_to_shader)
+        end
+    end
+end
 ----------------------------------------------
 ------------MOD CODE END----------------------

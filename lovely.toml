@@ -852,18 +852,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'card.lua'
-pattern = '''if self.ability.name == 'Invisible Joker' and (self.config.center.discovered or self.bypass_discovery_center) then'''
-position = 'before'
-payload = '''if (self.ability.set == 'Skill') and self and self.area and self.area.config.skill_table and self.config.center and not G.GAME.skills[self.config.center.key] then
-    if self:should_draw_base_shader() then
-        self.children.center:draw_shader('grm_dimmed', nil, self.ARGS.send_to_shader)
-    end
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = 'functions/state_events.lua'
 pattern = '''local hand_text_set = false'''
 position = 'before'
@@ -1344,16 +1332,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'card.lua'
-pattern = '''G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)'''
-position = 'at'
-payload = '''if not self.no_shader then
-    G.shared_stickers[self.sticker]:draw_shader('voucher', nil, self.ARGS.send_to_shader, nil, self.children.center)
-end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = 'functions/UI_definitions.lua'
 pattern = '''if card.area and card.area.config.type == 'joker' then'''
 position = 'before'
@@ -1632,34 +1610,6 @@ target = 'functions/state_events.lua'
 pattern = '''G.GAME.round_bonus.discards = 0'''
 position = 'after'
 payload = '''G.GAME.grim_boss_dollars = G.GAME.dollars'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''elseif self.sprite_facing == 'back' then'''
-position = 'before'
-payload = '''if self.ability and (self.ability.grm_status) then
-    if self.ability.grm_status.flint then
-        G.shared_stickers['sa_flint'].role.draw_major = self
-        G.shared_stickers['sa_flint']:draw_shader('dissolve', nil, nil, nil, self.children.center)
-    end
-    if self.ability.grm_status.subzero then
-        G.shared_stickers['sa_subzero'].role.draw_major = self
-        G.shared_stickers['sa_subzero']:draw_shader('dissolve', nil, nil, nil, self.children.center)
-    end
-    if self.ability.grm_status.rocky then
-        G.shared_stickers['sa_rocky'].role.draw_major = self
-        G.shared_stickers['sa_rocky']:draw_shader('dissolve', nil, nil, nil, self.children.center)
-    end
-    if self.ability.grm_status.gust or self.ability.grm_status.aether then
-        self.children.center:draw_shader('voucher', nil, self.ARGS.send_to_shader)
-    end
-    if self.ability.grm_status.aether then
-        G.shared_stickers['sa_aether'].role.draw_major = self
-        G.shared_stickers['sa_aether']:draw_shader('dissolve', nil, nil, nil, self.children.center)
-    end
-end'''
 match_indent = true
 
 [[patches]]
@@ -2334,47 +2284,6 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'card.lua'
-pattern = '''if self.ability.name == 'The Soul' and (self.config.center.discovered or self.bypass_discovery_center) then'''
-position = 'before'
-payload = '''if self.ability.name == 'Iron Core' and (self.config.center.discovered or self.bypass_discovery_center) then
-    local scale_mod = 0.05 + 0.05*math.sin(3.6*G.TIMERS.REAL) + 0.07*math.sin((2*G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
-    local rotate_mod = 0
-
-    G.iron_core.role.draw_major = self
-    G.iron_core:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
-    G.iron_core:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
-end
-if self.ability.name == 'Philosphy' and (self.config.center.discovered or self.bypass_discovery_center) then
-    local scale_mod = 0
-    local rotate_mod = (G.TIMERS.REAL - math.sin(G.TIMERS.REAL)) / 2
-
-    G.ultra_status.role.draw_major = self
-    G.ultra_status:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
-    G.ultra_status:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
-end
-if self.ability.name == 'Spectral Shard' and (self.config.center.discovered or self.bypass_discovery_center) then
-    local scale_mod = 0.05 + 0.05*math.sin(1.8*G.TIMERS.REAL) + 0.07*math.sin((G.TIMERS.REAL - math.floor(G.TIMERS.REAL))*math.pi*14)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^3
-    local rotate_mod = 0.1*math.sin(1.219*G.TIMERS.REAL) + 0.07*math.sin((G.TIMERS.REAL)*math.pi*5)*(1 - (G.TIMERS.REAL - math.floor(G.TIMERS.REAL)))^2
-
-    G.skill_soul.role.draw_major = self
-    G.skill_soul:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
-    G.skill_soul:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
-end
-if self.ability.name == 'Dexterity' and (self.config.center.discovered or self.bypass_discovery_center) then
-    local scale_mod = 0
-    local rotate_mod = 0.1*math.sin(1.219*G.TIMERS.REAL)
-
-    G.gold_bar.role.draw_major = self
-    G.gold_bar:draw_shader('dissolve',0, nil, nil, self.children.center,scale_mod, rotate_mod,nil, 0.1 + 0.03*math.sin(1.8*G.TIMERS.REAL),nil, 0.6)
-    G.gold_bar:draw_shader('dissolve', nil, nil, nil, self.children.center, scale_mod, rotate_mod)
-    G.gold_bar:draw_shader('grm_purple_shade', nil, self.ARGS.send_to_shader, nil, self.children.center, scale_mod, rotate_mod)
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
 pattern = '''if self.ability.name == 'The Wheel of Fortune' or self.ability.name == 'Ectoplasm' or self.ability.name == 'Hex' then'''
 position = 'before'
 payload = '''if self.ability.name == 'The Wheel of Fortune' and skill_active("sk_grm_fortunate_3") then
@@ -2553,14 +2462,6 @@ payload = '''  if name == "cry-Jimball" then
   if name == "Jimball2" then
     name = "cry-Jimball"
   end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''self.children.center:draw_shader('debuff', nil, self.ARGS.send_to_shader)'''
-position = 'at'
-payload = '''self.children.center:draw_shader(self.ability and (self.ability.set == "Skill") and 'grm_skill_debuff' or 'debuff', nil, self.ARGS.send_to_shader)'''
 match_indent = true
 
 [[patches]]

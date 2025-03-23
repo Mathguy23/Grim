@@ -850,7 +850,7 @@ return {
                 name = "Ante 1 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 1{}",
                     "then won"
                 }
             },
@@ -858,7 +858,7 @@ return {
                 name = "Ante 2 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 2{}",
                     "then won"
                 }
             },
@@ -866,7 +866,7 @@ return {
                 name = "Ante 3 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 3{}",
                     "then won"
                 }
             },
@@ -874,7 +874,7 @@ return {
                 name = "Ante 4 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 4{}",
                     "then won"
                 }
             },
@@ -882,7 +882,7 @@ return {
                 name = "Ante 5 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 5{}",
                     "then won"
                 }
             },
@@ -890,7 +890,7 @@ return {
                 name = "Ante 6 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 6{}",
                     "then won"
                 }
             },
@@ -898,7 +898,7 @@ return {
                 name = "Ante 7 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 7{}",
                     "then won"
                 }
             },
@@ -906,7 +906,7 @@ return {
                 name = "Ante 8 Banner",
                 text = {
                     "Learned this Skill",
-                    "on {C:attention}Ante 0{}",
+                    "on {C:attention}Ante 8{}",
                     "then won"
                 }
             },
