@@ -803,8 +803,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/state_events.lua'
-pattern = '''mult, hand_chips, modded = G.GAME.blind:modify_hand(G.play.cards, poker_hands, text, mult, hand_chips)'''
-position = 'after'
+pattern = '''mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)'''
+position = 'before'
 payload = '''if old_zodiac_effect then
     G.GAME.Ortalab_Zodiac_Reduction = old_zodiac_effect
     old_zodiac_effect = nil
@@ -1501,21 +1501,10 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'card.lua'
-pattern = '''return self.ability.mult'''
-position = 'at'
-payload = '''return self.ability.mult + (self.ability.perma_bonus_mult or 0)'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = 'functions/common_events.lua'
 pattern = '''if _c.set == 'Other' then'''
 position = 'before'
 payload = '''if ((_c.set == 'Enhanced') or (_c.set == 'Default')) then
-    if specific_vars and specific_vars.grim_bonus_mult and not specific_vars.bonus_mult then
-        localize{type = 'other', key = 'card_extra_mult', nodes = desc_nodes, vars = {specific_vars.grim_bonus_mult}}
-    end
     if card then
         for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs", "Fleurons", "Halberds"}) do
             if (card:is_suit(j) or card:is_suit("bunc_" .. j)) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
@@ -1539,14 +1528,6 @@ payload = '''if ((_c.set == 'Enhanced') or (_c.set == 'Default')) then
         end
     end
 end'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = 'card.lua'
-pattern = '''bonus_chips = (self.ability.bonus + (self.ability.perma_bonus or 0)) > 0 and (self.ability.bonus + (self.ability.perma_bonus or 0)) or nil,'''
-position = 'after'
-payload = '''grim_bonus_mult = ((self.ability.perma_bonus_mult or 0) > 0) and self.ability.perma_bonus_mult or nil,'''
 match_indent = true
 
 [[patches]]
@@ -1627,8 +1608,8 @@ for i = 1, #G.play.cards do
         card.ability.grm_status.aether = true
     end
     if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff then
-        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
-        card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + 1
+        card.ability.perma_mult = card.ability.perma_mult or 0
+        card.ability.perma_mult = card.ability.perma_mult + 1
         card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={1}}})
     end
     if card.ability and card.ability.grm_status and card.ability.grm_status.subzero and not card.debuff then
@@ -2600,8 +2581,8 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
     end
     if (context.cardarea == G.hand) then
         if card.debuff and G.GAME.special_levels and (G.GAME.special_levels["debuff"] > 0) then
-            card.ability.perma_bonus_mult = card.ability.perma_bonus_mult or 0
-            card.ability.perma_bonus_mult = card.ability.perma_bonus_mult + G.GAME.special_levels["debuff"] * 0.5
+            card.ability.perma_mult = card.ability.perma_mult or 0
+            card.ability.perma_mult = card.ability.perma_mult + G.GAME.special_levels["debuff"] * 0.5
             card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.5}}})
         end
     end

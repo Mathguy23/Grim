@@ -606,11 +606,6 @@ return {
                     "籌碼{C:chips}+#1#{}",
                 }
             },
-            card_extra_mult = {
-                text = {
-                    "{C:red}+#1#{}額外倍數"
-                }
-            },
             ante_0_sticker = {
                 name = "底注0旗幟",
                 text = {

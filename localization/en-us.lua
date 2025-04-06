@@ -833,11 +833,6 @@ return {
                     "{C:chips}+#1#{} Chips",
                 }
             },
-            card_extra_mult = {
-                text = {
-                    "{C:red}+#1#{} extra mult"
-                }
-            },
             ante_0_sticker = {
                 name = "Ante 0 Banner",
                 text = {
