@@ -757,7 +757,7 @@ return {
                 name = "渦輪賭注",
                 text = {
                     "打敗{C:attention}Boss盲注{}後",
-                    "獲得{C:purple}150{}經驗值"
+                    "獲得{C:purple}300{}經驗值"
                 },
             },
             stake_grm_bismuth = {

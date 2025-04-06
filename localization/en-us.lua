@@ -1023,7 +1023,7 @@ return {
                 name = "Turbo Stake",
                 text = {
                     "After defeating each",
-                    "{C:attention}Boss Blind{}, {C:purple}+150{} XP"
+                    "{C:attention}Boss Blind{}, {C:purple}+300{} XP"
                 },
             },
             stake_grm_bismuth = {

@@ -1103,6 +1103,7 @@ if (G.GAME.blind_on_deck == "Boss") then
         stake_orange = 220,
         stake_gold = 250,
         stake_grm_bismuth = 300,
+        stake_grm_turbo = 300,
         stake_bunc_cyan = 227,
         stake_bunc_pink = 235,
         stake_bunc_magenta = 242,
@@ -1335,7 +1336,7 @@ match_indent = true
 target = 'functions/UI_definitions.lua'
 pattern = '''if card.area and card.area.config.type == 'joker' then'''
 position = 'before'
-payload = '''if card.area and (card.area == G.consumeables) and card.playing_card then
+payload = '''if card.area and (card.area == G.consumeables) and card.playing_card and not (hit_minor_arcana_suits and hit_minor_arcana_suits[card.config.card.suit]) then
     use = 
     {n=G.UIT.C, config={align = "cr"}, nodes={
       {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_discard_card', func = 'grm_can_discard_card'}, nodes={
