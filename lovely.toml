@@ -708,8 +708,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'card.lua'
-pattern = '''G.GAME.pack_choices = self.config.center.config.choose or 1'''
-position = 'after'
+pattern = '''if self.cost > 0 then '''
+position = 'before'
 payload = '''if skill_active("sk_grm_mystical_1") and self.ability.name:find('Arcana') then
     G.GAME.pack_choices = G.GAME.pack_choices + 1
 end
@@ -2317,16 +2317,17 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'functions/UI_definitions.lua'
+pattern = '''added_menu_button(scale),'''
+position = 'at'
+payload = ''''''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
 pattern = '''{n=G.UIT.R, config={align = "cm", minh = 1.75, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.ORANGE, button = "options", shadow = true}, nodes={'''
 position = 'before'
-payload = '''{n=G.UIT.R, config={id = 'skill_tree_button', align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.PURPLE, button = "your_skill_tree", shadow = true}, nodes={
-    {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
-        {n=G.UIT.T, config={text = localize('b_skill_tree_1'), scale = 1.2*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
-    }},
-    {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
-        {n=G.UIT.T, config={text = localize('b_skill_tree_2'), scale = 1*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = G.F_GUIDE and 'guide' or 'back', orientation = 'bm'}, func = 'set_button_pip'}}
-    }}
-}},'''
+payload = '''added_menu_button(scale),'''
 match_indent = true
 
 [[patches]]
@@ -2334,7 +2335,8 @@ match_indent = true
 target = 'functions/UI_definitions.lua'
 pattern = '''return {n=G.UIT.ROOT, config = {align = "cm", padding = 0.03, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
 position = 'before'
-payload = '''for i, j in ipairs(contents.buttons[1].nodes) do
+payload = '''
+for i, j in ipairs(contents.buttons[1].nodes) do
     if j.config and j.config.minh then
         j.config.minh = 1.2
     end
@@ -2357,7 +2359,7 @@ position = 'before'
 payload = '''function skill_meets_dependencies(key)
     if G.P_SKILLS[key] and G.P_SKILLS[key].grm_mod_reqs then
         for i, j in ipairs(G.P_SKILLS[key].grm_mod_reqs) do
-            mod = SMODS and SMODS.Mods and SMODS.Mods[j]
+            local mod = SMODS and SMODS.Mods and SMODS.Mods[j]
             if not mod or not mod.can_load or mod.disabled then
                 return false
             end
