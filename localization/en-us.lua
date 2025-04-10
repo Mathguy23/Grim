@@ -1679,6 +1679,7 @@ return {
             lunar_stats = "Lunar Stats",
             b_skill_tree_1 = "Skill",
             b_skill_tree_2 = "Tree",
+            b_other = "Other",
             b_skills = "Skills",
             b_draw = "Draw",
             b_pack = "Pack",

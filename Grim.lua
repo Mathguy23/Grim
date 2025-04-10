@@ -307,6 +307,77 @@ SMODS.current_mod.set_debuff = function(card)
     end
 end
 
+------Collective Menu---------------------
+
+function added_menu_button(scale)
+    local mods = {
+        GRM = false,
+        NH = false,
+    }
+    local num = 0
+    for i, j in pairs(mods) do
+        local mod = SMODS and SMODS.Mods and SMODS.Mods[i]
+        if mod and mod.can_load and not mod.disabled then
+            mods[i] = true
+            num = num + 1
+        end
+    end
+    if num > 1 then
+        return {n=G.UIT.R, config={align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.BLUE, button = "your_mod_buttons_math", shadow = true}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                {n=G.UIT.T, config={text = localize('b_other'), scale = scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+            }},
+        }}
+    elseif mods.GRM then
+        return {n=G.UIT.R, config={id = 'skill_tree_button', align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.PURPLE, button = "your_skill_tree", shadow = true}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                {n=G.UIT.T, config={text = localize('b_skill_tree_1'), scale = 1.2*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+            }},
+            {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                {n=G.UIT.T, config={text = localize('b_skill_tree_2'), scale = 1*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = G.F_GUIDE and 'guide' or 'back', orientation = 'bm'}, func = 'set_button_pip'}}
+            }}
+        }}
+    elseif mods.NH then
+        return {n=G.UIT.R, config={align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.BLUE, button = "your_contracts", shadow = true}, nodes={
+            {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                {n=G.UIT.T, config={text = localize('b_contracts'), scale = 0.8*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+            }},
+        }}
+    end
+end
+
+G.FUNCS.your_mod_buttons_math = function(e)
+    G.FUNCS.overlay_menu{
+        definition = create_UI_mod_buttons_math(),
+    }
+end
+
+function create_UI_mod_buttons_math()
+    scale = 0.4
+    local t = {n=G.UIT.R, config={align = "cm", id = 'skill_tree_ui', colour = G.C.CLEAR, paddng = 0.1}, nodes = {
+        {n=G.UIT.R, config={align = "cm", padding = 0.2, r = 0.1, colour = G.C.BLACK, emboss = 0.05}, nodes={
+            {n=G.UIT.R, config={id = 'skill_tree_button', align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.PURPLE, button = "your_skill_tree", shadow = true}, nodes={
+                {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_skill_tree_1'), scale = 1.2*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+                }},
+                {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_skill_tree_2'), scale = 1*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = G.F_GUIDE and 'guide' or 'back', orientation = 'bm'}, func = 'set_button_pip'}}
+                }}
+            }},
+            {n=G.UIT.R, config={align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.BLUE, button = "your_contracts", shadow = true}, nodes={
+                {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
+                    {n=G.UIT.T, config={text = localize('b_contracts'), scale = 0.8*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
+                }},
+            }}
+
+        }},
+    }}
+    local skill_ui = create_UIBox_generic_options({ contents = {t}})
+    return skill_ui
+end
+
+-----------------------------------------
+
 function create_UIBox_Skills()
     local deck_tables = {}
 

@@ -1335,6 +1335,7 @@ return {
             k_ex_decay = "衰變！",
             lunar_stats = "衛星統計",
             b_skill_tree_1 = "技能",
+            b_other = "Other",
             b_skill_tree_2 = "樹",
             b_skills = "技能",
             b_draw = "抽牌",
