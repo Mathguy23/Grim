@@ -404,6 +404,15 @@ return {
                     "學習一個{C:red}III級{}的技能"
                 }
             },
+            sk_grm_prestige_2 = {
+                name = "Prestige II",
+                text = {
+                    "{C:attention}Unlearn{} {C:purple}non-Prestige{} skills,",
+                    "Reduce all {C:attention}Skill{} {C:purple}XP{}",
+                    "costs by {C:attention}25%{}",
+                    "{C:dark_edition}+1{} Legendary Token",
+                }
+            },
             sk_grm_blind_breaker = {
                 name = "盲注破壞者",
                 text = {

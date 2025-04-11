@@ -447,6 +447,15 @@ return {
                     "{C:red}III{} skill",
                 }
             },
+            sk_grm_prestige_2 = {
+                name = "Prestige II",
+                text = {
+                    "{C:attention}Unlearn{} {C:purple}non-Prestige{} skills,",
+                    "Reduce all {C:attention}Skill{} {C:purple}XP{}",
+                    "costs by {C:attention}25%{}",
+                    "{C:dark_edition}+1{} Legendary Token",
+                }
+            },
             sk_grm_blind_breaker = {
                 name = "Blind Breaker",
                 text = {

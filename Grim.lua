@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.1.3
+--- VERSION: 1.1.4
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -606,7 +606,7 @@ function get_skills(during_game)
         if not shown_skills[layer] then
             shown_skills[layer] = {offset = 0, tier = layer}
         end
-        if during_game and not G.GAME.hide_unlearnable then
+        if (during_game and not G.GAME.hide_unlearnable) or (G and G.GAME and G.GAME.skills and G.GAME.skills[j.key]) then
             shown_skills[layer][#shown_skills[layer] + 1] = j.key
         else
             local valid = true
@@ -716,8 +716,8 @@ function learn_skill(card, direct_, debuffing)
     if not obj.class and (G.GAME.free_skills and (G.GAME.free_skills > 0)) then
         G.GAME.free_skills = G.GAME.free_skills - 1
     elseif not debuffing then
-        G.GAME.skill_xp = G.GAME.skill_xp - obj.xp_req
-        G.GAME.xp_spent = (G.GAME.xp_spent or 0) + obj.xp_req
+        G.GAME.skill_xp = G.GAME.skill_xp - math.floor(obj.xp_req * (G.GAME.grim_xp_discount or 1))
+        G.GAME.xp_spent = (G.GAME.xp_spent or 0) + math.floor(obj.xp_req * (G.GAME.grim_xp_discount or 1))
     end
     if obj.token_req and not debuffing then
         G.GAME.legendary_tokens = G.GAME.legendary_tokens - obj.token_req
@@ -873,6 +873,24 @@ function learn_skill(card, direct_, debuffing)
             end
         else
             G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
+        end
+    elseif key == "sk_grm_prestige_2" then
+        if not debuffing then
+            local pool = {}
+            for i, j in pairs(G.GAME.skills) do
+                if not G.P_SKILLS[i].class and (i ~= "sk_grm_prestige_1") and (i ~= "sk_grm_prestige_2") then
+                    table.insert(pool, i)
+                end
+            end
+            for i, j in ipairs(pool) do
+                unlearn_skill(j)
+            end
+            skills_page = nil
+            G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
+            G.GAME.grim_xp_discount = (G.GAME.grim_xp_discount or 1) * 0.75
+        else
+            G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
+            G.GAME.grim_xp_discount = (G.GAME.grim_xp_discount or 1) * 0.75
         end
     elseif key == "sk_grm_dash_1" then
         if G.GAME.force_grm_packs then
@@ -1032,6 +1050,9 @@ function unlearn_skill(direct_, debuffing)
         G.GAME.energy_plus = (G.GAME.energy_plus or 0) - 1
     elseif key == "sk_grm_prestige_1" then
         G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) - 1
+    elseif key == "sk_grm_prestige_2" then
+        G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) - 1
+        G.GAME.grim_xp_discount = (G.GAME.grim_xp_discount or 1) / 0.75
     elseif key == "sk_ortalab_decay_1" then
         for i, j in ipairs({'p_arcana_normal_1', 'p_arcana_normal_2', 'p_arcana_normal_3', 'p_arcana_normal_4', 'p_arcana_jumbo_1', 'p_arcana_jumbo_2', 'p_arcana_mega_1', 'p_arcana_mega_2', 'p_celestial_normal_1', 'p_celestial_normal_2', 'p_celestial_normal_3', 'p_celestial_normal_4', 'p_celestial_jumbo_1', 'p_celestial_jumbo_2', 'p_celestial_mega_1', 'p_celestial_mega_2'}) do
             if G.GAME.banned_keys[j] == 'grim' then
@@ -1089,7 +1110,7 @@ G.FUNCS.can_learn = function(e)
         e.config.button = 'do_nothing'
         return
     end
-    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < e.config.ref_table.config.center.xp_req)) or (e.config.ref_table.config.center.token_req and (G.GAME.legendary_tokens < e.config.ref_table.config.center.token_req))) and (not G.GAME.free_skills or (G.GAME.free_skills <= 0)) then
+    if e.config.ref_table and e.config.ref_table.config and e.config.ref_table.config.center and e.config.ref_table.config.center.key and (G.GAME.skills[e.config.ref_table.config.center.key] or (not e.config.ref_table.config.center.xp_req or (G.GAME.skill_xp < math.floor(e.config.ref_table.config.center.xp_req * (G.GAME.grim_xp_discount or 1)))) or (e.config.ref_table.config.center.token_req and (G.GAME.legendary_tokens < e.config.ref_table.config.center.token_req))) and (not G.GAME.free_skills or (G.GAME.free_skills <= 0)) then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = 'do_nothing'
     else
