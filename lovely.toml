@@ -463,9 +463,9 @@ payload = '''elseif _c.set == 'Skill' then
             localize{type = 'descriptions', key = 'skill_req_heading', set = 'Other', nodes = desc_nodes}
         end
         if G.GAME.free_skills and (G.GAME.free_skills > 0) and not card.config.center.class and not card.config.center.token_req then
-            localize{type = 'descriptions', key = 'free_xp_req', set = 'Other', nodes = desc_nodes, vars = {number_format(math.floor(card.config.center.xp_req * (G.GAME.grim_xp_discount or 0)))}}
+            localize{type = 'descriptions', key = 'free_xp_req', set = 'Other', nodes = desc_nodes, vars = {number_format(math.floor(card.config.center.xp_req * (G.GAME.grim_xp_discount or 1)))}}
         elseif not card.config.center.class then
-            localize{type = 'descriptions', key = 'xp_req', set = 'Other', nodes = desc_nodes, vars = {number_format(math.floor(card.config.center.xp_req * (G.GAME.grim_xp_discount or 0)))}}
+            localize{type = 'descriptions', key = 'xp_req', set = 'Other', nodes = desc_nodes, vars = {number_format(math.floor(card.config.center.xp_req * (G.GAME.grim_xp_discount or 1)))}}
         end
         if card.config.center.token_req then
             localize{type = 'descriptions', key = 'token_req', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.token_req)}}
