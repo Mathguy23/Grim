@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.1.5a
+--- VERSION: 1.1.6a
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -1335,7 +1335,6 @@ function calculate_skill(skill, context)
             add_tag(Tag("tag_ethereal"))
         end
     elseif context.selecting_blind then
-        print(skill)
         if (skill == "sk_grm_dexterity") and (G.GAME.skill_xp >= 100) then
             ease_hands_played(math.floor(G.GAME.skill_xp / 100))
         elseif skill == "sk_grm_holdover_2" then
