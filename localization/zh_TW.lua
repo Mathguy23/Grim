@@ -174,7 +174,7 @@ return {
             sk_grm_ease_3 = {
                 name = "緩和 III",
                 text = {
-                    "如果已達到至少{C:attention}85%{}的要求分數",
+                    "如果已達到至少{C:attention}75%{}的要求分數",
                     "可以防止死亡",
                 }
             },

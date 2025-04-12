@@ -190,7 +190,7 @@ return {
                 text = {
                     "Prevents Death",
                     "if chips scored",
-                    "are at least {C:attention}85%",
+                    "are at least {C:attention}75%",
                     "of required chips",
                 }
             },
