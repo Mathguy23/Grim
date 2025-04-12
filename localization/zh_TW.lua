@@ -428,6 +428,183 @@ return {
                     "出現在商店或擴充包中",
                 }
             }
+            sk_grm_dexterity = {
+                name = "Dexterity",
+                text = {
+                    "When {C:attention}Blind{} is selected,",
+                    "Gain {C:blue}+1{} hand per {C:purple}100{} XP held,",
+                }
+            },
+            sk_grm_holdover_1 = {
+                name = "Holdover I",
+                text = {
+                    "Up to {C:attention}3{} unused {C:red}discards{}",
+                    "may be carried over to the",
+                    "{C:attention}next round{} at {C:attention}end of round{}",
+                    "{C:red}-1{} discards per round"
+                }
+            },
+            sk_grm_holdover_2 = {
+                name = "Holdover II",
+                text = {
+                    "Up to {C:attention}2{} unused {C:blue}hands{}",
+                    "may be carried over to the",
+                    "{C:attention}next round{} at {C:attention}end of round{}",
+                }
+            },
+            sk_grm_holdover_3 = {
+                name = "Holdover III",
+                text = {
+                    "Double caps of",
+                    "{C:purple}Holdover{} skills",
+                }
+            },
+            sk_cry_ace_1 = {
+                name = "ACE I",
+                text = {
+                    "Reroll {C:cry_code,E:1}Crash's{} payload",
+                    "for this run",
+                }
+            },
+            sk_cry_ace_2 = {
+                name = "ACE II",
+                text = {
+                    "{C:tarot}The Fool{} can",
+                    "create {C:cry_code,E:1}Code Cards{}",
+                }
+            },
+            sk_cry_ace_3 = {
+                name = "ACE III",
+                text = {
+                    "All {C:cry_code,E:1}Program Packs{}",
+                    "contain {C:spectral}POINTER://{}",
+                }
+            },
+            sk_cry_m_1 = {
+                name = "M I",
+                text = {
+                    "{C:blue}+3{} base chips for each",
+                    "{C:attention}Pair{} played this run",
+                }
+            },
+            sk_cry_m_2 = {
+                name = "M II",
+                text = {
+                    "Place {C:attention}Jolly Joker{} in {C:attention}shop{}",
+                    "at the start of each {C:attention}shop{}",
+                }
+            },
+            sk_cry_m_3 = {
+                name = "M III",
+                text = {
+                    "Create {C:attention}Jolly Jimball{}",
+                    "{C:inactive}(Must have room)",
+                }
+            },
+            sk_cry_sticky_4 = {
+                name = "Sticky IV",
+                text = {
+                    "{C:attention}Banana Cards{} have a",
+                    "{C:green}1 in 8{} chance to duplicate",
+                    "at end of {C:attention}round{}"
+                }
+            },
+            sk_poke_energetic_1 = {
+                name = "Energetic I",
+                text = {
+                    "{C:pink}+1{} Energy Limit"
+                },
+            },
+            sk_poke_energetic_2 = {
+                name = "Energetic II",
+                text = {
+                    "{C:attention}Jokers{} with a {C:attention}type{} create",
+                    "the coresponding {C:pink}Energy{} card",
+                    "when {C:attention}sold{}",
+                    "{C:inactive}(Must have room)"
+                },
+            },
+            sk_poke_energetic_3 = {
+                name = "Energetic III",
+                text = {
+                    "{C:attention}Jokers{} have {C:green}#1# in 5{} chance",
+                    "to gain a {C:dark_edition}Polychrome{} or",
+                    "{C:dark_edition}Negative{} edition when {C:pink}Energized{}",
+                },
+            },
+            sk_mf_painted_1 = {
+                name = "Painted I",
+                text = {
+                    "{C:colourcard}Colour{} cards gain {C:attention}2{}",
+                    "rounds when obtained",
+                },
+            },
+            sk_mf_painted_2 = {
+                name = "Painted II",
+                text = {
+                    "{C:attention}Upgrade{} a random {C:colourcard}Colour{} card",
+                    "after defeating the {C:attention}Boss Blind{}",
+                },
+            },
+            sk_mf_painted_3 = {
+                name = "Painted III",
+                text = {
+                    "{C:colourcard}Colour{} cards may",
+                    "be used twice",
+                },
+            },
+            sk_ortalab_decay_1 = {
+                name = "Decay I",
+                text = {
+                    "{C:planet}Planet{} cards, {C:planet}Celestial Packs{},",
+                    "{C:tarot}Tarot{} cards, and {C:tarot}Arcana Packs{}",
+                    "do not appear in {C:attention}shop{}"
+                }
+            },
+            sk_ortalab_magica_1 = {
+                name = "Mágica I",
+                text = {
+                    "{C:loteria}Loteria{} cards can",
+                    "appear in {C:tarot}Arcana{} packs",
+                }
+            },
+            sk_ortalab_magica_2 = {
+                name = "Mágica II",
+                text = {
+                    "All {C:loteria}Chalupa Packs{} have {X:attention,C:white} X2 {}",
+                    "options, choices, and cost",
+                }
+            },
+            sk_ortalab_magica_3 = {
+                name = "Mágica III",
+                text = {
+                    "{C:green}80%{} chance to create",
+                    "a {C:loteria}The Rooster{} when a",
+                    "{C:loteria}The Rooster{} is used",
+                    "{C:inactive}(Must have room)"
+                }
+            },
+            sk_ortalab_starry_1 = {
+                name = "Starry I",
+                text = {
+                    "{C:attention}+1{} temporary levels to",
+                    "all {C:zodiac}Zodiacs{} left {C:attention}unactivated{}",
+                    "each {C:attention}round{}, at end of round.",
+                }
+            },
+            sk_ortalab_starry_2 = {
+                name = "Starry II",
+                text = {
+                    "{C:zodiac}Zodiac{} cards can",
+                    "appear in {C:planet}Celestial{} packs",
+                }
+            },
+            sk_ortalab_starry_3 = {
+                name = "Starry III",
+                text = {
+                    "{C:zodiac}Zodiacs{} never decay"
+                }
+            },
         },
         Other = {
             undiscovered_skill = {

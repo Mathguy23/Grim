@@ -245,6 +245,9 @@ payload = '''self.P_SKILLS = {
     sk_ortalab_starry_2 = {key = 'sk_ortalab_starry_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry II", xp_req = 450, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_1'}, tier = 2, branch = "Starry", grm_mod_reqs = {"ortalab"}},
     sk_ortalab_starry_3 = {key = 'sk_ortalab_starry_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry III", xp_req = 700, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_2'}, tier = 3, branch = "Starry", grm_mod_reqs = {"ortalab"}},
     sk_grm_dexterity = {key = 'sk_grm_dexterity', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Dexterity", xp_req = 0, token_req = 1, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Dexterity"},
+    sk_grm_holdover_1 = {key = 'sk_grm_holdover_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Holdover I", xp_req = 250, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "Holdover"},
+    sk_grm_holdover_2 = {key = 'sk_grm_holdover_2', unlocked = true, discovered = false, atlas = 'grm_skills4', cost = 8, name = "Holdover II", xp_req = 300, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_holdover_1'}, tier = 2, branch = "Holdover"},
+    sk_grm_holdover_3 = {key = 'sk_grm_holdover_3', unlocked = true, discovered = false, atlas = 'grm_skills4', cost = 8, name = "Holdover III", xp_req = 350, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_holdover_2'}, tier = 3, branch = "Holdover"},
 }
 local ordered_skills = {}
 local ordered_legendaries = {}
@@ -1599,8 +1602,8 @@ payload = '''G.E_MANAGER:add_event(Event({trigger = 'immediate',func = function(
     if G.GAME.nullified_blinds[G.GAME.blind.config.blind.key] then G.GAME.blind:disable() end
     return true
 end}))
-if skill_active("sk_grm_dexterity") and (G.GAME.skill_xp >= 100) then
-    ease_hands_played(math.floor(G.GAME.skill_xp / 100))
+for i2, j2 in pairs(G.GAME.skills) do
+    calculate_skill(i2, {selecting_blind = true})
 end'''
 match_indent = true
 

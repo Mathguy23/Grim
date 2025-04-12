@@ -606,7 +606,9 @@ function get_skills(during_game)
         if not shown_skills[layer] then
             shown_skills[layer] = {offset = 0, tier = layer}
         end
-        if (during_game and not G.GAME.hide_unlearnable) or (G and G.GAME and G.GAME.skills and G.GAME.skills[j.key]) then
+        if during_game and G and G.GAME and G.GAME.banned_keys and G.GAME.banned_keys[j.key] then
+
+        elseif (during_game and not G.GAME.hide_unlearnable) or (G and G.GAME and G.GAME.skills and G.GAME.skills[j.key]) then
             shown_skills[layer][#shown_skills[layer] + 1] = j.key
         else
             local valid = true
@@ -926,6 +928,9 @@ function learn_skill(card, direct_, debuffing)
     elseif key == "sk_ortalab_starry_3" then
         G.GAME.orig_Zodiac_Reduction = G.GAME.Ortalab_Zodiac_Reduction
         G.GAME.Ortalab_Zodiac_Reduction = 0
+    elseif key == "sk_grm_holdover_1" then
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards - 1
+        ease_discard(-1)
     end
 end
 
@@ -1066,6 +1071,9 @@ function unlearn_skill(direct_, debuffing)
     elseif key == "sk_ortalab_starry_3" then
         G.GAME.Ortalab_Zodiac_Reduction = G.GAME.orig_Zodiac_Reduction
         G.GAME.orig_Zodiac_Reduction = nil
+    elseif key == "sk_grm_holdover_1" then
+        G.GAME.round_resets.discards = G.GAME.round_resets.discards + 1
+        ease_discard(1)
     end
 end
 
@@ -1224,11 +1232,20 @@ G.FUNCS.your_skill_tree = function(e)
 end
 
 function calculate_skill(skill, context)
+    if not skill_active(skill) then
+        return
+    end
     if context.end_of_round then
         if skill == "sk_grm_ease_3" and context.game_over then
             if G.GAME.chips >= (G.GAME.blind.chips * 0.75) then
                 return true
             end
+        elseif skill == "sk_grm_holdover_1" then
+            G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
+            G.GAME.holdover.discards = math.min(skill_active("sk_grm_holdover_3") and 6 or 3, G.GAME.current_round.discards_left)
+        elseif skill == "sk_grm_holdover_2" then
+            G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
+            G.GAME.holdover.hands = math.min(skill_active("sk_grm_holdover_3") and 4 or 2, G.GAME.current_round.hands_left)
         end
     elseif context.ante_mod then
         if skill == "sk_grm_chime_1" and ((context.current_ante) % 8 == 0) and not G.GAME.reset_antes[context.current_ante] then
@@ -1316,6 +1333,25 @@ function calculate_skill(skill, context)
     elseif context.ending_shop then
         if skill == "sk_grm_ghost_2" then
             add_tag(Tag("tag_ethereal"))
+        end
+    elseif context.selecting_blind then
+        print(skill)
+        if (skill == "sk_grm_dexterity") and (G.GAME.skill_xp >= 100) then
+            ease_hands_played(math.floor(G.GAME.skill_xp / 100))
+        elseif skill == "sk_grm_holdover_2" then
+            if G.GAME.holdover then
+                if G.GAME.holdover.hands and (G.GAME.holdover.hands > 0) then
+                    ease_hands_played(G.GAME.holdover.hands)
+                    G.GAME.holdover.hands = 0
+                end
+            end
+        elseif skill == "sk_grm_holdover_1" then
+            if G.GAME.holdover then
+                if G.GAME.holdover.discards and (G.GAME.holdover.discards > 0) then
+                    ease_discard(G.GAME.holdover.discards)
+                    G.GAME.holdover.discards = 0
+                end
+            end
         end
     end
 end
@@ -1843,6 +1879,8 @@ SMODS.Atlas({ key = "skills3", atlas_table = "ASSET_ATLAS", path = "skills3.png"
         G.gold_bar = Sprite(0, 0, G.CARD_W, G.CARD_H, G[self.atlas_table][self.key_noloc or self.key], {x = 1,y = 5})
     end
 })
+
+SMODS.Atlas({ key = "skills4", atlas_table = "ASSET_ATLAS", path = "skills4.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "enhance", atlas_table = "ASSET_ATLAS", path = "enhance.png", px = 71, py = 95})
 
