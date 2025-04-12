@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.1.5
+--- VERSION: 1.1.5a
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -1226,7 +1226,7 @@ end
 function calculate_skill(skill, context)
     if context.end_of_round then
         if skill == "sk_grm_ease_3" and context.game_over then
-            if G.GAME.chips >= (G.GAME.blind.chips * 0.85) then
+            if G.GAME.chips >= (G.GAME.blind.chips * 0.75) then
                 return true
             end
         end
