@@ -465,10 +465,10 @@ return {
             sk_grm_blind_breaker = {
                 name = "Blind Breaker",
                 text = {
-                    "After {C:attention}main scoring{}, Gives",
-                    "{X:red,C:white} ^0.2 {} for each {C:blue}hand{} played",
+                    "After {C:attention}main scoring{}, Gives {X:red,C:white} ^0.2 {}",
+                    "Mult for each {C:blue}hand{} played",
                     "{C:attention}previously{} this {C:attention}round{}",
-                    "{C:inactive}(Currently {X:red,C:white} ^#1# {C:inactive})"
+                    "{C:inactive}(Currently {X:red,C:white} ^#1# {C:inactive} Mult)"
                 }
             },
             sk_grm_spectral_shard = {
