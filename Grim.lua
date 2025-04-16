@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.1.6a
+--- VERSION: 1.2.1
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -858,6 +858,8 @@ function learn_skill(card, direct_, debuffing)
         if not G.GAME.grm_did_purchase then
             change_shop_size(1)
         end
+    elseif key == "sk_grm_shelf_3" then
+        SMODS.change_voucher_limit(1)
     elseif key == "sk_grm_prestige_1" then
         if not debuffing then
             local pool = {}
@@ -1037,12 +1039,12 @@ function unlearn_skill(direct_, debuffing)
     elseif key == "sk_grm_shelf_1" then
         change_shop_size(1)
         G.GAME.grm_modify_booster_slots = (G.GAME.grm_modify_booster_slots or 0) - 2
-        if G.shop then
-        end
     elseif key == "sk_grm_shelf_2" then
         if not G.GAME.grm_did_purchase then
             change_shop_size(-1)
         end
+    elseif key == "sk_grm_shelf_3" then
+        SMODS.change_voucher_limit(-1)
     elseif key == "sk_cry_m_3" then
         for i = 1, #G.jokers.cards do
             local card = G.jokers.cards[i]
@@ -1399,14 +1401,21 @@ function get_modded_xp(amount)
         return 0
     end
     local new_amount = amount
-    if skill_active("sk_grm_skillful_3") and (new_amount > 0) then
+    if skill_active("sk_grm_skillful_3") then
         new_amount = new_amount * 2
     end
-    if skill_active("sk_grm_ghost_3") and (new_amount > 0) then
+    if skill_active("sk_grm_ghost_3") then
         new_amount = math.max(1 , math.floor(new_amount * 0.5))
     end
     if (G.GAME.area == "Metro") or (G.GAME.area == "Aether") then
         new_amount = math.max(1 , math.floor(new_amount * (G.GAME.area_data.xp_buff or 1)))
+    end
+    for i = 1, #G.jokers.cards do
+        if G.jokers.cards[i].ability and G.jokers.cards[i].ability.name == 'Cosmic Credit' then
+            if G.jokers.cards[i].ability.extra and G.jokers.cards[i].ability.extra.xp_mult then
+                new_amount = new_amount * G.jokers.cards[i].ability.extra.xp_mult
+            end
+        end
     end
     new_amount = math.floor(new_amount)
     return new_amount
@@ -2006,6 +2015,8 @@ SMODS.Atlas({ key = "loot", atlas_table = "ASSET_ATLAS", path = "Loot.png", px =
 
 SMODS.Atlas({ key = "sleeves", atlas_table = "ASSET_ATLAS", path = "Sleeves.png", px = 71, py = 95})
 
+SMODS.Atlas({ key = "stickers", atlas_table = "ASSET_ATLAS", path = "Stickers.png", px = 71, py = 95})
+
 SMODS.Atlas({ key = "blinds", atlas_table = "ANIMATION_ATLAS", path = "Blinds.png", px = 34, py = 34, frames = 21 })
 
 SMODS.Atlas({ key = "jolly_jimball", path = "JollyJimball.png", px = 71, py = 95 })
@@ -2486,9 +2497,172 @@ SMODS.Joker {
     end,
 	add_to_deck = function(self, card, from_debuff)
 		if not from_debuff then
-			create_cryptid_notif_overlay("jimball")
+			Cryptid.notification_overlay("jimball")
 		end
 	end,
+}
+
+SMODS.Sticker {
+    key = 'badge_applier',
+    rate = 0,
+    pos = { x = 0, y = 0 },
+    colour = HEX '97F1EF',
+    badge_colour = HEX '97F1EF',
+    should_apply = function(self, card, center, area)
+        if (pseudorandom('badges') < 0.5) then
+            return
+        end
+        return (area == G.shop_jokers) or (area == G.pack_cards)
+    end,
+    loc_txt = {
+        name = "",
+        text = {
+            "",
+        },
+        label = ""
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+    apply = function(self, card, val)
+        local badges = {}
+        local total = 0
+        if not card.ability.eternal and ((card.ability.set == "Joker") or (card.ability.set == "Default") or (card.ability.set == "Enhanced")) then
+            if card.config.center.eternal_compat then
+                badges.grm_destruct = 2
+                total = total + 2
+            else
+                badges.grm_destruct = 1
+                total = total + 1
+            end
+        end
+        if (card.ability.set == "Joker") then
+            badges.grm_void = 1
+            total = total + 1
+        end
+        if (card.ability.set == "Joker") then
+            badges.grm_accomplishment = 1
+            total = total + 1
+        end
+        if (card.ability.set == "Default") or (card.ability.set == "Enhanced") then
+            badges.grm_accomplishment_playing_card = 1
+            total = total + 1
+        end
+        if total > 0 then
+            local rng = pseudorandom('badges') * total
+            for i, j in pairs(badges) do
+                if rng <= j then
+                    card.ability[i] = true
+                    break
+                else
+                    rng = rng - j
+                end
+            end 
+        end
+    end
+}
+
+SMODS.Sticker {
+    key = 'destruct',
+    rate = 0,
+    pos = { x = 0, y = 0 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Destruct Badge",
+        text = {
+            "{C:purple}+25{} XP when this",
+            "card is {C:attention}destroyed{}",
+            "{C:inactive}(Selling excluded){}"
+        },
+        label = "Destruct"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+}
+
+SMODS.Sticker {
+    key = 'void',
+    rate = 0,
+    pos = { x = 2, y = 0 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Void Badge",
+        text = {
+            "{C:purple}+10{} XP at {C:attention}end of round{}",
+            "per {C:attention}empty{} joker slot",
+        },
+        label = "Void"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+}
+
+SMODS.Sticker {
+    key = 'accomplishment',
+    rate = 0,
+    pos = { x = 1, y = 0 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Accomplishment Badge",
+        text = {
+            "{C:purple}+75{} XP at end",
+            "of {C:attention}ante{}",
+        },
+        label = "Accomplishment"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+    calculate = function(self, card, context)
+        if context.end_of_round and not context.individual and not context.repetition and not context.blueprint and G.GAME.blind.boss and not (G.GAME.blind.config and  G.GAME.blind.config.bonus) then
+            add_skill_xp(75, card)
+        end
+    end
+}
+
+SMODS.Sticker {
+    key = 'accomplishment_playing_card',
+    rate = 0,
+    pos = { x = 1, y = 0 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Accomplishment Badge",
+        text = {
+            "+{C:purple}30{} XP if held in",
+            "hand at end of {C:attention}ante{}"
+        },
+        label = "Accomplishment"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+    calculate = function(self, card, context)
+        if context.playing_card_end_of_round and (context.cardarea == G.hand) and not context.individual and not context.repetition and G.GAME.blind.boss and not (G.GAME.blind.config and G.GAME.blind.config.bonus) then
+            add_skill_xp(30, card)
+        end
+    end
 }
 
 -----Alchemist Stuff---------
@@ -3225,6 +3399,7 @@ SMODS.Stellar {
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
     end
 }
+
 SMODS.Stellar {
     key = 'arcturus',
     atlas = "stellar",
@@ -3664,7 +3839,7 @@ SMODS.Joker {
     cost = 6,
     blueprint_compat = false,
     eternal_compat = false,
-    config = {extra = {xp = 30, xp_mod = 1}},
+    config = {extra = {xp = 40, xp_mod = 1}},
     loc_vars = function(self, info_queue, card)
         return { vars = {card.ability.extra.xp ,card.ability.extra.xp_mod}}
     end,
@@ -3702,6 +3877,23 @@ SMODS.Joker {
     end,
     calc_xp_bonus = function(self, card)
         return card.ability.extra.xp
+    end
+}
+
+SMODS.Joker {
+    key = 'cosmic_credit',
+    name = "Cosmic Credit",
+    rarity = 1,
+    atlas = 'jokers',
+    pos = {x = 0, y = 3},
+    cost = 4,
+    blueprint_compat = false,
+    config = {extra = {xp = 20, xp_mult = 1.5}},
+    loc_vars = function(self, info_queue, card)
+        return { vars = {card.ability.extra.xp_mult ,card.ability.extra.xp}}
+    end,
+    calc_xp_bonus = function(self, card)
+        return -card.ability.extra.xp
     end
 }
 
@@ -3774,17 +3966,6 @@ SMODS.Voucher {
             G.GAME.xp_interest_max = card.ability.max
         return true end }))
     end
-}
-
-SMODS.Stake {
-    key = 'turbo',
-    name = "Turbo Stake",
-    atlas = "stakes",
-    pos = {x = 0, y = 0},
-    applied_stakes = {},
-    colour = HEX("9260B9"),
-    sticker_pos = {x = 0, y = 0},
-    sticker_atlas = "stickers"
 }
 
 SMODS.Stake {
@@ -3881,9 +4062,16 @@ end
 function Card:calculate_xp_bonus()
     if self.debuff then return end
     if self.ability.set == "Joker" then
+        local total = 0
         local obj = self.config.center
         if obj.calc_xp_bonus and type(obj.calc_xp_bonus) == 'function' then
-            return obj:calc_xp_bonus(self)
+            total = total + obj:calc_xp_bonus(self)
+        end
+        if self.ability.grm_void then
+            total = total + 10 * (G.jokers.config.card_limit - #G.jokers.cards)
+        end
+        if total ~= 0 then
+            return total
         end
     end
 end
@@ -3952,6 +4140,7 @@ function add_custom_round_eval_row(name, foot, intrest, the_colour)
     local scale = 0.9
     total_cashout_rows = (total_cashout_rows or 0) + 1
     delay(0.4)
+    local rand = math.floor(math.random() * 100)
 
     G.E_MANAGER:add_event(Event({
         trigger = 'before',delay = 0.5,
@@ -3968,7 +4157,7 @@ function add_custom_round_eval_row(name, foot, intrest, the_colour)
             end
             local full_row = {n=G.UIT.R, config={align = "cm", minw = 5}, nodes={
                 {n=G.UIT.C, config={padding = 0.05, minw = width*0.55, minh = 0.61, align = "cl"}, nodes=left_text},
-                {n=G.UIT.C, config={padding = 0.05,minw = width*0.45, align = "cr"}, nodes={{n=G.UIT.C, config={align = "cm", id = 'dollar_grm_'..name .. tostring(total_cashout_rows)},nodes={}}}}
+                {n=G.UIT.C, config={padding = 0.05,minw = width*0.45, align = "cr"}, nodes={{n=G.UIT.C, config={align = "cm", id = 'dollar_grm_'..name .. tostring(total_cashout_rows).. tostring(rand)},nodes={}}}}
             }}
             G.round_eval:add_child(full_row,G.round_eval:get_UIE_by_ID('bonus_round_eval'))
             play_sound('cancel', 1)
@@ -3980,10 +4169,10 @@ function add_custom_round_eval_row(name, foot, intrest, the_colour)
         trigger = 'before',delay = 0.38,
         func = function()
                 G.round_eval:add_child(
-                        {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name .. tostring(total_cashout_rows)}, nodes={
+                        {n=G.UIT.R, config={align = "cm", id = 'dollar_row_grm_'..name .. tostring(total_cashout_rows).. tostring(rand)}, nodes={
                             {n=G.UIT.O, config={object = DynaText({string = {foot}, colours = {the_colour}, shadow = true, pop_in = 0, scale = 0.65, float = true})}}
                         }},
-                        G.round_eval:get_UIE_by_ID('dollar_grm_'..name .. tostring(total_cashout_rows)))
+                        G.round_eval:get_UIE_by_ID('dollar_grm_'..name .. tostring(total_cashout_rows).. tostring(rand)))
             play_sound('coin3', 0.9+0.2*math.random(), 0.7)
             play_sound('coin6', 1.3, 0.8)
             return true

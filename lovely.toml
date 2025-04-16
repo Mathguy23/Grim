@@ -221,6 +221,7 @@ payload = '''self.P_SKILLS = {
     sk_cry_sticky_4 = {key = 'sk_cry_sticky_4', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Sticky IV", xp_req = 800, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_3'}, tier = 4, branch = "Sticky", grm_mod_reqs = {"Cryptid"}},
     sk_grm_shelf_1 = {key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 150, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Shelf"},
     sk_grm_shelf_2 = {key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 350, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
+    sk_grm_shelf_3 = {key = 'sk_grm_shelf_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf III", xp_req = 500, pos = {x=1,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_2'}, tier = 3, branch = "Shelf"},
     sk_grm_prestige_1 = {key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
     sk_grm_prestige_2 = {key = 'sk_grm_prestige_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Prestige II", xp_req = 800, pos = {x=2,y=5}, soul_pos = {x=3, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, tier = 2, branch = "Prestige"},
     sk_grm_blind_breaker = {key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Blind Breaker"},
@@ -418,12 +419,16 @@ payload = '''elseif _c.set == 'Skill' then
             info_queue[#info_queue+1] = {key = 'rental', set = 'Other', vars = {3}}
         elseif _c.name == "Prestige I" then
             loc_vars = {number_format(G.GAME.xp_spent)}
+        elseif _c.name == "Blind Breaker" then
+            loc_vars = {1 + G.GAME.current_round.hands_played * 0.2}
         elseif _c.name == "ACE I" then
             info_queue[#info_queue+1] = G.P_CENTERS["c_cry_crash"]
         elseif _c.name == "ACE II" then
             info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
         elseif _c.name == "ACE III" then
             info_queue[#info_queue+1] = G.P_CENTERS["c_cry_pointer"]
+        elseif _c.name == "M I" then
+            loc_vars = {number_format(3 * G.GAME.hands["Pair"].played)}
         elseif _c.name == "M III" then
             info_queue[#info_queue+1] = G.P_CENTERS["j_grm_jolly_jimball"]
         elseif _c.name == "Sticky IV" then
@@ -1132,7 +1137,6 @@ if (G.GAME.blind_on_deck == "Boss") then
         stake_orange = 220,
         stake_gold = 250,
         stake_grm_bismuth = 300,
-        stake_grm_turbo = 300,
         stake_bunc_cyan = 227,
         stake_bunc_pink = 235,
         stake_bunc_magenta = 242,
@@ -1170,16 +1174,18 @@ if (G.GAME.blind_on_deck == "Boss") then
         stake_cruel_cruel = 300,
         stake_cruel_fools = 300,
     }
-    local plus_xp = add_skill_table[stake_key] or 150
+    local plus_xp = 100
+    local name = localize('boss_blind')
     if G.GAME.modifiers and G.GAME.modifiers.force_stake_xp then
         plus_xp = G.GAME.modifiers.force_stake_xp
     end
     if G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
         plus_xp = math.floor(plus_xp * 2)
+        name = localize('showdown_blind')
     end
-    local stake_name = localize {type = 'name_text', key = stake_key, set = 'Stake'}
+    -- local stake_name = localize {type = 'name_text', key = stake_key, set = 'Stake'}
     if plus_xp and (plus_xp > 0) then
-        add_custom_round_eval_row(stake_name , tostring(get_modded_xp(plus_xp)) .. " XP")
+        add_custom_round_eval_row(name , tostring(get_modded_xp(plus_xp)) .. " XP")
         cash_out_xp = cash_out_xp + get_modded_xp(plus_xp)
     end
 end
@@ -1198,9 +1204,15 @@ for i0 = 1, #G.jokers.cards do
 end
 if G.GAME.used_vouchers['v_grm_progress'] or G.GAME.used_vouchers['v_grm_complete'] then
     local intrest = math.min(G.GAME.xp_interest_max, math.floor(G.GAME.skill_xp / G.GAME.xp_interest_rate) * G.GAME.xp_interest)
+    if intrest < 0 then
+        intrest = 0
+    end
     local intrest_text = " "..localize{type = 'variable', key = 'xp_interest', vars = {G.GAME.xp_interest, G.GAME.xp_interest_rate, G.GAME.xp_interest_max}}
-    add_custom_round_eval_row(intrest_text , tostring(get_modded_xp(intrest)) .. " XP", intrest)
-    cash_out_xp = cash_out_xp + get_modded_xp(intrest)
+    intrest = get_modded_xp(intrest)
+    if intrest ~= 0 then
+        add_custom_round_eval_row(intrest_text , tostring(intrest) .. " XP", intrest)
+        cash_out_xp = cash_out_xp + intrest
+    end
 end'''
 match_indent = true
 
@@ -1290,7 +1302,9 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
 position = 'before'
-payload = '''if skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 7) then
+payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big(7)) then
+    ease_dollars(math.floor(G.GAME.current_round.dollars/7))
+elseif not to_big and skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 7) then
     ease_dollars(math.floor(G.GAME.current_round.dollars/7))
 end
 add_skill_xp(cash_out_xp or 0, nil, nil, true)
@@ -1955,7 +1969,9 @@ payload = '''if other.ability.grm_status and other.ability.grm_status.gust and (
 elseif new_card.ability.grm_status and new_card.ability.grm_status.gust and (not other.ability.grm_status or not other.ability.grm_status.gust) and new_card.highlighted then
     G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
 end
-new_card.ability.grm_status = {}'''
+new_card.ability.grm_status = {}
+new_card.ability.grm_accomplishment_playing_card = nil
+new_card.ability.grm_destruct = nil'''
 match_indent = true
 
 [[patches]] # thnx JamMod
@@ -2035,7 +2051,8 @@ match_indent = true
 target = 'card.lua'
 pattern = '''function Card:sell_card()'''
 position = 'after'
-payload = '''   if self.ability.eternal and skill_active("sk_grm_sticky_1") then
+payload = '''   self.ability.no_destruct_xp = true
+    if self.ability.eternal and skill_active("sk_grm_sticky_1") then
         G.GAME.skill_xp = G.GAME.skill_xp - 100
         G.GAME.xp_spent = (G.GAME.xp_spent or 0) + 100
     end
@@ -2274,22 +2291,7 @@ target = 'functions/state_events.lua'
 pattern = '''local nu_chip, nu_mult = G.GAME.selected_back:trigger_effect{context = 'final_scoring_step', chips = hand_chips, mult = mult}'''
 position = 'before'
 payload = '''if skill_active("sk_grm_blind_breaker") then
-    local text = ""
-    local value = math.max(1, G.GAME.chips^0.2)
-    if (to_big and to_big(value) or value) < (to_big and to_big(1e13) or 1e13) then
-        text = string.format("%.2f", (to_number and to_number(value) or value))
-    else
-        text = tostring(0.01 * math.floor(100 * value))
-    end
-    G.E_MANAGER:add_event(Event({
-        func = (function()
-            attention_text({
-                scale = 1.4, text = "X" .. text, hold = 2, align = 'cm', offset = {x = 0,y = -2.7},major = G.play
-            })
-            return true
-        end)
-    }))
-    mult = mod_mult(mult*value)
+    mult = mod_mult(mult*(1 + G.GAME.current_round.hands_played * 0.2))
     update_hand_text({delay = 0}, {mult = mult})
 end'''
 match_indent = true
@@ -2621,4 +2623,36 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
     end
     return unpack(effects)
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)'''
+position = 'after'
+payload = '''   if self.ability.grm_destruct and not self.ability.no_destruct_xp and (self.added_to_deck or self.playing_card) then
+        add_skill_xp(25, self)
+        self.ability.no_destruct_xp = true
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:remove()'''
+position = 'after'
+payload = '''   if self.ability and G and G.GAME and G.GAME.skill_xp and self.ability.grm_destruct and not self.ability.no_destruct_xp and (self.added_to_deck or self.playing_card) then
+        add_skill_xp(25, self)
+        self.ability.no_destruct_xp = true
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''self.ability.eternal = nil'''
+position = 'after'
+payload = '''   if self.ability and self.ability.grm_destruct then
+        return
+    end'''
 match_indent = true
