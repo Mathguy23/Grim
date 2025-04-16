@@ -422,8 +422,9 @@ return {
             sk_grm_blind_breaker = {
                 name = "Blind Breaker",
                 text = {
-                    "After {C:attention}main scoring{}, Gives {X:red,C:white} ^0.2 {} for",
-                    "each hand played previously",
+                    "After {C:attention}main scoring{}, Gives",
+                    "{X:red,C:white} ^0.2 {} for each {C:blue}hand{} played",
+                    "{C:attention}previously{} this {C:attention}round{}",
                     "{C:inactive}(Currently {X:red,C:white} ^#1# {C:inactive})"
                 }
             },
