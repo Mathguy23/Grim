@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.2
+--- VERSION: 1.2.3
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -3923,7 +3923,7 @@ SMODS.Enhancement {
         card.ability.xp = self.config.xp
     end,
     calculate = function(self, card, context)
-        if context.cardarea == G.play and context.main_scoring then
+        if ((context.cardarea == G.play) and context.main_scoring) or ((context.cardarea == G.consumeables) and context.joker_main) then
             add_skill_xp(card and card.ability.xp or 5, card)
         end
     end
