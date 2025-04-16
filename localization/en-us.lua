@@ -434,6 +434,12 @@ return {
                     "{C:attention}purchased"
                 }
             },
+            sk_grm_shelf_3 = {
+                name = "Shelf III",
+                text = {
+                    "{C:attention}+1{} voucher slot"
+                }
+            },
             sk_grm_prestige_1 = {
                 name = "Prestige I",
                 text = {
@@ -459,9 +465,9 @@ return {
             sk_grm_blind_breaker = {
                 name = "Blind Breaker",
                 text = {
-                    "After {C:attention}main scoring{}, Gives",
-                    "{X:red,C:white} XMult {} equal to {C:blue}scored chips^0.2{}",
-                    "{C:inactive}(Minimum of {X:red,C:white} X1 {C:inactive})"
+                    "After {C:attention}main scoring{}, Gives {X:red,C:white} ^0.2 {} for",
+                    "each hand played previously",
+                    "{C:inactive}(Currently {X:red,C:white} ^#1# {C:inactive})"
                 }
             },
             sk_grm_spectral_shard = {
@@ -528,6 +534,7 @@ return {
                 text = {
                     "{C:blue}+3{} base chips for each",
                     "{C:attention}Pair{} played this run",
+                    "{C:inactive}(Currently {C:blue}+#1#{C:inactive})"
                 }
             },
             sk_cry_m_2 = {
@@ -1140,7 +1147,15 @@ return {
                     "containing a {C:attention}#2#{}",
                     "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
                 },
-            }
+            },
+            j_grm_cosmic_credit = {
+                name = "Cosmic Credit",
+                text = {
+                    "{X:purple,C:white} X#1# {} to all XP",
+                    "sources, {C:red}-#2#{} XP at {C:attention}end{}",
+                    "{C:attention}of round{}",
+                },
+            },
         },
         Voucher = {
             v_grm_progress = {
@@ -1727,6 +1742,8 @@ return {
             region_spooky = "Spooky",
             region_sewer = "Sewer",
             region_aether = "Aether",
+            boss_blind = "Boss Blind",
+            showdown_blind = "Showdown Blind",
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."},

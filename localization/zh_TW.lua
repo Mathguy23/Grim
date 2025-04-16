@@ -392,6 +392,12 @@ return {
                     "直到{C:attention}購買{}一個物品"
                 }
             },
+            sk_grm_shelf_3 = {
+                name = "Shelf III",
+                text = {
+                    "{C:attention}+1{} voucher slot"
+                }
+            },
             sk_grm_prestige_1 = {
                 name = "威信 I",
                 text = {
@@ -414,11 +420,11 @@ return {
                 }
             },
             sk_grm_blind_breaker = {
-                name = "盲注破壞者",
+                name = "Blind Breaker",
                 text = {
-                    "計算完{C:attention}主要的分數後{}，獲得",
-                    "等同於{C:blue}計分的籌碼^0.15{}的{X:red,C:white}乘成{}",
-                    "{C:inactive}（最少{X:red,C:white} X1 {C:inactive}）"
+                    "After {C:attention}main scoring{}, Gives {X:red,C:white} ^0.2 {} for",
+                    "each hand played previously",
+                    "{C:inactive}(Currently {X:red,C:white} ^#1# {C:inactive})"
                 }
             },
             sk_grm_spectral_shard = {
@@ -1017,6 +1023,23 @@ return {
                     "打出的{C:attention}牌型{}中"
                 }
             },
+            j_grm_jolly_jimball = {
+                name = "Jolly Jimball",
+                text = {
+                    "This Joker gains {X:mult,C:white} X#1# {} Mult",
+                    "per {C:attention}consecutive{} hand",
+                    "containing a {C:attention}#2#{}",
+                    "{C:inactive}(Currently {X:mult,C:white} X#3# {C:inactive} Mult)",
+                },
+            },
+            j_grm_cosmic_credit = {
+                name = "Cosmic Credit",
+                text = {
+                    "{X:purple,C:white} X#1# {} to all XP",
+                    "sources, {C:red}-#2#{} XP at {C:attention}end{}",
+                    "{C:attention}of round{}",
+                },
+            },
         },
         Voucher = {
             v_grm_progress = {
@@ -1530,6 +1553,8 @@ return {
             k_area_pack = "區域禮包",
             k_loot_pack = "戰利禮包",
             k_ancient_pack = "古老禮包",
+            boss_blind = "Boss Blind",
+            showdown_blind = "Showdown Blind",
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}出牌次數{}及{C:red}棄牌次數{}不會自動重設"},
