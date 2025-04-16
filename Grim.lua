@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.1
+--- VERSION: 1.2.3
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -2015,7 +2015,7 @@ SMODS.Atlas({ key = "loot", atlas_table = "ASSET_ATLAS", path = "Loot.png", px =
 
 SMODS.Atlas({ key = "sleeves", atlas_table = "ASSET_ATLAS", path = "Sleeves.png", px = 71, py = 95})
 
-SMODS.Atlas({ key = "stickers", atlas_table = "ASSET_ATLAS", path = "Stickers.png", px = 71, py = 95})
+SMODS.Atlas({ key = "stickers2", atlas_table = "ASSET_ATLAS", path = "Stickers.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "blinds", atlas_table = "ANIMATION_ATLAS", path = "Blinds.png", px = 34, py = 34, frames = 21 })
 
@@ -2568,7 +2568,7 @@ SMODS.Sticker {
     pos = { x = 0, y = 0 },
     colour = HEX '8a71e1',
     badge_colour = HEX '8a71e1',
-    atlas = 'stickers',
+    atlas = 'stickers2',
     should_apply = function(self, card, center, area)
         return false
     end,
@@ -2592,7 +2592,7 @@ SMODS.Sticker {
     pos = { x = 2, y = 0 },
     colour = HEX '8a71e1',
     badge_colour = HEX '8a71e1',
-    atlas = 'stickers',
+    atlas = 'stickers2',
     should_apply = function(self, card, center, area)
         return false
     end,
@@ -2615,7 +2615,7 @@ SMODS.Sticker {
     pos = { x = 1, y = 0 },
     colour = HEX '8a71e1',
     badge_colour = HEX '8a71e1',
-    atlas = 'stickers',
+    atlas = 'stickers2',
     should_apply = function(self, card, center, area)
         return false
     end,
@@ -2643,7 +2643,7 @@ SMODS.Sticker {
     pos = { x = 1, y = 0 },
     colour = HEX '8a71e1',
     badge_colour = HEX '8a71e1',
-    atlas = 'stickers',
+    atlas = 'stickers2',
     should_apply = function(self, card, center, area)
         return false
     end,
@@ -3923,7 +3923,7 @@ SMODS.Enhancement {
         card.ability.xp = self.config.xp
     end,
     calculate = function(self, card, context)
-        if context.cardarea == G.play and context.main_scoring then
+        if ((context.cardarea == G.play) and context.main_scoring) or ((context.cardarea == G.consumeables) and context.joker_main) then
             add_skill_xp(card and card.ability.xp or 5, card)
         end
     end
