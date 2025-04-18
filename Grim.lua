@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.3
+--- VERSION: 1.2.4
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -2015,7 +2015,7 @@ SMODS.Atlas({ key = "loot", atlas_table = "ASSET_ATLAS", path = "Loot.png", px =
 
 SMODS.Atlas({ key = "sleeves", atlas_table = "ASSET_ATLAS", path = "Sleeves.png", px = 71, py = 95})
 
-SMODS.Atlas({ key = "stickers2", atlas_table = "ASSET_ATLAS", path = "Stickers.png", px = 71, py = 95})
+SMODS.Atlas({ key = "stickers2", atlas_table = "ASSET_ATLAS", path = "stickers2.png", px = 71, py = 95})
 
 SMODS.Atlas({ key = "blinds", atlas_table = "ANIMATION_ATLAS", path = "Blinds.png", px = 34, py = 34, frames = 21 })
 
@@ -3883,7 +3883,7 @@ SMODS.Joker {
 SMODS.Joker {
     key = 'cosmic_credit',
     name = "Cosmic Credit",
-    rarity = 1,
+    rarity = 2,
     atlas = 'jokers',
     pos = {x = 0, y = 3},
     cost = 4,
@@ -3894,6 +3894,23 @@ SMODS.Joker {
     end,
     calc_xp_bonus = function(self, card)
         return -card.ability.extra.xp
+    end
+}
+
+SMODS.Joker {
+    key = 'apprentice',
+    name = "Apprentice",
+    rarity = 1,
+    atlas = 'jokers',
+    pos = {x = 1, y = 3},
+    cost = 6,
+    blueprint_compat = false,
+    config = {extra = {xp = 20}},
+    loc_vars = function(self, info_queue, card)
+        return { vars = {card.ability.extra.xp}}
+    end,
+    calc_xp_bonus = function(self, card)
+        return card.ability.extra.xp
     end
 }
 

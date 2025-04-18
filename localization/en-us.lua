@@ -1157,6 +1157,13 @@ return {
                     "{C:attention}of round{}",
                 },
             },
+            j_grm_apprentice = {
+                name = "Apprentice",
+                text = {
+                    "{C:purple}+#1#{} XP at {C:attention}end{}",
+                    "{C:attention}of round{}",
+                },
+            },
         },
         Voucher = {
             v_grm_progress = {
