@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.4
+--- VERSION: 1.2.5
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -191,10 +191,13 @@ SMODS.Element = SMODS.Consumable:extend {
         if self.status then
             for i=1, #G.hand.highlighted do
                 G.hand.highlighted[i].ability.grm_status = G.hand.highlighted[i].ability.grm_status or {}
-                if (self.status == "gust") and not G.hand.highlighted[i].ability.grm_status.gust and not card.debuff then
+                if (self.status == "gust") and not G.hand.highlighted[i].ability.grm_status.gust and not G.hand.highlighted[i].debuff then
                     G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
                 end
                 G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function() 
+                    if self.status == "gust" then
+                        G.hand.highlighted[i].ability.grm_status.debuff_flag = G.hand.highlighted[i].debuff
+                    end
                     G.hand.highlighted[i].ability.grm_status[self.status] = true
                     return true 
                 end }))
@@ -2528,7 +2531,10 @@ SMODS.Sticker {
         local badges = {}
         local total = 0
         if not card.ability.eternal and ((card.ability.set == "Joker") or (card.ability.set == "Default") or (card.ability.set == "Enhanced")) then
-            if card.config.center.eternal_compat then
+            if not card.config.center.eternal_compat then
+                badges.grm_destruct = 2
+                total = total + 2
+            elseif card.ability.name == "Glass Card" then
                 badges.grm_destruct = 2
                 total = total + 2
             else
@@ -2599,7 +2605,7 @@ SMODS.Sticker {
     loc_txt = {
         name = "Void Badge",
         text = {
-            "{C:purple}+10{} XP at {C:attention}end of round{}",
+            "{C:purple}+15{} XP at {C:attention}end of round{}",
             "per {C:attention}empty{} joker slot",
         },
         label = "Void"
@@ -2671,10 +2677,10 @@ SMODS.Element {
     key = 'm_lead',
     atlas = "metal",
     pos = {x = 1, y = 0},
-    config = {mod_conv = 'm_grm_lead', max_highlighted = 2},
+    config = {mod_conv = 'm_grm_lead', max_highlighted = 5},
     loc_vars = function(self, info_queue, card)
         info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_lead']
-        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_lead')}}}
+        return {vars = {(card and card.ability.max_highlighted or 5), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_lead')}}}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2853,10 +2859,10 @@ SMODS.Element {
     key = 'm_iron',
     atlas = "metal",
     pos = {x =4, y = 1},
-    config = {mod_conv = 'm_grm_iron', max_highlighted = 2},
+    config = {mod_conv = 'm_grm_iron', max_highlighted = 5},
     loc_vars = function(self, info_queue, card)
         info_queue[#info_queue+1] = G.P_CENTERS[card and card.ability.mod_conv or 'm_grm_iron']
-        return {vars = {(card and card.ability.max_highlighted or 2), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_iron')}}}
+        return {vars = {(card and card.ability.max_highlighted or 5), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_iron')}}}
     end,
     in_pool = function(self)
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2898,8 +2904,11 @@ SMODS.Spectral {
             if valid then
                 local _, status = pseudorandom_element(statuses, pseudoseed('phil'))
                 G.E_MANAGER:add_event(Event({func = function()
+                    if (status == "gust") then
+                        G.hand.cards[i].ability.grm_status.debuff_flag = G.hand.cards[i].debuff
+                    end
                     G.hand.cards[i].ability.grm_status[status] = true
-                    if status == "gust" and G.hand.cards[i].highlighted then
+                    if (status == "gust") and G.hand.cards[i].highlighted and not G.hand.cards[i].debuff then
                         G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
                     end
                 return true end }))
@@ -2923,13 +2932,13 @@ SMODS.Enhancement {
     key = 'radium',
     name = "Radium Card",
     atlas = 'enhance',
-    config = {h_xp = 12, base_odds = 226, odds = 1600, m_type = "Modern"},
+    config = {h_xp = 18, base_odds = 226, odds = 1600, m_type = "Modern"},
     pos = {x = 0, y = 1},
     in_pool = function(self)
         return false
     end,
     loc_vars = function(self, info_queue, card)
-        return {vars = {card and card.ability.h_xp or 12, (card and card.ability.base_odds or 226) * G.GAME.probabilities.normal, card and card.ability.odds or 1600}}
+        return {vars = {card and card.ability.h_xp or 18, (card and card.ability.base_odds or 226) * G.GAME.probabilities.normal, card and card.ability.odds or 1600}}
     end
 }
 
@@ -2955,11 +2964,6 @@ SMODS.Enhancement {
     end,
     loc_vars = function(self, info_queue, card)
         return {vars = {card and card.ability.h_chips or 50}}
-    end,
-    calculate = function(self, card, context)
-        if context.cardarea == G.hand and context.main_scoring then
-            return {chips = card and card.ability.h_chips or 50}
-        end
     end
 }
 
@@ -4085,7 +4089,7 @@ function Card:calculate_xp_bonus()
             total = total + obj:calc_xp_bonus(self)
         end
         if self.ability.grm_void then
-            total = total + 10 * (G.jokers.config.card_limit - #G.jokers.cards)
+            total = total + 15 * (G.jokers.config.card_limit - #G.jokers.cards)
         end
         if total ~= 0 then
             return total
