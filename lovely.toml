@@ -1,0 +1,2713 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''chips_text = '0','''
+position = 'after'
+payload = '''base_ante_scaling = get_starting_params().ante_scaling,
+scaling_multipliers = {},
+skills = {},
+skill_xp = 0,
+xp_spent = 0,
+legendary_tokens = 0,
+reset_antes2 = {},
+reset_antes3 = {},
+ghost_skill_xp = 0,
+xp_interest = 1,
+xp_interest_rate = 10,
+xp_interest_max = 50,
+grm_unlocks = {
+    shop_rerolls = 0,
+},
+grim_boss_dollars = 0,
+grim_hand_size_bonus = 0,
+ante_banners = {},
+grim_class = {},
+area = 'Classic',
+region = 'Classic',
+area_data = {
+    norm_color = HEX("50846e"),
+    endless_color = HEX("4f6367"),
+    adjacent = {
+        Classic = true,
+        Metro = true,
+    },
+},
+special_levels = {
+    heart = 0,
+    club = 0,
+    spade = 0,
+    diamond = 0,
+    nothing = 0,
+    fleuron = 0,
+    halberd = 0,
+    debuff = 0,
+    boss = 0,
+    face_down = 0,
+    not_allowed = 0,
+    overshoot = 0,
+    money = 0,
+    grind = 0,
+},
+stellar_levels = {
+    hearts = {chips = 0, mult = 0},
+    diamonds = {chips = 0, mult = 0},
+    clubs = {chips = 0, mult = 0},
+    spades = {chips = 0, mult = 0},
+    fleurons = {chips = 0, mult = 0},
+    halberds = {chips = 0, mult = 0},
+    nothings = {chips = 0, mult = 0},
+},
+nullified_blinds = {},
+force_grm_packs = {},
+skill_debuffs = {},
+skill_tree_data = get_skills and get_skills() or {},
+hide_unlearnable = true,
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if center.name == "Wee Joker" and (center.discovered or self.bypass_discovery_center) then'''
+position = 'before'
+payload = '''if (center.set == "Skill") then 
+    H = W
+    self.T.h = H
+elseif (center.name == "JollyJimball") then
+    H = W
+    self.T.h = H
+    H = H*57/69
+    W = W*57/69
+    self.T.h = H
+    self.T.w = W
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''(_c.set == 'Joker' and G.C.RARITY[_c.rarity]) or'''
+position = 'after'
+payload = '''(_c.set == 'Skill' and _c.class and (G.C.BLUE)) or
+(_c.set == 'Skill' and (G.C.ORANGE)) or'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if not self.bypass_lock and self.config.center.unlocked ~= false and'''
+position = 'before'
+payload = '''if not self.bypass_lock and self.config.center.unlocked ~= false and
+    (self.ability.set == 'Skill') and
+    not self.config.center.discovered and 
+    ((self.area ~= G.jokers and self.area ~= G.consumeables and self.area) or not self.area) then
+        card_type = 'Undiscovered'
+    end  
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''elseif not self.params.bypass_discovery_center and (_center.set == 'Edition' or _center.set == 'Joker' or _center.consumeable or _center.set == 'Voucher' or _center.set == 'Booster') and not _center.discovered then'''
+position = 'before'
+payload = '''elseif _center.set == 'Skill' and not _center.unlocked and not self.params.bypass_discovery_center then 
+    self.children.center = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS["grm_skills2"], {x = 3, y = 0})
+elseif not self.params.bypass_discovery_center and (_center.set == 'Skill') and not _center.discovered then
+    self.children.center = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS[SMODS.UndiscoveredSprites["Skill"].atlas], SMODS.UndiscoveredSprites["Skill"].pos)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''total = {tally = 0, of = 0},'''
+position = 'before'
+payload = '''skills = {tally = 0, of = 0},
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''for _, v in pairs(G.P_BLINDS) do'''
+position = 'before'
+payload = '''if G.P_SKILLS then
+    for _, v in pairs(G.P_SKILLS) do
+        if skill_meets_dependencies(_) then
+            G.DISCOVER_TALLIES.total.of = G.DISCOVER_TALLIES.total.of+1
+            G.DISCOVER_TALLIES.skills.of = G.DISCOVER_TALLIES.skills.of+1
+            if v.discovered then 
+                G.DISCOVER_TALLIES.total.tally = G.DISCOVER_TALLIES.total.tally+1
+                G.DISCOVER_TALLIES.skills.tally = G.DISCOVER_TALLIES.skills.tally+1
+            end
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''Stake = {},'''
+position = 'after'
+payload = '''Skill = {},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''self.P_LOCKED = {}'''
+position = 'after'
+payload = '''self.P_SKILLS = {
+    sk_grm_chime_1 = {key = 'sk_grm_chime_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime I", xp_req = 200, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Chime"},
+    sk_grm_chime_2 = {key = 'sk_grm_chime_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime II", xp_req = 250, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}, tier = 2, branch = "Chime"},
+    sk_grm_chime_3 = {key = 'sk_grm_chime_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Chime III", xp_req = 650, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_2'}, unlock_condition = {type = 'ante_up', ante = 17}, tier = 3, branch = "Chime"},
+    sk_grm_hexahedron_1 = {key = 'sk_grm_hexahedron_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron I", xp_req = 300, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Hexahedron"},
+    sk_grm_hexahedron_2 = {key = 'sk_grm_hexahedron_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron II", xp_req = 400, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 2, branch = "Hexahedron"},
+    sk_grm_hexahedron_3 = {key = 'sk_grm_hexahedron_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hexahedron III", xp_req = 750, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 3, branch = "Hexahedron"},
+    sk_grm_strike_1 = {key = 'sk_grm_strike_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike I", xp_req = 300, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Strike"},
+    sk_grm_strike_2 = {key = 'sk_grm_strike_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike II", xp_req = 400, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 2, branch = "Strike"},
+    sk_grm_strike_3 = {key = 'sk_grm_strike_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Strike III", xp_req = 800, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 3, branch = "Strike"},
+    sk_grm_ease_1 = {key = 'sk_grm_ease_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease I", xp_req = 150, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "Ease"},
+    sk_grm_ease_2 = {key = 'sk_grm_ease_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease II", xp_req = 200, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_1'}, tier = 2, branch = "Ease"},
+    sk_grm_ease_3 = {key = 'sk_grm_ease_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease III", xp_req = 300, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_2'}, tier = 3, branch = "Ease"},
+    sk_grm_mystical_1 = {key = 'sk_grm_mystical_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical I", xp_req = 350, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Mystical"},
+    sk_grm_mystical_2 = {key = 'sk_grm_mystical_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical II", xp_req = 500, pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}, tier = 2, branch = "Mystical"},
+    sk_grm_mystical_3 = {key = 'sk_grm_mystical_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Mystical III", xp_req = 750, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_2'}, tier = 3, branch = "Mystical"},
+    sk_grm_ocean_1 = {key = 'sk_grm_ocean_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ocean I", xp_req = 300, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Ocean"},
+    sk_grm_ocean_2 = {key = 'sk_grm_ocean_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ocean II", xp_req = 350, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_1'}, tier = 2, branch = "Ocean"},
+    sk_grm_ocean_3 = {key = 'sk_grm_ocean_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ocean III", xp_req = 550, pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 3, branch = "Ocean"},
+    sk_grm_stake_1 = {key = 'sk_grm_stake_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake I", xp_req = 150, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_1'}, tier = 1, branch = "Stake"},
+    sk_grm_stake_2 = {key = 'sk_grm_stake_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake II", xp_req = 300, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}, tier = 2, branch = "Stake"},
+    sk_grm_stake_3 = {key = 'sk_grm_stake_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Stake III", xp_req = 800, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_2'}, tier = 3, branch = "Stake"},
+    sk_grm_skillful_1 = {key = 'sk_grm_skillful_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}, tier = 1, branch = "Skillful"},
+    sk_grm_skillful_2 = {key = 'sk_grm_skillful_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful II", xp_req = 550, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 2, branch = "Skillful"},
+    sk_grm_skillful_3 = {key = 'sk_grm_skillful_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Skillful III", xp_req = 1000, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_2'}, tier = 3, branch = "Skillful"},
+    sk_grm_motley_1 = {key = 'sk_grm_motley_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley I", xp_req = 300, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Motley"},
+    sk_grm_motley_2 = {key = 'sk_grm_motley_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley II", xp_req = 400, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}, tier = 2, branch = "Motley"},
+    sk_grm_motley_3 = {key = 'sk_grm_motley_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Motley III", xp_req = 700, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}, tier = 3, branch = "Motley"},
+    sk_grm_fortunate_1 = {key = 'sk_grm_fortunate_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Fortunate I", xp_req = 50, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_mystical_1'}, tier = 1, branch = "Fortunate"},
+    sk_grm_fortunate_2 = {key = 'sk_grm_fortunate_2', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Fortunate II", xp_req = 200, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_fortunate_1'}, tier = 2, branch = "Fortunate"},
+    sk_grm_fortunate_3 = {key = 'sk_grm_fortunate_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Fortunate III", xp_req = 350, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_fortunate_2'}, tier = 3, branch = "Fortunate"},
+    sk_grm_scarce_1 = {key = 'sk_grm_scarce_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Scarce I", xp_req = 800, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2', 'sk_grm_stake_2'}, tier = 1, branch = "Scarce"},
+    sk_grm_gravity_1 = {key = 'sk_grm_gravity_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity I", xp_req = 200, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Gravity"},
+    sk_grm_gravity_2 = {key = 'sk_grm_gravity_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity II", xp_req = 300, pos = {x=3,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_1'}, tier = 2, branch = "Gravity"},
+    sk_grm_gravity_3 = {key = 'sk_grm_gravity_3', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Gravity III", xp_req = 550, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_gravity_2'}, tier = 3, branch = "Gravity"},
+    sk_grm_ghost_1 = {key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 250, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "Ghost"},
+    sk_grm_ghost_2 = {key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 350, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}, tier = 2, branch = "Ghost"},
+    sk_grm_ghost_3 = {key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 650, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}, tier = 3, branch = "Ghost"},
+    sk_grm_receipt_1 = {key = 'sk_grm_receipt_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt I", xp_req = 200, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Receipt"},
+    sk_grm_receipt_2 = {key = 'sk_grm_receipt_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt II", xp_req = 250, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_1'}, tier = 2, branch = "Receipt"},
+    sk_grm_receipt_3 = {key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 600, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}, tier = 3, branch = "Receipt"},
+    sk_grm_dash_1 = {key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 150, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}, tier = 1, branch = "Dash"},
+    sk_grm_dash_2 = {key = 'sk_grm_dash_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash II", xp_req = 250, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_dash_1'}, tier = 2, branch = "Dash"},
+    sk_grm_cl_hoarder = {key = 'sk_grm_cl_hoarder', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hoarder", xp_req = 0, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_cl_astronaut = {key = 'sk_grm_cl_astronaut', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Astronaut", xp_req = 0, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_orbit_1 = {key = 'sk_grm_orbit_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit I", xp_req = 300, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_cl_astronaut'}, tier = 1, branch = "Orbit"},
+    sk_grm_orbit_2 = {key = 'sk_grm_orbit_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Orbit II", xp_req = 350, pos = {x=2,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_orbit_1'}, tier = 2, branch = "Orbit"},
+    sk_grm_cl_alchemist = {key = 'sk_grm_cl_alchemist', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Alchemist", xp_req = 0, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_cl_explorer = {key = 'sk_grm_cl_explorer', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Explorer", xp_req = 0, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {}, class = true},
+    sk_grm_sticky_1 = {key = 'sk_grm_sticky_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky I", xp_req = 200, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_stake_1'}, tier = 1, branch = "Sticky"},
+    sk_grm_sticky_2 = {key = 'sk_grm_sticky_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky II", xp_req = 350, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_1'}, tier = 2, branch = "Sticky"},
+    sk_grm_sticky_3 = {key = 'sk_grm_sticky_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Sticky III", xp_req = 650, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_2'}, tier = 3, branch = "Sticky"},
+    sk_cry_sticky_4 = {key = 'sk_cry_sticky_4', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Sticky IV", xp_req = 800, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_sticky_3'}, tier = 4, branch = "Sticky", grm_mod_reqs = {"Cryptid"}},
+    sk_grm_shelf_1 = {key = 'sk_grm_shelf_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf I", xp_req = 150, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Shelf"},
+    sk_grm_shelf_2 = {key = 'sk_grm_shelf_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf II", xp_req = 350, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_1'}, tier = 2, branch = "Shelf"},
+    sk_grm_shelf_3 = {key = 'sk_grm_shelf_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Shelf III", xp_req = 500, pos = {x=1,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_2'}, tier = 3, branch = "Shelf"},
+    sk_grm_prestige_1 = {key = 'sk_grm_prestige_1', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Prestige I", xp_req = 500, pos = {x=2,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_skillful_1'}, tier = 1, branch = "Prestige"},
+    sk_grm_prestige_2 = {key = 'sk_grm_prestige_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Prestige II", xp_req = 800, pos = {x=2,y=5}, soul_pos = {x=3, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, tier = 2, branch = "Prestige"},
+    sk_grm_blind_breaker = {key = 'sk_grm_blind_breaker', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Blind Breaker", xp_req = 0, token_req = 1, pos = {x=3,y=5}, soul_pos = {x=4, y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Blind Breaker"},
+    sk_grm_spectral_shard = {key = 'sk_grm_spectral_shard', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Spectral Shard", xp_req = 0, token_req = 1, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Spectral Shard"},
+    sk_cry_ace_1 = {key = 'sk_cry_ace_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE I", xp_req = 250, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_ace_2 = {key = 'sk_cry_ace_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE II", xp_req = 600, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_1'}, tier = 2, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_ace_3 = {key = 'sk_cry_ace_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "ACE III", xp_req = 0, token_req = 1, pos = {x=0,y=1}, soul_pos = {x=1,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_ace_2', 'sk_grm_prestige_1'}, tier = 3, branch = "ACE", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_1 = {key = 'sk_cry_m_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M I", xp_req = 300, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_2 = {key = 'sk_cry_m_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M II", xp_req = 400, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_1'}, tier = 2, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_cry_m_3 = {key = 'sk_cry_m_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "M III", xp_req = 800, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_cry_m_2'}, tier = 3, branch = "M", grm_mod_reqs = {"Cryptid"}},
+    sk_poke_energetic_1 = {key = 'sk_poke_energetic_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic I", xp_req = 150, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
+    sk_poke_energetic_2 = {key = 'sk_poke_energetic_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic II", xp_req = 350, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_poke_energetic_1'}, tier = 2, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
+    sk_poke_energetic_3 = {key = 'sk_poke_energetic_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Energetic III", xp_req = 500, pos = {x=3,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_poke_energetic_2'}, tier = 3, branch = "Energetic", grm_mod_reqs = {"Pokermon"}},
+    sk_mf_painted_1 = {key = 'sk_mf_painted_1', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted I", xp_req = 250, pos = {x=4,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_1'}, tier = 1, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
+    sk_mf_painted_2 = {key = 'sk_mf_painted_2', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted II", xp_req = 300, pos = {x=0,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_mf_painted_1'}, tier = 2, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
+    sk_mf_painted_3 = {key = 'sk_mf_painted_3', unlocked = true, discovered = true, atlas = 'grm_skills3', cost = 8, name = "Painted III", xp_req = 400, pos = {x=1,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_mf_painted_2'}, tier = 3, branch = "Painted", grm_mod_reqs = {"MoreFluff"}},
+    sk_ortalab_decay_1 = {key = 'sk_ortalab_decay_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Decay I", xp_req = 300, pos = {x=3,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_shelf_2', 'sk_grm_strike_2'}, tier = 1, branch = "Decay", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_magica_1 = {key = 'sk_ortalab_magica_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica I", xp_req = 300, pos = {x=4,y=3}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 1, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_magica_2 = {key = 'sk_ortalab_magica_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica II", xp_req = 400, pos = {x=0,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_1'}, tier = 2, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_magica_3 = {key = 'sk_ortalab_magica_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Mágica III", xp_req = 800, pos = {x=1,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_magica_2'}, tier = 3, branch = "Mágica", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_1 = {key = 'sk_ortalab_starry_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry I", xp_req = 200, pos = {x=2,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 1, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_2 = {key = 'sk_ortalab_starry_2', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry II", xp_req = 450, pos = {x=3,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_1'}, tier = 2, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_ortalab_starry_3 = {key = 'sk_ortalab_starry_3', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Starry III", xp_req = 700, pos = {x=4,y=4}, set = "Skill", effect = "", config = {}, prereq = {'sk_ortalab_starry_2'}, tier = 3, branch = "Starry", grm_mod_reqs = {"ortalab"}},
+    sk_grm_dexterity = {key = 'sk_grm_dexterity', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Dexterity", xp_req = 0, token_req = 1, pos = {x=0,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_prestige_1'}, branch = "Dexterity"},
+    sk_grm_holdover_1 = {key = 'sk_grm_holdover_1', unlocked = true, discovered = false, atlas = 'grm_skills3', cost = 8, name = "Holdover I", xp_req = 250, pos = {x=4,y=5}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "Holdover"},
+    sk_grm_holdover_2 = {key = 'sk_grm_holdover_2', unlocked = true, discovered = false, atlas = 'grm_skills4', cost = 8, name = "Holdover II", xp_req = 300, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_holdover_1'}, tier = 2, branch = "Holdover"},
+    sk_grm_holdover_3 = {key = 'sk_grm_holdover_3', unlocked = true, discovered = false, atlas = 'grm_skills4', cost = 8, name = "Holdover III", xp_req = 350, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_holdover_2'}, tier = 3, branch = "Holdover"},
+}
+local ordered_skills = {}
+local ordered_legendaries = {}
+local ordered_classes = {}
+for i, j in pairs(self.P_SKILLS) do
+    if not j.class and not j.token_req then
+        table.insert(ordered_skills, i)
+    elseif j.token_req then
+        table.insert(ordered_legendaries, i)
+    else
+        table.insert(ordered_classes, i)
+    end
+end
+table.sort(ordered_skills)
+table.sort(ordered_legendaries)
+table.sort(ordered_classes)
+for i, j in ipairs(ordered_skills) do
+    self.P_SKILLS[j].order = i
+end
+for i, j in ipairs(ordered_legendaries) do
+    self.P_SKILLS[j].order = #ordered_skills + i
+end
+for i, j in ipairs(ordered_classes) do
+    self.P_SKILLS[j].order = #ordered_classes + #ordered_skills + i
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''local meta = STR_UNPACK(get_compressed(G.SETTINGS.profile..'/'..'meta.jkr') or 'return {}')'''
+position = 'after'
+payload = '''for k, v in pairs(G.P_SKILLS) do
+    SMODS._save_d_u(v)
+    v._discovered_unlocked_overwritten = true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''table.sort(self.P_CENTER_POOLS["Seal"], function (a, b) return a.order < b.order end)'''
+position = 'after'
+payload = '''table.sort(self.P_CENTER_POOLS["Skill"], function (a, b) return a.order < b.order end)'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if _center.name == 'Square Joker' and (_center.discovered or self.bypass_discovery_center) then'''
+position = 'before'
+payload = '''if (_center.set == 'Skill') then
+    self.children.center.scale.y = self.children.center.scale.x
+elseif (_center.name == "JollyJimball") then
+    self.children.center.scale.y = self.children.center.scale.x
+    self.children.center.scale.y = self.children.center.scale.y*57/69
+    self.children.center.scale.x = self.children.center.scale.x*57/69
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''elseif self.config.center.name == "Square Joker" then'''
+position = 'before'
+payload = '''elseif (self.config.center.set == "Skill") then
+    H = W 
+    self.T.h = H*scale
+    self.T.w = W*scale
+elseif (self.config.center.name == "JollyJimball") then
+    H = W 
+    self.T.h = H*scale*57/69*scale
+    self.T.w = W*scale*57/69*scale'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''for k, v in pairs(self.P_STAKES) do'''
+position = 'before'
+payload = '''for k, v in pairs(self.P_SKILLS) do
+    v.key = k
+    if not v.wip and not v.demo then 
+        if TESTHELPER_unlocks then v.discovered = true; v.alerted = true  end --REMOVE THIS
+        if not v.unlocked and meta.unlocked[k] then 
+            v.unlocked = true
+        end
+        if not v.discovered and meta.discovered[k] then 
+            v.discovered = true
+        end
+        if v.discovered and meta.alerted[k] then 
+            v.alerted = true
+        elseif v.discovered then
+            v.alerted = false
+        end
+        if SMODS.Mods and skill_meets_dependencies(k) then
+            table.insert(self.P_CENTER_POOLS["Skill"], v)
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''for k, v in pairs(G.P_CENTERS) do'''
+position = 'before'
+payload = '''for k, v in pairs(G.P_SKILLS) do
+    if not v.demo and not v.wip then 
+        v.alerted = true
+        v.discovered = true
+        v.unlocked = true
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''G.ARGS.save_progress.PROFILE = G.PROFILES[G.SETTINGS.profile]'''
+position = 'after'
+payload = '''for k, v in pairs(self.P_SKILLS) do
+    G.ARGS.save_progress.UDA[k] = (v.unlocked and 'u' or '')..(v.discovered and 'd' or '')..(v.alerted and 'a' or '')
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''elseif _c.set == 'Joker' then'''
+position = 'before'
+payload = '''elseif _c.set == 'Skill' then
+    if card and card.config and G.P_SKILLS[card.config.center.key].discovered then
+        if _c.name == "Mystical III" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
+        elseif _c.name == "Stake III" then
+            loc_vars = {tonumber(string.format("%.2f", (1.3 ^ (G.GAME.round_resets.ante or 0))))}
+        elseif _c.name == "Motley I" then
+            info_queue[#info_queue+1] = G.P_CENTERS["m_wild"]
+        elseif _c.name == "Motley II" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_lovers"]
+        elseif _c.name == "Motley III" then
+            info_queue[#info_queue+1] = G.P_CENTERS["m_wild"]
+        elseif _c.name == "Fortunate I" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
+            info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
+        elseif _c.name == "Fortunate II" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
+        elseif _c.name == "Fortunate III" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_wheel_of_fortune"]
+        elseif _c.name == "Orbit II" then
+            if G.P_CENTERS["c_grm_dysnomia"].discovered then
+                info_queue[#info_queue+1] = G.P_CENTERS["c_grm_dysnomia"]
+            end
+            if G.P_CENTERS["c_grm_lp_944_20"].discovered then
+                info_queue[#info_queue+1] = G.P_CENTERS["c_grm_lp_944_20"]
+            end
+        elseif _c.name == "Ghost II" then
+            info_queue[#info_queue+1] = G.P_TAGS["tag_ethereal"]
+        elseif _c.name == "Explorer" then
+            info_queue[#info_queue+1] = G.P_TAGS["tag_grm_grid"]
+        elseif _c.name == "Sticky I" then
+            info_queue[#info_queue+1] = {key = 'eternal', set = 'Other'}
+        elseif _c.name == "Sticky II" then
+            info_queue[#info_queue+1] = {key = 'perishable', set = 'Other', vars = {G.GAME.perishable_rounds or 5, G.GAME.perishable_rounds or 5}}
+        elseif _c.name == "Sticky III" then
+            info_queue[#info_queue+1] = {key = 'rental', set = 'Other', vars = {3}}
+        elseif _c.name == "Prestige I" then
+            loc_vars = {number_format(G.GAME.xp_spent)}
+        elseif _c.name == "Blind Breaker" then
+            loc_vars = {1 + G.GAME.current_round.hands_played * 0.2}
+        elseif _c.name == "ACE I" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_cry_crash"]
+        elseif _c.name == "ACE II" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
+        elseif _c.name == "ACE III" then
+            info_queue[#info_queue+1] = G.P_CENTERS["c_cry_pointer"]
+        elseif _c.name == "M I" then
+            loc_vars = {number_format(3 * G.GAME.hands["Pair"].played)}
+        elseif _c.name == "M III" then
+            info_queue[#info_queue+1] = G.P_CENTERS["j_grm_jolly_jimball"]
+        elseif _c.name == "Sticky IV" then
+            info_queue[#info_queue+1] = {key = "banana", set = "Other", vars = {G.GAME.probabilities.normal, 10}}
+        elseif _c.name == "Energetic III" then
+            info_queue[#info_queue+1] = G.P_CENTERS["e_polychrome"]
+            info_queue[#info_queue+1] = G.P_CENTERS["e_negative"]
+            loc_vars = {G.GAME.probabilities.normal}
+        elseif _c.name == "Mágica III" then
+            info_queue[#info_queue+1] = {set = 'Other', key = 'rooster_alt'}
+        elseif _c.name == "Starry III" then
+            loc_vars = {G.GAME.probabilities.normal}
+        end
+    else
+        if _c.name == "Stake III" then
+            loc_vars = {tonumber(string.format("%.2f", (1.3 ^ (G.GAME.round_resets.ante or 0))))}
+        elseif _c.name == "Prestige I" then
+            loc_vars = {number_format(G.GAME.xp_spent)}
+        elseif _c.name == "Energetic III" then
+            loc_vars = {G.GAME.probabilities.normal}
+        elseif _c.name == "Starry III" then
+            loc_vars = {G.GAME.probabilities.normal}
+        end
+    end
+    if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
+        local validated = true
+        if card.config.center.prereq then
+            for i2, j2 in ipairs(card.config.center.prereq) do
+                if not G.GAME.skills[j2] and not G.P_SKILLS[j2].discovered then
+                    validated = false
+                end
+            end
+        end
+        if validated or G.P_SKILLS[card.config.center.key].discovered then
+            localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
+        else
+            localize{type = 'descriptions', key = 'unknown_skill_ability', set = 'Other', nodes = desc_nodes}
+        end
+        if not card.config.center.class then
+            localize{type = 'descriptions', key = 'skill_req_heading', set = 'Other', nodes = desc_nodes}
+        end
+        if G.GAME.free_skills and (G.GAME.free_skills > 0) and not card.config.center.class and not card.config.center.token_req then
+            localize{type = 'descriptions', key = 'free_xp_req', set = 'Other', nodes = desc_nodes, vars = {number_format(math.floor(card.config.center.xp_req * (G.GAME.grim_xp_discount or 1)))}}
+        elseif not card.config.center.class then
+            localize{type = 'descriptions', key = 'xp_req', set = 'Other', nodes = desc_nodes, vars = {number_format(math.floor(card.config.center.xp_req * (G.GAME.grim_xp_discount or 1)))}}
+        end
+        if card.config.center.token_req then
+            localize{type = 'descriptions', key = 'token_req', set = 'Other', nodes = desc_nodes, vars = {number_format(card.config.center.token_req)}}
+        end
+        if card.config.center.prereq then
+            for i2, j2 in ipairs(card.config.center.prereq) do
+                local skill_name = localize{type='name_text',key=j2,set = "Skill"}
+                if not G.P_SKILLS[j2].discovered then
+                    skill_name = localize('unknown_skill_name')
+                end
+                if G.GAME.skills[j2] then
+                    localize{type = 'descriptions', key = 'met_skill_req', set = 'Other', nodes = desc_nodes, vars = {skill_name}}
+                else
+                    localize{type = 'descriptions', key = 'unmet_skill_req', set = 'Other', nodes = desc_nodes, vars = {skill_name}}
+                end
+            end
+        end
+    else
+        localize{type = 'descriptions', key = _c.key, set = _c.set, nodes = desc_nodes, vars = loc_vars}
+    end
+    if specific_vars and specific_vars.sticker then info_queue[#info_queue+1] = {key = string.lower(specific_vars.sticker)..'_sticker', set = 'Other'} end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''elseif args.type == 'use' then'''
+position = 'before'
+payload = '''elseif args.type == 'learn' then 
+    button_contents = {n=G.UIT.T, config={text = localize('b_learn'),colour = G.C.WHITE, scale = 0.5}}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''elseif card.ability.set == 'Voucher' then'''
+position = 'before'
+payload = '''elseif card.ability.set == 'Skill' then
+    learn_skill(card)
+    G.GAME.skills[card.key] = true'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''elseif card.area and card.area == G.pack_cards then'''
+position = 'before'
+payload = '''elseif card and card.area and card.area.config.skill_table then
+    return {
+      n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'learn_skill', func = 'can_learn'}, nodes={
+          {n=G.UIT.T, config={text = localize('b_learn'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
+        }},
+    }}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''local card_count = self ~= G.shop_vouchers and {n=G.UIT.R, config={align = self == G.jokers and 'cl' or self == G.hand and 'cm' or 'cr', padding = 0.03, no_fill = true}, nodes={'''
+position = 'at'
+payload = '''local card_count = ((self ~= G.shop_vouchers) and not (self.config.skill_table)) and {n=G.UIT.R, config={align = self == G.jokers and 'cl' or self == G.hand and 'cm' or 'cr', padding = 0.03, no_fill = true}, nodes={'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''self.highlighted = is_higlighted'''
+position = 'after'
+payload = '''if self.ability.set == "Skill" then
+    if self.highlighted and self.area and self.area.config.type ~= 'shop' then
+        local x_off = (self.ability.consumeable and -0.1 or 0)
+        self.children.use_button = UIBox{
+            definition = G.UIDEF.use_and_sell_buttons(self), 
+            config = {align=
+                    ((self.area == G.jokers) or (self.area == G.consumeables)) and "cr" or
+                    "bmi"
+                , offset = 
+                    ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=x_off - 0.4,y=0} or
+                    {x=0,y=0.65},
+                parent =self}
+        }
+    elseif self.children.use_button then
+        self.children.use_button:remove()
+        self.children.use_button = nil
+    end
+end
+if self.playing_card then
+        if self.highlighted and self.area and self.area == G.consumeables then
+            local x_off = (self.ability.consumeable and -0.1 or 0)
+            self.children.use_button = UIBox{
+                definition = G.UIDEF.use_and_sell_buttons(self), 
+                config = {align=
+                        ((self.area == G.jokers) or (self.area == G.consumeables)) and "cr" or
+                        "bmi"
+                    , offset = 
+                        ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=x_off - 0.4,y=0} or
+                        {x=0,y=0.65},
+                    parent =self}
+            }
+        elseif self.highlighted and G.GAME.skills.sk_grm_cl_hoarder and (self.area ~= G.pack_cards) and (self.area ~= G.play) then
+            local x_off = (self.ability.consumeable and -0.1 or 0)
+            self.children.use_button = UIBox{
+                definition = G.UIDEF.use_and_sell_buttons(self), 
+                config = {align=
+                        ((self.area == G.jokers) or (self.area == G.consumeables)) and "cr" or
+                        "bmi"
+                    , offset = 
+                        ((self.area == G.jokers) or (self.area == G.consumeables)) and {x=x_off - 0.4,y=0} or
+                        {x=0,y=0.65},
+                    parent =self}
+            }
+        elseif self.children.use_button then
+            self.children.use_button:remove()
+            self.children.use_button = nil
+        end
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''elseif hide_desc then'''
+position = 'at'
+payload = '''elseif hide_desc and not ((_c.set == 'Skill') and card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key]) then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.RESET_JIGGLES = true'''
+position = 'after'
+payload = '''
+G.GAME.blind_attack = nil
+local skill_saved = false
+for i, j in pairs(G.GAME.skills) do
+    local saved = calculate_skill(i, {end_of_round = true, game_over = game_over})
+    if saved then
+        skill_saved = true
+    end
+end
+if game_over and skill_saved then
+    game_over = false
+end
+if (G.GAME.special_levels) and (G.GAME.special_levels["money"] > 0) and (to_big and to_big(G.GAME.dollars) or (G.GAME.dollars)) < (to_big and to_big(G.GAME.grim_boss_dollars) or (G.GAME.grim_boss_dollars)) then
+    ease_dollars(math.ceil(0.1 * G.GAME.special_levels["money"] * (G.GAME.grim_boss_dollars - G.GAME.dollars)))
+end
+if (G.GAME.blind_on_deck == "Boss") and G.GAME.special_levels and (G.GAME.special_levels["overshoot"] > 0) then
+    local big_func = to_big or (function(x) return x end)
+    if big_func(math.abs((G.GAME.blind.chips - G.GAME.chips) / G.GAME.blind.chips)) <= big_func(.015 * G.GAME.special_levels["overshoot"]) then
+        add_tag(Tag("tag_negative"))
+    end
+end
+if (G.GAME.special_levels) and (G.GAME.special_levels["boss"] > 0) and (G.GAME.blind_on_deck == "Boss") and G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
+    local glass = {}
+    local pool = {}
+    for i = 1, #G.playing_cards do
+        if not G.playing_cards[i].ability.name ~= 'Glass Card' then
+            table.insert(pool, G.playing_cards[i])
+        end
+    end
+    if #pool > G.GAME.special_levels["boss"] then
+        for i = 1, G.GAME.special_levels["boss"] do
+            local card, index = pseudorandom_element(pool, pseudoseed('deimos'))
+            table.insert(glass, card)
+            table.remove(pool, index)
+        end
+    else
+        glass = pool
+    end
+    for i, j in ipairs(glass) do
+        j:set_ability(G.P_CENTERS["m_glass"])
+    end
+end
+if skill_active("sk_grm_cl_explorer") and (G.GAME.blind_on_deck == "Boss") then
+    add_tag(Tag("tag_grm_grid"))
+end
+if (G.GAME.blind_on_deck == "Boss") and (G.GAME.special_levels) and (G.GAME.special_levels["grind"] > 0) then
+    for i = 1, G.GAME.special_levels["grind"] do
+        local rng = pseudorandom('grind')
+        local reward = ""
+        if rng > 0.66 then
+            reward = SMODS.create_card {set = "Lunar", no_edition = true}
+        elseif rng > 0.33 then
+            reward = SMODS.create_card {set = "Stellar", no_edition = true}
+        else
+            reward = SMODS.create_card {set = "Planet", no_edition = true}
+        end
+        reward:set_edition('e_negative')
+        reward:add_to_deck()
+        reward.ability.no_sell_value = true
+        reward:set_cost()
+        G.consumeables:emplace(reward)
+    end
+end
+if skill_active("sk_cry_sticky_4") then
+    for j, k in ipairs({G.jokers, G.consumeables, G.hand, G.deck, G.discard}) do
+        local dupe_these = {}
+        for i = 1, #k.cards do
+            if k.cards[i].ability.banana and (pseudorandom('sticky') < G.GAME.probabilities.normal/8) then
+                table.insert(dupe_these, k.cards[i])
+            end
+        end
+        for i = 1, math.min(((((k == G.jokers) or (k == G.consumeables)) and k.config.card_limit) or 1e15) - #k.cards, #dupe_these) do
+            card_eval_status_text(dupe_these[i], 'extra', nil, nil, nil, {message = localize('k_duplicated_ex')})
+            local card = copy_card(dupe_these[i], nil, nil, nil, dupe_these[i].edition and dupe_these[i].edition.negative)
+            card:add_to_deck()
+            if k.cards[i].playing_card then
+                G.deck.config.card_limit = G.deck.config.card_limit + 1
+                table.insert(G.playing_cards, card)
+            end
+            k:emplace(card)
+        end
+    end
+end
+if (G.GAME.blind_on_deck == "Boss") and skill_active("sk_mf_painted_2") then
+    local pool = {}
+    for i = 1, #G.consumeables.cards do
+        if G.consumeables.cards[i].ability and (G.consumeables.cards[i].ability.set == "Colour") then
+            table.insert(pool, G.consumeables.cards[i])
+        end
+    end
+    if #pool > 0 then
+        local card = pseudorandom_element(pool, pseudoseed('painted'))
+        card.ability.val = card.ability.val + 1
+        G.E_MANAGER:add_event(Event({
+        func = function() 
+            card_eval_status_text(card, 'extra', nil, nil, nil, {
+            message = localize('k_upgrade_ex'),
+            colour = G.C.SECONDARY_SET.ColourCard,
+            card = card
+            }) 
+            return true
+        end}))
+    end
+end
+if skill_active("sk_ortalab_starry_1") then
+    if G.zodiacs then
+        for i, j in pairs(G.zodiacs) do
+            if j.ability.grm_unactivated then
+                j.config.extra.temp_level = j.config.extra.temp_level + 1
+                G.E_MANAGER:add_event(Event({
+                    delay = 0.4,
+                    trigger = 'after',
+                    func = (function()
+                        attention_text({
+                            text = '+1',
+                            colour = G.C.WHITE,
+                            scale = 1, 
+                            hold = 1/G.SETTINGS.GAMESPEED,
+                            cover = j.HUD_zodiac,
+                            cover_colour = G.ARGS.LOC_COLOURS.Zodiac,
+                            align = 'cm',
+                            })
+                        play_sound('generic1', 0.9 + math.random()*0.1, 0.8)
+                        play_sound('holo1', 1.2 + math.random()*0.1, 0.4)
+                        return true
+                    end)
+                }))
+            end
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.cost > 0 then '''
+position = 'before'
+payload = '''if skill_active("sk_grm_mystical_1") and self.ability.name:find('Arcana') then
+    G.GAME.pack_choices = G.GAME.pack_choices + 1
+end
+if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') then
+G.GAME.pack_choices = G.GAME.pack_choices * 2
+end
+if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
+    G.GAME.pack_choices = G.GAME.pack_choices + 2
+end
+if skill_active("sk_grm_gravity_1") and self.ability.name:find('Celestial') then
+    G.GAME.pack_choices = G.GAME.pack_choices + 1
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local _size = self.ability.extra'''
+position = 'after'
+payload = '''if skill_active("sk_grm_mystical_1") and self.ability.name:find('Arcana') then
+    _size = _size + 1
+end
+if next(SMODS.find_card("j_grm_brochure")) and self.ability.name:find('Area') then
+    _size = _size + 1
+end
+if skill_active("sk_grm_motley_3") and self.ability.name:find('Arcana') then
+    _size = math.max(2, _size - 1)
+end
+if skill_active("sk_grm_gravity_1") and self.ability.name:find('Celestial') then
+    _size = _size + 2
+end
+if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
+    _size = _size + 4
+end
+if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') then
+    _size = _size * 2
+end
+local lovers_indexes = nil
+if skill_active("sk_grm_motley_2") and self.ability.name:find('Arcana') then
+    lovers_indexes = math.floor(pseudorandom('motley') * _size) + 1
+end
+local pointer_index = nil
+if skill_active("sk_cry_ace_3") and (self.ability.name:find('code_') or self.ability.name:find('Program')) then
+    pointer_index = math.floor(pseudorandom('ace') * _size) + 1
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if (self.ability.set == 'Planet' or (self.ability.set == 'Booster' and self.ability.name:find('Celestial'))) and #find_joker('Astronomer') > 0 then self.cost = 0 end'''
+position = 'after'
+payload = '''if skill_active("sk_grm_mystical_2") and (self.ability.set == 'Tarot' or (self.ability.set == 'Booster' and self.ability.name:find('Arcana'))) then
+    self.cost = 0
+end
+if G.GAME.area == "Market" then
+    self.cost = math.floor(self.cost * (G.GAME.area_data.market_upcount or 1.5))
+end
+if G.GAME.area == "Aether" then
+    self.cost = math.floor(self.cost * (G.GAME.area_data.aether_discount or 0.5))
+end
+if self.ability.no_sell_value then
+    self.cost = 0
+    self.ability.extra_value = 0
+end
+if skill_active("sk_grm_receipt_2") and ((self.ability.set == 'Voucher') or (self.ability.set == 'Booster')) and (self.cost > 0) then
+    self.cost = math.max(1, math.floor(self.cost * 0.7))
+end
+if skill_active("sk_ortalab_magica_2") and (self.cost > 0) and (self.ability.set == 'Booster' and self.ability.name:find('loteria')) then
+    self.cost = 2 * self.cost
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''e.config.ref_table:use_consumeable(area)'''
+position = 'after'
+payload = '''for i, j in pairs(G.GAME.skills) do
+    calculate_skill(i, {using_consumeable = true, card = card})
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)'''
+position = 'before'
+payload = '''if old_zodiac_effect then
+    G.GAME.Ortalab_Zodiac_Reduction = old_zodiac_effect
+    old_zodiac_effect = nil
+end
+mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
+for j, i in ipairs({'sk_grm_strike_1', 'sk_grm_strike_2', 'sk_cry_m_1', 'sk_grm_gravity_2', 'sk_grm_strike_3'}) do
+    if skill_active(i) then
+        hand_chips, mult, modded = calculate_skill(i, {modify_base = true, chips = hand_chips, mult = mult, scoring_name = text})
+        if modded then
+            mult, hand_chips = mod_mult(mult), mod_chips(hand_chips)
+            update_hand_text({sound = 'chips2'}, {chips = hand_chips, mult = mult})
+        end
+    end
+end
+if G.zodiacs then
+    if skill_active("sk_ortalab_starry_1") then
+        for k1, i in pairs(G.zodiacs) do
+            if i.config.extra.hand_type == text then
+                i.ability.grm_unactivated = nil
+            end
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.CONTROLLER:recall_cardarea_focus('shop_jokers')'''
+position = 'after'
+payload = '''for i, j in pairs(G.GAME.skills) do
+    calculate_skill(i, {reroll_shop = true})
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''inc_career_stat('c_cards_discarded', highlighted_count)'''
+position = 'after'
+payload = '''for i, j in pairs(G.GAME.skills) do
+    calculate_skill(i, {pre_discard = true})
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''local hand_text_set = false'''
+position = 'before'
+payload = '''for i = 1, #scoring_hand do
+    if scoring_hand[i].ability and scoring_hand[i].ability.grm_status and scoring_hand[i].ability.grm_status.subzero and not scoring_hand[i].debuff and not scoring_hand[i].ability.grm_status.aether then
+        scoring_hand[i].ability.grm_status.subzero = nil
+        card_eval_status_text(scoring_hand[i], 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
+    end
+end
+for i, j in pairs(G.GAME.skills) do
+    calculate_skill(i, {before = true, scoring_name = text})
+end
+if next(SMODS.find_card("j_grm_showdown")) then
+    local card = SMODS.find_card("j_grm_showdown")[1]
+    text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = upgrade_poker_hand_showdown(text, scoring_hand, card)
+    mult = mod_mult(G.GAME.hands[text].mult)
+    hand_chips = mod_chips(G.GAME.hands[text].chips)
+end
+if (G.GAME.area == "Tunnel") and (G.GAME.current_round.hands_played == 0) then
+    local active = true
+    local play_more_than = (G.GAME.hands[text].played or 0)
+    for k, v in pairs(G.GAME.hands) do
+        if k ~= text and v.played > play_more_than and v.visible then
+            active = false
+            break
+        end
+    end
+    if active then
+        level_up_hand(nil, text)
+    else
+        local _handname, _played, _order = 'High Card', -1, 100
+        for k, v in pairs(G.GAME.hands) do
+            if v.played > _played or (v.played == _played and _order > v.order) then 
+                _played = v.played
+                _handname = k
+            end
+        end
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(_handname, 'poker_hands'),chips = G.GAME.hands[_handname].chips, mult = G.GAME.hands[_handname].mult, level=G.GAME.hands[_handname].level})
+        delay(0.35)
+        level_up_hand(nil, _handname, nil, -math.min(G.GAME.hands[_handname].level - 1, math.floor(G.GAME.hands[_handname].level / 2)))
+        update_hand_text({sound = 'button', volume = 0.7, pitch = 0.8, delay = 0.3}, {handname=localize(text, 'poker_hands'),chips = hand_chips, mult = mult, level=G.GAME.hands[text].level})
+    end
+end
+if (G.GAME.area == "Toxic Waste") and (G.GAME.current_round.discards_left > 0) then
+    ease_discard(-G.GAME.area_data.discard_decay)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod'''
+position = 'after'
+payload = '''if not do_skills then
+    for i, j in pairs(G.GAME.skills) do
+        calculate_skill(i, {ante_mod = true, current_ante = G.GAME.round_resets.ante, old_ante = G.GAME.round_resets.ante - mod})
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''function ease_ante(mod)'''
+position = 'at'
+payload = '''function ease_ante(mod, do_skills)'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''edition = poll_edition('wheel_of_fortune', nil, true, true)'''
+position = 'at'
+payload = '''if skill_active("sk_grm_fortunate_2") and skill_active("sk_grm_fortunate_1") then
+    edition = poll_edition('wheel_of_fortune', nil, false, true, {'e_negative', 'e_polychrome', 'e_holo'})
+elseif skill_active("sk_grm_fortunate_2") then
+    edition = poll_edition('wheel_of_fortune', nil, false, true, {'e_polychrome', 'e_holo'})
+elseif skill_active("sk_grm_fortunate_1") then
+    edition = poll_edition('wheel_of_fortune', nil, false, true)
+    if edition == 'e_negative' then
+        check_for_unlock({type = 'skill_check', fortune_check = true})
+    end
+else
+    edition = poll_edition('wheel_of_fortune', nil, true, true)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''pack_cards[i] = card'''
+position = 'after'
+payload = '''::continue::'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local card = nil'''
+position = 'after'
+payload = '''local lovers_found = false
+local pointer_found = false
+for i, j in ipairs(pack_cards) do
+    if j.ability and j.ability.name == "The Lovers" then
+        lovers_found = true
+    end
+    if j.ability and j.ability.name == "cry-Pointer" then
+        pointer_found = true
+    end
+end
+if lovers_indexes and (lovers_indexes == i) and not lovers_found then
+    card = create_card("Tarot", G.pack_cards, nil, nil, true, true, 'c_lovers', 'ar1')
+    card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+    card.T.x = self.T.x + 0
+    card.T.y = self.T.y
+    pack_cards[i] = card or {}
+    goto continue
+end
+if pointer_index and (pointer_index == i) and not pointer_found then
+    card = create_card("Tarot", G.pack_cards, nil, nil, true, true, 'c_cry_pointer', 'ar1')
+    card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+    card.T.x = self.T.x + 0
+    card.T.y = self.T.y
+    pack_cards[i] = card or {}
+    goto continue
+end
+if self.ability.name:find('Arcana') and skill_active("sk_ortalab_magica_1") then
+    if pseudorandom('magica') < 0.4 then
+        card = create_card("Loteria", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    end
+end
+if self.ability.name:find('Celestial') and skill_active("sk_ortalab_starry_2") then
+    if pseudorandom('magica') < 0.4 then
+        card = create_card("Zodiac", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    end
+end
+if self.ability.name:find('Celestial') and G.GAME.used_vouchers.v_telescope and (i ~= 1) then
+    local rng = pseudorandom('astro')
+    if skill_active("sk_grm_cl_astronaut") and (rng <= 0.35) then
+        card = create_card("Lunar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    elseif skill_active("sk_grm_cl_astronaut") and (rng <= 0.59) then
+        card = create_card("Stellar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    end
+elseif self.ability.name:find('Celestial') then
+    local rng = pseudorandom('astro')
+    if skill_active("sk_grm_cl_astronaut") and (rng <= 0.34) then
+        card = create_card("Lunar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    elseif skill_active("sk_grm_cl_astronaut") and (rng <= 0.56) then
+        card = create_card("Stellar", G.pack_cards, nil, nil, true, true, nil, 'pl1')
+        card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
+        card.T.x = self.T.x + 0
+        card.T.y = self.T.y
+        pack_cards[i] = card or {}
+        goto continue
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if context.scoring_hand[i].ability.name ~= 'Wild Card' and not context.scoring_hand[i].config.center.any_suit then'''
+position = 'at'
+payload = '''if context.scoring_hand[i].ability.name ~= 'Wild Card' and not context.scoring_hand[i].config.center.any_suit and not (skill_active("sk_grm_motley_3") and (context.scoring_hand[i].config.center ~= G.P_CENTERS.c_base)) then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit then'''
+position = 'at'
+payload = '''if context.scoring_hand[i].ability.name == 'Wild Card' or context.scoring_hand[i].config.center.any_suit or (skill_active("sk_grm_motley_3") and (context.scoring_hand[i].config.center ~= G.P_CENTERS.c_base)) then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if flush_calc then'''
+position = 'before'
+payload = '''if not G.jokers then return false end
+if (skill_active("sk_grm_motley_3") and (self.config.center ~= G.P_CENTERS.c_base)) and (not self.debuff or (bypass_debuff and not flush_calc)) then
+    return true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''function create_card_for_shop(area)'''
+position = 'after'
+payload = '''   if skill_active("sk_grm_scarce_1") then
+        G.GAME.joker_rate = 0
+    end
+    if skill_active("sk_ortalab_decay_1") then
+        G.GAME.planet_rate = 0
+        G.GAME.tarot_rate = 0
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'tag.lua'
+pattern = '''if not self.triggered and self.config.type == _context.type then'''
+position = 'after'
+payload = '''   if (_context.type == 'store_joker_create') and skill_active("sk_grm_scarce_1") then
+        return
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''add_round_eval_row({name = 'bottom', dollars = dollars})'''
+position = 'before'
+payload = '''cash_out_xp = 0
+if (G.GAME.area == "Ghost Town") and G.GAME.area_data and (pseudorandom('ghost') < G.GAME.probabilities.normal/(G.GAME.area_data.ghost_odds or 3)) then
+    add_custom_round_eval_row("Ghost Town" , "$".. G.GAME.area_data.ghost_dollars, nil, G.C.MONEY)
+    pitch = pitch + 0.06
+    dollars = dollars + G.GAME.area_data.ghost_dollars
+end
+if (G.GAME.blind_on_deck == "Boss") then
+    local stake_key = G.P_CENTER_POOLS.Stake[G.GAME.stake].key
+    local plus_xp = 100
+    local name = localize('boss_blind')
+    if G.GAME.modifiers and G.GAME.modifiers.force_stake_xp then
+        plus_xp = G.GAME.modifiers.force_stake_xp
+    end
+    if G.GAME.blind and G.GAME.blind.config.blind.boss.showdown then
+        plus_xp = math.floor(plus_xp * 2)
+        name = localize('showdown_blind')
+    end
+    if plus_xp and (plus_xp > 0) then
+        add_custom_round_eval_row(name , tostring(get_modded_xp(plus_xp)) .. " XP")
+        cash_out_xp = cash_out_xp + get_modded_xp(plus_xp)
+    end
+end
+if skill_active("sk_grm_skillful_1") then
+    add_custom_round_eval_row("Skillful I" , tostring(get_modded_xp(30)) .. " XP")
+    cash_out_xp = cash_out_xp + get_modded_xp(30)
+end
+for i0 = 1, #G.jokers.cards do
+    local ret0 = G.jokers.cards[i0]:calculate_xp_bonus()
+    if ret0 then
+        local joker_name = localize {type = 'name_text', key = G.jokers.cards[i0].config.center.key, set = 'Joker'}
+        G.jokers.cards[i0]:juice_up(0.7, 0.46)
+        add_custom_round_eval_row(joker_name , tostring(get_modded_xp(ret0)) .. " XP")
+        cash_out_xp = cash_out_xp + get_modded_xp(ret0)
+    end
+end
+if G.GAME.used_vouchers['v_grm_progress'] or G.GAME.used_vouchers['v_grm_complete'] then
+    local intrest = math.min(G.GAME.xp_interest_max, math.floor(G.GAME.skill_xp / G.GAME.xp_interest_rate) * G.GAME.xp_interest)
+    if intrest < 0 then
+        intrest = 0
+    end
+    local intrest_text = " "..localize{type = 'variable', key = 'xp_interest', vars = {G.GAME.xp_interest, G.GAME.xp_interest_rate, G.GAME.xp_interest_max}}
+    intrest = get_modded_xp(intrest)
+    if intrest ~= 0 then
+        add_custom_round_eval_row(intrest_text , tostring(intrest) .. " XP", intrest)
+        cash_out_xp = cash_out_xp + intrest
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.CONTROLLER.locks.toggle_shop = true'''
+position = 'after'
+payload = '''if G.shop then
+    for i, j in pairs(G.GAME.skills) do
+        calculate_skill(i, {ending_shop = true})
+    end
+    if G.GAME.grm_unlocks then
+        G.GAME.grm_unlocks.shop_rerolls = 0
+    end
+    if skill_active("sk_grm_shelf_2") and G.GAME.grm_did_purchase then
+        change_shop_size(2)
+    end
+    G.GAME.grm_did_purchase = false
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''while i <= #G.P_LOCKED do'''
+position = 'before'
+payload = '''for i, card in pairs(G.P_SKILLS) do
+    if not card.unlocked and skill_meets_dependencies(i) then
+        if skill_unlock_check(card, args) then
+            unlock_card(card)
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''calculate_reroll_cost(final_free)'''
+position = 'after'
+payload = '''G.GAME.grm_unlocks.shop_rerolls = G.GAME.grm_unlocks.shop_rerolls + 1
+check_for_unlock({type = 'skill_check'})
+if skill_active("sk_grm_hexahedron_3") then
+    local more_reroll = math.floor(old_cost / 7)
+    if more_reroll > 0 then
+        G.GAME.current_round.free_rerolls = G.GAME.current_round.free_rerolls + more_reroll
+        calculate_reroll_cost(true)
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.GAME.current_round.discards_left = G.GAME.current_round.discards_left + mod'''
+position = 'after'
+payload = '''check_for_unlock({type = 'skill_check'})'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local _c, _atlas = G.P_CENTERS[_achievement],'''
+position = 'at'
+payload = '''local _c, _atlas = (_type == "Skill") and G.P_SKILLS[_achievement] or G.P_CENTERS[_achievement],'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''_type == 'Voucher' and localize('k_voucher') or'''
+position = 'after'
+payload = '''_type == 'Skill' and localize('k_skill') or'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''if G.GAME.current_round.reroll_cost > 0 then'''
+position = 'before'
+payload = '''local old_cost = G.GAME.current_round.reroll_cost'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
+position = 'before'
+payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big(7)) then
+    ease_dollars(math.floor(G.GAME.current_round.dollars/4))
+elseif not to_big and skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 7) then
+    ease_dollars(math.floor(G.GAME.current_round.dollars/4))
+end
+add_skill_xp(cash_out_xp or 0, nil, nil, true)
+cash_out_xp = 0'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''mult = center.config.mult or 0,'''
+position = 'before'
+payload = '''xp = center.config.xp or 0,
+m_type = center.m_type or ((name == "Gold Card") and "Precious") or ((name == "Steel Card") and "Common") or "",'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''if not G.GAME.current_round.used_packs[i] then'''
+position = 'before'
+payload = '''if G.GAME.modifiers["loot_pack"] and not G.GAME.current_round.used_packs[0] then
+    G.GAME.current_round.used_packs[0] = 'p_grm_loot_normal_1'
+    local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+    G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[0]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+    create_shop_card_ui(card, 'Booster', G.shop_booster)
+    card.ability.booster_pos = 0
+    card:start_materialize()
+    G.shop_booster:emplace(card)
+    card.ability.couponed = true
+    card:set_cost()
+end
+if G.GAME.grm_modify_booster_slots or (G.GAME.force_grm_packs and (#G.GAME.force_grm_packs > 0)) then
+    for i0 = 1, math.max((G.GAME.force_grm_packs and #G.GAME.force_grm_packs) or 0, 2 + (G.GAME.grm_modify_booster_slots or 0)) do
+        if G.GAME.force_grm_packs and G.GAME.force_grm_packs[i0] and not G.GAME.current_round.used_packs[i0] then
+            G.GAME.current_round.used_packs[i0] = get_pack('shop_pack', G.GAME.force_grm_packs[i0]).key
+        end
+        if not G.GAME.current_round.used_packs[i0] then
+            G.GAME.current_round.used_packs[i0] = get_pack('shop_pack').key
+        end
+
+        if G.GAME.current_round.used_packs[i0] ~= 'USED' then 
+            local card = Card(G.shop_booster.T.x + G.shop_booster.T.w/2,
+            G.shop_booster.T.y, G.CARD_W*1.27, G.CARD_H*1.27, G.P_CARDS.empty, G.P_CENTERS[G.GAME.current_round.used_packs[i0]], {bypass_discovery_center = true, bypass_discovery_ui = true})
+            create_shop_card_ui(card, 'Booster', G.shop_booster)
+            card.ability.booster_pos = i0
+            card:start_materialize()
+            G.shop_booster:emplace(card)
+        end
+    end
+    break
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''set_deck_win()'''
+position = 'after'
+payload = '''set_skill_win()'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''deck_usage = {},'''
+position = 'after'
+payload = '''skill_banners = {},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''if card.area and card.area.config.type == 'joker' then'''
+position = 'before'
+payload = '''if card.area and (card.area == G.consumeables) and card.playing_card and not (hit_minor_arcana_suits and hit_minor_arcana_suits[card.config.card.suit]) then
+    use = 
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+      {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_discard_card', func = 'grm_can_discard_card'}, nodes={
+        {n=G.UIT.B, config = {w=0.1,h=0.6}},
+        {n=G.UIT.T, config={text = localize('b_discard'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+      }}
+    }}
+    sell = 
+    {n=G.UIT.C, config={align = "cr"}, nodes={
+      {n=G.UIT.C, config={ref_table = card, align = "cr",maxw = 1.25, padding = 0.1, r=0.08, minw = 1.25, minh = 1, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_draw_card', func = 'grm_can_draw_card'}, nodes={
+        {n=G.UIT.B, config = {w=0.1,h=0.6}},
+        {n=G.UIT.T, config={text = localize('b_draw'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+      }}
+    }}
+    local t = {
+      n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+        {n=G.UIT.C, config={padding = 0.15, align = 'cl'}, nodes={
+          {n=G.UIT.R, config={align = 'cl'}, nodes={
+            sell
+          }},
+          {n=G.UIT.R, config={align = 'cl'}, nodes={
+            use
+          }},
+        }},
+    }}
+    return t
+elseif card.playing_card and G.GAME.skills.sk_grm_cl_hoarder and (card.area ~= G.pack_cards) and (card.area ~= G.play) then
+    return {
+        n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
+          {n=G.UIT.R, config={mid = true}, nodes={
+          }},
+          {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, minh = 0.8*card.T.h, maxw = 0.7*card.T.w - 0.15, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'grm_pack_card', func = 'grm_can_pack_card'}, nodes={
+            {n=G.UIT.T, config={text = localize('b_pack'),colour = G.C.UI.TEXT_LIGHT, scale = 0.55, shadow = true}}
+          }},
+      }}
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''--Joker Effects'''
+position = 'before'
+payload = '''for i=1, #G.consumeables.cards do
+    local _card = G.consumeables.cards[i]
+    local effects = eval_card(_card, {cardarea = G.consumeables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true})
+    if _card.playing_card then
+        local ii = 'talisman_check_key'
+        effects[ii] = {}
+        local reps = {1}
+        local j = 1
+        while j <= #reps do
+            if reps[j] ~= 1 then 
+                local _, eff = next(reps[j])
+                card_eval_status_text(eff.card, 'jokers', nil, nil, nil, eff)
+                percent = percent + 0.08
+            end
+
+            if reps[j] == 1 then 
+                --Check for hand doubling
+                --From Red seal
+                local eval = eval_card(_card, {end_of_round = true,cardarea = G.consumeables, repetition = true, repetition_only = true})
+                if next(eval) and eval.seals then 
+                    for h = 1, eval.seals.repetitions do
+                        reps[#reps+1] = eval
+                    end
+                end
+            end
+            if effects.chips then 
+                juice_card(_card)
+                hand_chips = mod_chips(hand_chips + effects.chips)
+                update_hand_text({delay = 0}, {chips = hand_chips})
+                card_eval_status_text(_card, 'chips', effects.chips, percent)
+            end
+
+            if effects.xp then
+                juice_card(_card)
+                add_skill_xp(effects.xp, _card)
+            end
+
+            if effects.mult then 
+                juice_card(_card)
+                mult = mod_mult(mult + effects.mult)
+                update_hand_text({delay = 0}, {mult = mult})
+                card_eval_status_text(_card, 'mult', effects.mult, percent)
+            end
+
+            if effects.p_dollars then 
+                juice_card(_card)
+                ease_dollars(effects.p_dollars)
+                card_eval_status_text(_card, 'dollars', effects.p_dollars, percent)
+            end
+
+            if effects.dollars then 
+                juice_card(_card)
+                ease_dollars(effects.dollars)
+                card_eval_status_text(_card, 'dollars', effects.dollars, percent)
+            end
+
+            if effects.extra then
+                juice_card(_card)
+                local extras = {mult = false, hand_chips = false}
+                if effects.extra.mult_mod then mult =mod_mult( mult + effects.extra.mult_mod);extras.mult = true end
+                if effects.extra.chip_mod then hand_chips = mod_chips(hand_chips + effects.extra.chip_mod);extras.hand_chips = true end
+                if effects.extra.swap then 
+                    local old_mult = mult
+                    mult = mod_mult(hand_chips)
+                    hand_chips = mod_chips(old_mult)
+                    extras.hand_chips = true; extras.mult = true
+                end
+                if effects.extra.func then effects.extra.func() end
+                update_hand_text({delay = 0}, {chips = extras.hand_chips and hand_chips, mult = extras.mult and mult})
+                card_eval_status_text(_card, 'extra', nil, percent, nil, effects.extra)
+            end
+
+            --If x_mult added, do mult add event and mult the mult to the total
+            if effects.x_mult then
+                juice_card(_card)
+                mult = mod_mult(mult*effects.x_mult)
+                update_hand_text({delay = 0}, {mult = mult})
+                card_eval_status_text(_card, 'x_mult', effects.x_mult, percent)
+            end
+
+            --calculate the card edition effects
+            if effects.edition then
+                juice_card(_card)
+                hand_chips = mod_chips(hand_chips + (effects.edition.chip_mod or 0))
+                mult = mult + (effects.edition.mult_mod or 0)
+                mult = mod_mult(mult*(effects.edition.x_mult_mod or 1))
+                update_hand_text({delay = 0}, {
+                    chips = effects.edition.chip_mod and hand_chips or nil,
+                    mult = (effects.edition.mult_mod or effects.edition.x_mult_mod) and mult or nil,
+                })
+                card_eval_status_text(_card, 'extra', nil, percent, nil, {
+                    message = (effects.edition.chip_mod and localize{type='variable',key='a_chips',vars={effects.edition.chip_mod}}) or
+                            (effects.edition.mult_mod and localize{type='variable',key='a_mult',vars={effects.edition.mult_mod}}) or
+                            (effects.edition.x_mult_mod and localize{type='variable',key='a_xmult',vars={effects.edition.x_mult_mod}}),
+                    chip_mod =  effects.edition.chip_mod,
+                    mult_mod =  effects.edition.mult_mod,
+                    x_mult_mod =  effects.edition.x_mult_mod,
+                    colour = G.C.DARK_EDITION,
+                    edition = true})
+            end
+            j = j + 1
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''for k, v in ipairs(cards_destroyed) do'''
+position = 'before'
+payload = '''for i=1, #G.consumeables.cards do
+    local destroyed = nil
+    local card = G.consumeables.cards[i]
+    if card.playing_card and (card.ability.name == 'Glass Card') and not card.debuff and pseudorandom('glass') < G.GAME.probabilities.normal/card.ability.extra then 
+        card.shattered = true
+        cards_destroyed[#cards_destroyed+1] = card
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if _c.set == 'Other' then'''
+position = 'before'
+payload = '''if ((_c.set == 'Enhanced') or (_c.set == 'Default')) then
+    if card then
+        for i, j in ipairs({"Hearts", "Diamonds", "Spades", "Clubs", "Fleurons", "Halberds"}) do
+            if (card:is_suit(j) or card:is_suit("bunc_" .. j)) and G.GAME.special_levels and (G.GAME.special_levels[string.sub(j:lower(),1,-2)] > 0) then
+                info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels[j:lower()].chips,G.GAME.stellar_levels[j:lower()].mult}}
+            end
+        end
+        local has_suit = false
+        for i, j in pairs(SMODS.Suits) do
+            if card:is_suit(j.key) then
+                has_suit = true
+                break
+            end
+        end
+        if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
+            info_queue[#info_queue+1] = {set = 'Other', key = 'star_tooltip', vars = {G.GAME.stellar_levels["nothings"].chips,G.GAME.stellar_levels["nothings"].mult}}
+        end
+        if card.ability and card.ability.grm_status and not card.debuff then
+            for i, j in pairs(card.ability.grm_status) do
+                info_queue[#info_queue+1] = {set = 'Other', key = i}
+            end
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.round_scores.cards_played.amt = G.GAME.round_scores.cards_played.amt + 1'''
+position = 'after'
+payload = '''if G.hand.highlighted[i].facing == 'back' then G.hand.highlighted[i].grim_facing_down = true end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''check_for_unlock({type = 'play_all_hearts'})'''
+position = 'after'
+payload = '''for i = 1, #G.play.cards do
+    G.play.cards[i].grim_facing_down = nil
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''play_area_status_text("Not Allowed!")--localize('k_not_allowed_ex'), true)'''
+position = 'after'
+payload = '''if G.GAME.special_levels and (G.GAME.special_levels["not_allowed"] > 0) then
+    if pseudorandom('rhea') < G.GAME.probabilities.normal * ((G.GAME.special_levels["not_allowed"]) % 2) / 2 then
+        level_up_hand(used_tarot, text, nil, math.ceil((G.GAME.special_levels["not_allowed"]) / 2))
+    elseif G.GAME.special_levels["not_allowed"] >= 2 then
+        level_up_hand(used_tarot, text, nil, math.floor((G.GAME.special_levels["not_allowed"]) / 2))
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.blind:set_blind(G.GAME.round_resets.blind)'''
+position = 'after'
+payload = '''G.E_MANAGER:add_event(Event({trigger = 'immediate',func = function()
+    if G.GAME.nullified_blinds[G.GAME.blind.config.blind.key] then G.GAME.blind:disable() end
+    return true
+end}))
+for i2, j2 in pairs(G.GAME.skills) do
+    calculate_skill(i2, {selecting_blind = true})
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.R, config={align = "cm",r = 0.1, padding = 0.05, minw = 3.1, colour = G.C.BLACK, emboss = 0.05}, nodes={'''
+position = 'after'
+payload = '''  ((type == "Boss") and G.GAME.nullified_blinds[G.GAME.round_resets.blind_choices["Boss"]]) and {n=G.UIT.R, config={align = "cm", maxw = 3}, nodes={
+      {n=G.UIT.T, config={text = localize('nullified'), scale = 0.3, colour = disabled and G.C.UI.TEXT_INACTIVE or G.C.WHITE, shadow = not disabled}}
+  }} or {n=G.UIT.R, config={align = "cm", maxw = 3}, nodes={}},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.round_bonus.discards = 0'''
+position = 'after'
+payload = '''G.GAME.grim_boss_dollars = G.GAME.dollars'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''local text,disp_text,poker_hands,scoring_hand,non_loc_disp_text = G.FUNCS.get_poker_hand_info(G.play.cards)'''
+position = 'before'
+payload = '''
+local destroyed_cards = {}
+for i = 1, #G.play.cards do
+    local card = G.play.cards[i]
+    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and card.ability.grm_status.gust and card.ability.grm_status.rocky and card.ability.grm_status.subzero and not card.debuff then
+        card:juice_up()
+        card.ability.grm_status.aether = true
+    end
+    if card.ability and card.ability.grm_status and card.ability.grm_status.flint and not card.debuff then
+        card.ability.perma_mult = card.ability.perma_mult or 0
+        card.ability.perma_mult = card.ability.perma_mult + 1
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={1}}})
+    end
+    if card.ability and card.ability.grm_status and card.ability.grm_status.subzero and not card.debuff then
+        for j = 1, #G.jokers.cards do
+            if not G.jokers.cards[j].debuff and (G.jokers.cards[j].ability.name == "Absolute Zero") then
+                G.GAME.grim_hand_size_bonus = (G.GAME.grim_hand_size_bonus or 0) + 1
+            end
+        end
+        G.GAME.grim_hand_size_bonus = (G.GAME.grim_hand_size_bonus or 0) + 1
+    end
+end
+for i, j in ipairs(destroyed_cards) do
+    j[2]:juice_up(0.8, 0.8)
+    j[2]:start_dissolve({G.C.RED}, nil, 1.6)
+    if j[2].area then j[2].area:remove_card(j[2]) end
+end
+for i = 1, #G.hand.cards do
+    local card = G.hand.cards[i]
+    if card.ability and card.ability.grm_status and card.ability.grm_status.rocky and not card.debuff and not card.ability.grm_status.aether then
+        card.ability.grm_status.rocky = nil
+        card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''card.T.x = self.T.x'''
+position = 'before'
+payload = '''if skill_active("sk_grm_cl_alchemist") and self.ability.name:find('Standard') then
+    card.ability.grm_status = {}
+    if pseudorandom('status') < 0.03 then
+        card.ability.grm_status.flint = true
+    end
+    if pseudorandom('status') < 0.03 then
+        card.ability.grm_status.subzero = true
+    end 
+    if pseudorandom('status') < 0.03 then
+        card.ability.grm_status.rocky = true
+    end 
+    if pseudorandom('status') < 0.03 then
+        card.ability.grm_status.debuff_flag = card.debuff
+        card.ability.grm_status.gust = true
+    end 
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''if G.GAME.blind.name == 'The Serpent' and'''
+position = 'before'
+payload = '''if G.GAME.grim_hand_size_bonus then
+    hand_space = hand_space + G.GAME.grim_hand_size_bonus
+    G.GAME.grim_hand_size_bonus = 0
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''if destroyed_cards[1] then'''
+position = 'before'
+payload = '''for i = 1, #G.hand.highlighted do
+    if G.hand.highlighted[i].ability and G.hand.highlighted[i].ability.grm_status and G.hand.highlighted[i].ability.grm_status.flint and not G.hand.highlighted[i].debuff and not G.hand.highlighted[i].ability.grm_status.aether then
+        G.hand.highlighted[i].ability.grm_status.flint = nil
+        card_eval_status_text(G.hand.highlighted[i], 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:highlight(is_higlighted)'''
+position = 'after'
+payload = '''   if (self.highlighted ~= is_higlighted) and (self.area == G.hand) and self.ability and self.ability.grm_status and self.ability.grm_status.gust and not self.debuff then
+        if is_higlighted then
+            G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+        else
+            G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
+        end
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability and self.ability.perma_debuff then self.debuff = true end'''
+position = 'after'
+payload = '''   if self.ability and self.ability.grm_status and self.ability.grm_status.gust and (self.debuff ~= self.ability.grm_status.debuff_flag) then
+        if self.highlighted then
+            if self.debuff and not self.ability.grm_status.debuff_flag then
+                G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
+            elseif not self.debuff and self.ability.grm_status.debuff_flag then
+                G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+            end
+        end
+        self.ability.grm_status.debuff_flag = self.debuff
+    end
+    if ((self.area == G.hand) or (self.area == G.deck)) and self.debuff and self.ability and self.ability.grm_status and self.ability.grm_status.gust and not self.ability.grm_status.aether then
+        self.ability.grm_status.gust = nil
+        self.ability.grm_status.debuff_flag = nil
+        card_eval_status_text(self, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_ex_expired')})
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:set_card_area(area)'''
+position = 'after'
+payload = '''   if self.highlighted and (self.area == G.hand) and (area ~= G.hand) and self.ability and self.ability.grm_status and self.ability.grm_status.gust and not self.debuff then
+        G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:remove_from_area()'''
+position = 'after'
+payload = '''   if self.highlighted and (self.area == G.hand) and self.ability and self.ability.grm_status and self.ability.grm_status.gust and not self.debuff then
+        G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''ease_background_colour{new_colour = G.C.BLIND.won, contrast = 1}'''
+position = 'at'
+payload = '''ease_background_colour{new_colour = (G.GAME.area_data and G.GAME.area_data.endless_color) or G.C.BLIND.won, contrast = 1}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''ease_background_colour{new_colour = G.C.BLIND['Small'], contrast = 1}'''
+position = 'at'
+payload = '''ease_background_colour{new_colour = (G.GAME.area_data and G.GAME.area_data.norm_color) or G.C.BLIND['Small'], contrast = 1}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'back.lua'
+pattern = '''if self.name == 'Checkered Deck' then'''
+position = 'before'
+payload = '''if self.name == 'Ghost Deck' then
+    G.GAME.area = "Graveyard"
+    G.GAME.area_data = {
+        norm_color = HEX("6c8279"),
+        endless_color = HEX("5e6769"),
+        adjacent = {
+            Metro = true,
+            Spooky = true,
+        },
+    }
+    G.GAME.region = "Spooky"
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.shop:recalculate()'''
+position = 'before'
+payload = '''if G.shop_jokers and G.shop_jokers.T then
+    G.shop_jokers.T.w = math.min(4.04 * G.CARD_W, G.GAME.shop.joker_max * 1.01 * G.CARD_W)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.STATE = G.STATES.SHOP'''
+position = 'before'
+payload = '''if G.GAME.area == "Metro" then
+    G.STATE = G.STATES.BLIND_SELECT
+elseif G.GAME.modifiers and G.GAME.modifiers.no_big_shop and (G.GAME.blind_on_deck == "Big") then
+    G.STATE = G.STATES.BLIND_SELECT
+else
+if skill_active("sk_cry_m_2") then
+    G.GAME.make_jolly = true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.STATE = G.STATES.SHOP'''
+position = 'after'
+payload = '''end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''self:emplace(card, nil, stay_flipped)'''
+position = 'before'
+payload = '''if (self == G.hand) and G.GAME and (G.GAME.area == "Midnight") and (pseudorandom('midnight') < 0.3) then
+    stay_flipped = true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local card_type = localize('k_'..string.lower(AUT.card_type))'''
+position = 'after'
+payload = '''if (AUT.card_type == "Skill") and (card.config.center and card.config.center.class) then
+    card_type = localize('k_class')
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if not v.boss then'''
+position = 'after'
+payload = '''elseif (G.GAME.area == "Dungeon") and not v.boss.showdown then
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''elseif not v.boss.showdown and (v.boss.min <= math.max(1, G.GAME.round_resets.ante) and ((math.max(1, G.GAME.round_resets.ante))%G.GAME.win_ante ~= 0 or G.GAME.round_resets.ante < 2)) then'''
+position = 'before'
+payload = '''elseif (G.GAME.area == "Dungeon") then
+    if v.in_pool and type(v.in_pool) == 'function' then
+        local res, options = v:in_pool()
+        eligible_bosses[k] = res and true or nil
+    else
+        eligible_bosses[k] = true
+    end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''elseif self.ability.name == 'Perkeo' then loc_vars = {self.ability.extra}'''
+position = 'before'
+payload = '''elseif self.ability.name == 'Hyperspace' then
+    local active = (G.GAME and G.GAME.area == "Aether")
+    main_end = (self.area and (not self.area.config or not self.area.config.collection)) and {
+        {n=G.UIT.C, config={align = "bm", minh = 0.4}, nodes={
+            {n=G.UIT.C, config={ref_table = self, align = "m", colour = active and G.C.GREEN or G.C.RED, r = 0.05, padding = 0.06}, nodes={
+                {n=G.UIT.T, config={text = ' '..localize(active and 'k_active' or 'k_inactive')..' ',colour = G.C.UI.TEXT_LIGHT, scale = 0.32*0.9}},
+            }}
+        }}
+    } or nil
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local ret = {}'''
+position = 'after'
+payload = '''if self.ability.name == 'Radium Card' and not self.ability.decayed then
+    if (pseudorandom('radondecay') < ((self.ability and self.ability.base_odds or 226) * G.GAME.probabilities.normal / (self.ability and self.ability.odds or 1600))) then
+        self.ability.decayed = true
+        card_eval_status_text(self, 'extra', nil, nil, nil, {message = localize('k_ex_decay'), colour = G.C.GREEN})
+    else
+        add_skill_xp(self.ability and self.ability.h_xp or 12, self)
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.FUNCS.draw_from_hand_to_discard()'''
+position = 'before'
+payload = '''
+for i = #G.hand.cards,1,-1 do
+    if G.hand.cards[i].ability and G.hand.cards[i].ability.decayed then
+        G.hand.cards[i]:start_dissolve()
+    end
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''pseudoshuffle(self.cards, pseudoseed(_seed or 'shuffle'))'''
+position = 'after'
+payload = '''self:dragLead()'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''new_card:set_base(other.config.card)'''
+position = 'after'
+payload = '''if other.ability.grm_status and other.ability.grm_status.gust and (not new_card.ability.grm_status or not new_card.ability.grm_status.gust) and new_card.highlighted and not new_card.debuff then
+    G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+elseif new_card.ability.grm_status and new_card.ability.grm_status.gust and (not other.ability.grm_status or not other.ability.grm_status.gust) and new_card.highlighted and not new_card.debuff then
+    G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
+end
+new_card.ability.grm_status = {}
+new_card.ability.grm_accomplishment_playing_card = nil
+new_card.ability.grm_destruct = nil'''
+match_indent = true
+
+[[patches]] # thnx JamMod
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''if #G.hand.highlighted <= 0 or G.GAME.blind.block_play or #G.hand.highlighted > 5 then'''
+position = "at"
+payload = '''
+if #G.hand.highlighted <= 0 or G.GAME.blind.block_play or #G.hand.highlighted > G.hand.config.highlighted_limit then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(to, card)'''
+position = 'before'
+payload = '''local orig_stay_flipped = stay_flipped'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(to, card)'''
+position = 'after'
+payload = '''if orig_stay_flipped then stay_flipped = true end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''local card = copy_card(pseudorandom_element(G.consumeables.cards, pseudoseed('perkeo')), nil)'''
+position = 'at'
+payload = '''local c_pool = {}
+for i, j in ipairs(G.consumeables.cards) do
+    local card = G.consumeables.cards[i]
+    if card.ability.consumeable then
+        c_pool[#c_pool + 1] = card
+    end
+end
+if #c_pool == 0 then
+    return true
+end
+local card = copy_card(pseudorandom_element(c_pool, pseudoseed('perkeo')), nil)'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.name == "Steel Joker" then'''
+position = 'before'
+payload = '''if self.ability.name == "Precious Joker" then
+    self.ability.precious_tally = 0
+    for k, v in pairs(G.playing_cards) do
+        if v.ability and (v.ability.m_type == "Precious") then self.ability.precious_tally = self.ability.precious_tally+1 end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if (G.SETTINGS.tutorial_complete or G.GAME.pseudorandom.seed ~= 'TUTORIAL' or G.GAME.round_resets.ante > 1) and'''
+position = 'before'
+payload = '''if (G.SETTINGS.tutorial_complete or G.GAME.pseudorandom.seed ~= 'TUTORIAL' or G.GAME.round_resets.ante > 1) and
+    self.area and
+    self.area.config.type == 'joker' and
+    skill_active("sk_grm_sticky_1") and
+    self.ability.eternal and
+    (G.GAME.skill_xp >= 100) then
+    return true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:sell_card()'''
+position = 'after'
+payload = '''   self.ability.no_destruct_xp = true
+    if self.ability.eternal and skill_active("sk_grm_sticky_1") then
+        G.GAME.skill_xp = G.GAME.skill_xp - 100
+        G.GAME.xp_spent = (G.GAME.xp_spent or 0) + 100
+    end
+    if skill_active("sk_poke_energetic_2") and (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or (type_sticker_applied and type_sticker_applied(self)) then
+        if #G.consumeables.cards < G.consumeables.config.card_limit then
+            local type = (self.ability.extra and (type(self.ability.extra) == "table") and self.ability.extra.ptype) or type_sticker_applied(self)
+            local card = SMODS.create_card {key = "c_poke_" .. type:lower() .. "_energy"}
+            card:add_to_deck()
+            G.consumeables:emplace(card)
+        end
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''c1.area:remove_card(c1)'''
+position = "before"
+payload = '''
+    if G.shop and skill_active("sk_grm_shelf_2") and not G.GAME.grm_did_purchase then
+        c1.immune_to_removal = true
+        change_shop_size(-2)
+    end
+    G.GAME.grm_did_purchase = true
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if G.shop_jokers.cards[i] then'''
+position = 'at'
+payload = '''if G.shop_jokers.cards[i] and not G.shop_jokers.cards[i].immune_to_removal then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)'''
+position = 'before'
+payload = '''if not G.GAME.modifiers["no_hand_discard_reset"] then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))'''
+position = 'after'
+payload = '''elseif G.GAME.current_round.hands_left and (G.GAME.current_round.hands_left <= 0) then
+    G.GAME.current_round.hands_left = 1
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.current_round.discards_left = math.max(0, G.GAME.round_resets.discards + G.GAME.round_bonus.discards)'''
+position = 'before'
+payload = '''if G.GAME.modifiers["blind_attack"] then
+    G.GAME.blind_attack = random_attack()
+end
+if G.zodiacs then
+    for _, zodiac in pairs(G.zodiacs) do
+        zodiac.ability.grm_unactivated = true
+    end
+end
+if not G.GAME.modifiers["no_hand_discard_reset"] then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.current_round.hands_left = (math.max(1, G.GAME.round_resets.hands + G.GAME.round_bonus.next_hands))'''
+position = 'after'
+payload = '''end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''v.ability.discarded = nil'''
+position = 'after'
+payload = '''if v.debuff then
+    v.ability.temp_debuff = nil
+    v:set_debuff()
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.GAME.current_round.hands_played = G.GAME.current_round.hands_played + 1'''
+position = 'after'
+payload = '''return true
+    end
+}))
+G.E_MANAGER:add_event(Event({
+    trigger = 'after',
+    func = function()
+        G.E_MANAGER:add_event(Event({
+        func = function()
+            if (G.GAME.chips < G.GAME.blind.chips) and G.GAME.modifiers["blind_attack"] then
+                do_attack("pre_draw_hand")
+                do_attack("pre_draw")
+            end
+            G.GAME.blind_attack = random_attack()
+            return true
+        end
+        }))
+        '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''e.config.button = 'sell_card''''
+position = 'after'
+payload = '''if e.config.ref_table.ability.eternal and skill_active("sk_grm_sticky_1") then
+    e.config.colour = G.C.PURPLE
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''if G.GAME.blind:press_play() then'''
+position = 'before'
+payload = '''G.E_MANAGER:add_event(Event({ func = function()
+    do_attack("press_play")
+return true end }))'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(self, card)'''
+position = 'before'
+payload = '''local orig_stay_flipped = stay_flipped'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''local stay_flipped = G.GAME and G.GAME.blind and G.GAME.blind:stay_flipped(self, card)'''
+position = 'after'
+payload = '''if orig_stay_flipped then stay_flipped = true end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''else draw_card(G.hand, G.play, 1, 'up', true, card, nil, mute) end'''
+position = 'before'
+payload = '''elseif card.attack_card or dont_dissolve then
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''ease_discard(-1)'''
+position = 'before'
+payload = '''G.E_MANAGER:add_event(Event({ func = function()
+    do_attack("pre_draw_discard")
+    do_attack("pre_draw")
+return true end }))'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = 'G.FUNCS.discard_cards_from_highlighted = function(e, hook)'
+position = 'after'
+payload = '''   if G.GAME.blind and (G.GAME.blind.name == "The Triton") and not G.GAME.blind.disabled then
+        ease_dollars(-G.GAME.dollars-100, true)
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = 'if not v.boss then'
+position = 'after'
+payload = '''elseif G.GAME.modifiers["astro_blinds"] and (v.boss.astronaut ~= true) then
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''hand_size = {value = starting_params.hand_size, order = 3},'''
+position = 'after'
+payload = '''force_stake_xp = {value = 100, order = 8},'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''self.GAME.base_reroll_cost = self.GAME.starting_params.reroll_cost'''
+position = 'after'
+payload = '''G.GAME.modifiers.force_stake_xp = self.GAME.starting_params.force_stake_xp
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''self.GAME.starting_params[v.id] = v.value'''
+position = 'after'
+payload = '''if v.id == "ante_scaling" then
+    G.GAME.base_ante_scaling = self.GAME.starting_params.ante_scaling
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''local nu_chip, nu_mult = G.GAME.selected_back:trigger_effect{context = 'final_scoring_step', chips = hand_chips, mult = mult}'''
+position = 'before'
+payload = '''if skill_active("sk_grm_blind_breaker") then
+    mult = mod_mult(mult*(1 + G.GAME.current_round.hands_played * 0.2))
+    update_hand_text({delay = 0}, {mult = mult})
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.name == 'The Wheel of Fortune' or self.ability.name == 'Ectoplasm' or self.ability.name == 'Hex' then'''
+position = 'before'
+payload = '''if self.ability.name == 'The Wheel of Fortune' and skill_active("sk_grm_fortunate_3") then
+    self.ability.extra = 1
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = 'function get_current_pool(_type, _rarity, _legendary, _append)'
+position = 'after'
+payload = '''   if not _rarity and skill_active("sk_grm_spectral_shard") and (_type == "Joker") and (pseudorandom('shard') < 0.03) then
+        _rarity = 4
+        _legendary = true
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = 'function Card:use_consumeable(area, copier)'
+position = 'after'
+payload = '''   if not self.grim_retrigger then
+        self.grim_retrigger = 0
+        if skill_active("sk_grm_gravity_3") and (self.ability.set == 'Planet') then
+            self.grim_retrigger = self.grim_retrigger + 1
+        end
+        if self.grim_retrigger > 0 then
+            for i = 1, self.grim_retrigger do
+                if self:can_use_consumeable(true, true) or (i == 1) then
+                    self:use_consumeable(area, copier)
+                end
+                card_eval_status_text(self, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_again_ex')})
+            end
+            if not self:can_use_consumeable(true, true) then
+                return
+            end
+        end
+    end
+    local joker = pokermon_selected_joker(self.config.center)
+    if joker and skill_active("sk_poke_energetic_3") and (self.ability.set == "Energy") and not joker.edition and (pseudorandom('energy_edition_chance') < 1/5) then
+        local edition = poll_edition('energy_edition', nil, false, true, {'e_negative', 'e_polychrome'})
+        joker:set_edition(edition, true)
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''added_menu_button(scale),'''
+position = 'at'
+payload = ''''''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.R, config={align = "cm", minh = 1.75, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.ORANGE, button = "options", shadow = true}, nodes={'''
+position = 'before'
+payload = '''added_menu_button(scale),'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''return {n=G.UIT.ROOT, config = {align = "cm", padding = 0.03, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
+position = 'before'
+payload = '''
+for i, j in ipairs(contents.buttons[1].nodes) do
+    if j.config and j.config.minh then
+        j.config.minh = 1.2
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''G.GAME.shop.joker_max*1.02*G.CARD_W,'''
+position = 'at'
+payload = '''math.min(4, G.GAME.shop.joker_max)*1.02*G.CARD_W,'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''function Game:start_up()'''
+position = 'before'
+payload = '''function skill_meets_dependencies(key)
+    if G.P_SKILLS[key] and G.P_SKILLS[key].grm_mod_reqs then
+        for i, j in ipairs(G.P_SKILLS[key].grm_mod_reqs) do
+            local mod = SMODS and SMODS.Mods and SMODS.Mods[j]
+            if not mod or not mod.can_load or mod.disabled then
+                return false
+            end
+        end
+    end
+    return true
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''boot_timer('prep stage', 'splash prep',1)'''
+position = 'before'
+payload = '''local a = (#self.P_CENTER_POOLS['Skill'] == 0)
+for k, v in pairs(self.P_SKILLS) do
+    v.valid_skill = false
+    if not v.wip and not v.demo and skill_meets_dependencies(k) then
+        if a then
+            table.insert(self.P_CENTER_POOLS['Skill'], v)
+        end
+        v.valid_skill = true
+    end
+end
+table.sort(self.P_CENTER_POOLS["Skill"], function (a, b) return a.order < b.order end)
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''if card.config.center.set == 'Tarot' or card.config.center.set == 'Planet' then'''
+position = 'before'
+payload = '''if skill_active("sk_cry_ace_2") and (card.config.center.set == 'Code') then 
+        G.E_MANAGER:add_event(Event({
+          trigger = 'immediate',
+          func = function()
+            G.E_MANAGER:add_event(Event({
+              trigger = 'immediate',
+              func = function()
+                G.GAME.last_tarot_planet = card.config.center_key
+                  return true
+              end
+            }))
+              return true
+          end
+        }))
+      end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local forced_tag = nil'''
+position = 'after'
+payload = '''if G.GAME.make_jolly then
+    card = SMODS.create_card {key = 'j_jolly'}
+    create_shop_card_ui(card, 'Joker', G.shop_jokers)
+    card.states.visible = false
+    if G.GAME.modifiers.cry_force_edition and not G.GAME.modifiers.cry_force_random_edition then
+        card:set_edition(nil, true, true)
+    elseif G.GAME.modifiers.cry_force_random_edition then
+        local edition = cry_poll_random_edition()
+        card:set_edition(edition, true, true)
+    end
+    card:start_materialize()
+    card:set_cost()
+    G.GAME.make_jolly = nil
+    return card
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/misc_functions.lua'
+pattern = '''function find_joker(name, non_debuff)'''
+position = 'after'
+payload = '''  if name == "cry-Jimball" then
+    local a = find_joker("Jimball2")
+    local b = find_joker("JollyJimball")
+    return (next(a) and a) or (next(b) and b) or {}
+  end
+  if name == "Jimball2" then
+    name = "cry-Jimball"
+  end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'blind.lua'
+pattern = 'function Blind:load(blindTable)'
+position = 'after'
+payload = '''self.debuffed_skills = blindTable.dbsk or {}
+
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'blind.lua'
+pattern = 'return blindTable'
+position = 'before'
+payload = '''blindTable.dbsk = self.debuffed_skills or {}
+    '''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = 'function Card:add_to_deck(from_debuff)'
+position = 'after'
+payload = '''   if skill_active("sk_mf_painted_1") and (self.ability.set == "Colour") and not self.ability.grm_coloured then
+        self.ability.grm_coloured = true
+        for i = 1, 2 do
+            trigger_colour_end_of_round(self)
+        end
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''if card.children.price then card.children.price:remove(); card.children.price = nil end'''
+position = 'after'
+payload = '''if card and skill_active("sk_mf_painted_3") and card.ability and (card.ability.set == "Colour") and not card.ability.grm_already_used then
+    card.ability.grm_saved = true
+    dont_dissolve = true
+    area:remove_from_highlighted(card)
+    play_sound('cardSlide2', nil, 0.3)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''function CardArea:remove_card(card, discarded_only)'''
+position = 'after'
+payload = '''if card and card.ability and card.ability.grm_saved then
+    card.ability.grm_saved = nil
+    card.ability.grm_already_used = true
+    return
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''elseif self.config.type == 'play' or self.config.type == 'shop' or self.config.type == 'consumeable' then'''
+position = 'before'
+payload = '''elseif self.config.skill_table then
+    card.states.drag.can = false
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'cardarea.lua'
+pattern = '''function CardArea:can_highlight(card)'''
+position = 'after'
+payload = '''if self.config.skill_table and not card.config.center.unlocked then
+    return false
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''local ret = {}'''
+position = 'after'
+payload = '''if context.main_scoring and not context.no_extra_grm then
+    local new_context = {no_extra_grm = true}
+    for i, j in pairs(context) do
+        new_context[i] = j
+    end
+    local effects = {eval_card(card, new_context)}
+    if (context.cardarea == G.play) then
+        if card:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}}
+        end
+        if card:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}}
+        end
+        if card:is_suit("Spades") and G.GAME.special_levels and (G.GAME.special_levels["spade"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}}
+        end
+        if card:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}}
+        end
+        if card:is_suit("bunc_Fleurons") and G.GAME.special_levels and (G.GAME.special_levels["fleuron"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}}
+        end
+        if card:is_suit("bunc_Halberds") and G.GAME.special_levels and (G.GAME.special_levels["halberd"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}}
+        end
+        if card.grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
+            effects[#effects + 1] = {{x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}}
+        end
+        if card.grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
+            effects[#effects + 1] = {{x_mult = G.GAME.area_data.midnight_mult}}
+        end
+        local has_suit = false
+        for i0, j in pairs(SMODS.Suits) do
+            if card:is_suit(j.key) then
+                has_suit = true
+                break
+            end
+        end
+        if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
+            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}}
+        end
+        if card.ability and card.ability.grm_status and card.ability.grm_status.rocky and not card.debuff then
+            effects[#effects + 1] = {extra = { func = function()
+                for i, j in ipairs(context.scoring_hand) do
+                    j.ability.perma_bonus = j.ability.perma_bonus or 0
+                    j.ability.perma_bonus = j.ability.perma_bonus + 3
+                    card_eval_status_text(j, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize('k_upgrade_ex')})
+                end
+            end}}
+        end
+    end
+    if (context.cardarea == G.hand) then
+        if card.debuff and G.GAME.special_levels and (G.GAME.special_levels["debuff"] > 0) then
+            card.ability.perma_mult = card.ability.perma_mult or 0
+            card.ability.perma_mult = card.ability.perma_mult + G.GAME.special_levels["debuff"] * 0.5
+            card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.5}}})
+        end
+    end
+    return unpack(effects)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:start_dissolve(dissolve_colours, silent, dissolve_time_fac, no_juice)'''
+position = 'after'
+payload = '''   if self.ability.grm_destruct and not self.ability.no_destruct_xp and (self.added_to_deck or self.playing_card) then
+        add_skill_xp(25, self)
+        self.ability.no_destruct_xp = true
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''function Card:remove()'''
+position = 'after'
+payload = '''   if self.ability and G and G.GAME and G.GAME.skill_xp and self.ability.grm_destruct and not self.ability.no_destruct_xp and (self.added_to_deck or self.playing_card) then
+        add_skill_xp(25, self)
+        self.ability.no_destruct_xp = true
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''self.ability.eternal = nil'''
+position = 'after'
+payload = '''   if self.ability and self.ability.grm_destruct then
+        return
+    end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.FUNCS.draw_from_play_to_discard()'''
+position = 'at'
+payload = '''
+if G.GAME.blind and skill_active("sk_grm_dash_1") then
+    refund_played_grim()
+else
+    G.FUNCS.draw_from_play_to_discard()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''return {n=is_row and G.UIT.R or G.UIT.ROOT, config={align = "cm", r = 0.1, colour = G.C.BLACK}, nodes={'''
+position = 'before'
+payload = '''local skills = CardArea(0,0,
+    3*joker_size,
+    0.6*G.CARD_H, 
+    {card_limit = nil,
+    card_w = joker_size*G.CARD_W, type = 'title_2', spread = true, highlight_limit = 0})
+
+  if challenge.skills then 
+  for k, v in ipairs(challenge.skills) do
+    local card = Card(0,0, G.CARD_W*joker_size, G.CARD_H*joker_size, nil, G.P_SKILLS[v.id], {bypass_discovery_center = true,bypass_discovery_ui = true, bypass_lock=true})
+    if v.edition then card:set_edition({[v.edition] = true}, true, true) end
+    if v.stickers then
+    	for i, _v in ipairs(v.stickers) do
+    		SMODS.Stickers[_v]:apply(card, true)
+    	end
+    end
+    if v.eternal then card:set_eternal(true) end
+    skills:emplace(card)
+  end
+  end
+
+  local skill_col = {n=G.UIT.C, config={align = "cm", padding = 0.05, colour = G.C.L_BLACK, r = 0.1, maxh = 1.8}, nodes={
+    {n=G.UIT.T, config={text = localize('k_skills_cap'), scale = 0.33, colour = G.C.UI.TEXT_LIGHT, vert = true, shadow = true}},
+    {n=G.UIT.C, config={align = "cm", minh = 0.6*G.CARD_H, r = 0.1, colour = G.C.UI.TRANSPARENT_DARK}, nodes={
+      skills and {n=G.UIT.O, config={object = skills}} or {n=G.UIT.T, config={text = localize('k_none'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}},
+    }}
+  }}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''joker_col, consumable_col, voucher_col'''
+position = 'after'
+payload = ''',skill_col'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''10*joker_size,'''
+position = 'at'
+payload = '''6.5*joker_size,'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.C, config={align = "cm", minh = 0.6*G.CARD_H, minw = 5, r = 0.1, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
+position = 'at'
+payload = '''{n=G.UIT.C, config={align = "cm", minh = 0.6*G.CARD_H, minw = 4.4, r = 0.1, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local card = Card(0,0, G.CARD_W*card_size, G.CARD_H*card_size, nil, G.P_CENTERS[v.id], {bypass_discovery_center = true,bypass_discovery_ui = true})'''
+position = 'before'
+payload = '''if G.P_CENTERS[v.id] then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''banned_card_area:emplace(card)'''
+position = 'after'
+payload = '''else
+  local card = Card(0,0, G.CARD_W*card_size, G.CARD_H*card_size, nil, G.P_SKILLS[v.id], {bypass_discovery_center = true,bypass_discovery_ui = true})
+  local a = banned_card_area:emplace(card)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''if _ch.rules then'''
+position = 'before'
+payload = '''if _ch.skills then
+    for k, v in ipairs(_ch.skills) do
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                learn_skill(nil, v.id, nil, true)
+            return true
+            end
+        }))
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if (area == G.shop_jokers) or (area == G.pack_cards) then'''
+position = 'before'
+payload = '''if G.GAME.modifiers.all_rental then
+    card:set_rental(true)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.rental then self.cost = 1 end'''
+position = 'at'
+payload = '''if not G.GAME.modifiers.rental_full_price then
+    if self.ability.rental then self.cost = 1 end
+end'''
+match_indent = true
