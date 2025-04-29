@@ -1752,7 +1752,8 @@ return {
             region_aether = "Aether",
             boss_blind = "Boss Blind",
             showdown_blind = "Showdown Blind",
-            k_skills_cap = "SKILLS"
+            k_skills_cap = "SKILLS",
+            ph_ease_3 = "Saved by Ease III",
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."},

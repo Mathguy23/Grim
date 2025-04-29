@@ -2711,3 +2711,25 @@ payload = '''if not G.GAME.modifiers.rental_full_price then
     if self.ability.rental then self.cost = 1 end
 end'''
 match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod'''
+position = 'after'
+payload = '''if mod ~= 0 then
+    fix_ante_scaling(nil, G.GAME.round_resets.ante - mod, G.GAME.round_resets.ante)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''config.saved and'''
+position = 'after'
+payload = '''(G.GAME.ease_3_saved) and {n=G.UIT.C, config={padding = 0.05, align = 'cm'}, nodes={
+    {n=G.UIT.R, config={align = 'cm'}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {' '..localize('ph_ease_3')..' '}, colours = {G.C.BLUE}, shadow = true, pop_in = 0, scale = 0.5*scale, silent = true})}}
+    }}
+}} or config.saved and'''
+match_indent = true
