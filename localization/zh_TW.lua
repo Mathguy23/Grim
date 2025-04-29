@@ -2,10 +2,10 @@ return {
     descriptions = {
         Skill = {
             sk_grm_chime_1 = {
-                name = "和協 I",
+                name = "Chime I",
                 text = {
-                    "每{C:attention}8{}個底注會{C:attention}-1{}個底注",
-                    "{C:inactive}（每個底注只觸發一次）{}"
+                    "{C:attention}-1{} Ante",
+                    "{C:inactive}(once per ante){}"
                 }
             },
             sk_grm_chime_2 = {
@@ -73,9 +73,10 @@ return {
                 }
             },
             sk_grm_strike_1 = {
-                name = "打擊 I",
+                name = "Strike I",
                 text = {
-                    "基礎倍數{C:red}+2{}",
+                    "{C:red}+2{} base mult",
+                    "per {C:attention}ante{}"
                 }
             },
             sk_grm_strike_2 = {
@@ -97,10 +98,10 @@ return {
                 }
             },
             sk_grm_hexahedron_2 = {
-                name = "六面體 II",
+                name = "Hexahedron II",
                 text = {
-                    "每次在商店{C:attention}重鎩{}",
-                    "會獲得{C:money}$1{}",
+                    "{C:attention}2{} free {C:attention}Rerolls{}",
+                    "per shop"
                 }
             },
             sk_grm_hexahedron_3 = {
@@ -231,10 +232,11 @@ return {
                 }
             },
             sk_grm_gravity_1 = {
-                name = "重力 I",
+                name = "Gravity I",
                 text = {
-                    "所有{C:planet}天外禮包{}",
-                    "有額外{C:attention}兩個{}選擇",
+                    "All {C:planet}Celestial Packs{} have",
+                    "{C:attention}+2{} options and {C:attention}+1{}",
+                    "choices"
                 }
             },
             sk_grm_gravity_2 = {
@@ -277,7 +279,7 @@ return {
             sk_grm_receipt_1 = {
                 name = "收據 I",
                 text = {
-                    "每次{C:attention}兌現{}{C:money}$7{}會獲得{C:money}$1"
+                    "每次{C:attention}兌現{}{C:money}$4{}會獲得{C:money}$1"
                 }
             },
             sk_grm_receipt_2 = {
@@ -288,22 +290,24 @@ return {
                 }
             },
             sk_grm_receipt_3 = {
-                name = "收據 III",
+                name = "Receipt III",
                 text = {
-                    "可負債至{C:red}-$25{}",
+                    "Go up to {C:red}-$25{} in debt,",
+                    "remove all {C:red}debt{} when {C:attention}Boss{}",
+                    "{C:attention}Blind{} is defeated"
                 }
             },
             sk_grm_dash_1 = {
-                name = "衝刺 I",
+                name = "Dash I",
                 text = {
-                    "每個商店會有{C:attention}標準禮包{}"
+                    "{C:attention}Played{} cards return",
+                    "to {C:attention}deck{}"
                 }
             },
             sk_grm_dash_2 = {
                 name = "衝刺 II",
                 text = {
-                    "所有{C:attention}標準禮包{}有",
-                    "額外{X:attention,C:white}兩倍{}的選項",
+                    "出牌數量 {C:dark_edition}+1{}",
                 }
             },
             sk_grm_cl_hoarder = {
@@ -388,7 +392,7 @@ return {
             sk_grm_shelf_2 = {
                 name = "擱板 II",
                 text = {
-                    "每個商店的欄位 {C:attention}+1{}",
+                    "每個商店的欄位 {C:attention}+2{}",
                     "直到{C:attention}購買{}一個物品"
                 }
             },
@@ -1563,6 +1567,7 @@ return {
             k_ancient_pack = "古老禮包",
             boss_blind = "Boss Blind",
             showdown_blind = "Showdown Blind",
+            k_skills_cap = "SKILLS"
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}出牌次數{}及{C:red}棄牌次數{}不會自動重設"},
@@ -1571,6 +1576,8 @@ return {
             ch_c_force_astronaut = {"一定要使用{C:attention}太空人{}職業"},
             ch_c_loot_pack = {"每個商店會有免費的{C:attention}戰利禮包{}"},
             ch_m_force_stake_xp = {"每個底注經驗值{C:purple}+#1#{}"},
+            ch_c_all_rental = {"All Jokers are Rental"},
+            ch_c_rental_full_price = {"Rental Jokers cost {C:attention}Full Price{}"}
 
         },
         v_dictionary = {
@@ -1583,6 +1590,8 @@ return {
         },
         challenge_names = {
             c_astro_dungeon = "太空地牢"
+            c_bankruptcy = "Bankruptcy",
+            c_overflow = "Overflow",
         },
         labels = {
             skill = "技能"

@@ -14,7 +14,6 @@ skills = {},
 skill_xp = 0,
 xp_spent = 0,
 legendary_tokens = 0,
-reset_antes = {},
 reset_antes2 = {},
 reset_antes3 = {},
 ghost_skill_xp = 0,
@@ -167,14 +166,14 @@ target = 'game.lua'
 pattern = '''self.P_LOCKED = {}'''
 position = 'after'
 payload = '''self.P_SKILLS = {
-    sk_grm_chime_1 = {key = 'sk_grm_chime_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime I", xp_req = 150, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Chime"},
+    sk_grm_chime_1 = {key = 'sk_grm_chime_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime I", xp_req = 200, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Chime"},
     sk_grm_chime_2 = {key = 'sk_grm_chime_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Chime II", xp_req = 250, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_1'}, tier = 2, branch = "Chime"},
     sk_grm_chime_3 = {key = 'sk_grm_chime_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Chime III", xp_req = 650, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_chime_2'}, unlock_condition = {type = 'ante_up', ante = 17}, tier = 3, branch = "Chime"},
     sk_grm_hexahedron_1 = {key = 'sk_grm_hexahedron_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron I", xp_req = 300, pos = {x=3,y=1}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Hexahedron"},
     sk_grm_hexahedron_2 = {key = 'sk_grm_hexahedron_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Hexahedron II", xp_req = 400, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_1'}, tier = 2, branch = "Hexahedron"},
     sk_grm_hexahedron_3 = {key = 'sk_grm_hexahedron_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Hexahedron III", xp_req = 750, pos = {x=0,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 3, branch = "Hexahedron"},
-    sk_grm_strike_1 = {key = 'sk_grm_strike_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike I", xp_req = 250, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Strike"},
-    sk_grm_strike_2 = {key = 'sk_grm_strike_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike II", xp_req = 450, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 2, branch = "Strike"},
+    sk_grm_strike_1 = {key = 'sk_grm_strike_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike I", xp_req = 300, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {}, tier = 1, branch = "Strike"},
+    sk_grm_strike_2 = {key = 'sk_grm_strike_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Strike II", xp_req = 400, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 2, branch = "Strike"},
     sk_grm_strike_3 = {key = 'sk_grm_strike_3', unlocked = false, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Strike III", xp_req = 800, pos = {x=2,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_2'}, tier = 3, branch = "Strike"},
     sk_grm_ease_1 = {key = 'sk_grm_ease_1', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease I", xp_req = 150, pos = {x=3,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_strike_1'}, tier = 1, branch = "Ease"},
     sk_grm_ease_2 = {key = 'sk_grm_ease_2', unlocked = true, discovered = false, atlas = 'grm_skills', cost = 8, name = "Ease II", xp_req = 200, pos = {x=4,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ease_1'}, tier = 2, branch = "Ease"},
@@ -204,7 +203,7 @@ payload = '''self.P_SKILLS = {
     sk_grm_ghost_1 = {key = 'sk_grm_ghost_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost I", xp_req = 250, pos = {x=0,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ocean_2'}, tier = 1, branch = "Ghost"},
     sk_grm_ghost_2 = {key = 'sk_grm_ghost_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost II", xp_req = 350, pos = {x=1,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_1'}, tier = 2, branch = "Ghost"},
     sk_grm_ghost_3 = {key = 'sk_grm_ghost_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Ghost III", xp_req = 650, pos = {x=2,y=0}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_ghost_2'}, tier = 3, branch = "Ghost"},
-    sk_grm_receipt_1 = {key = 'sk_grm_receipt_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt I", xp_req = 150, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Receipt"},
+    sk_grm_receipt_1 = {key = 'sk_grm_receipt_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt I", xp_req = 200, pos = {x=4,y=1}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_hexahedron_2'}, tier = 1, branch = "Receipt"},
     sk_grm_receipt_2 = {key = 'sk_grm_receipt_2', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt II", xp_req = 250, pos = {x=0,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_1'}, tier = 2, branch = "Receipt"},
     sk_grm_receipt_3 = {key = 'sk_grm_receipt_3', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Receipt III", xp_req = 600, pos = {x=1,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_receipt_2'}, tier = 3, branch = "Receipt"},
     sk_grm_dash_1 = {key = 'sk_grm_dash_1', unlocked = true, discovered = false, atlas = 'grm_skills2', cost = 8, name = "Dash I", xp_req = 150, pos = {x=2,y=2}, set = "Skill", effect = "", config = {}, prereq = {'sk_grm_motley_2'}, tier = 1, branch = "Dash"},
@@ -752,6 +751,9 @@ G.GAME.pack_choices = G.GAME.pack_choices * 2
 end
 if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
     G.GAME.pack_choices = G.GAME.pack_choices + 2
+end
+if skill_active("sk_grm_gravity_1") and self.ability.name:find('Celestial') then
+    G.GAME.pack_choices = G.GAME.pack_choices + 1
 end'''
 match_indent = true
 
@@ -775,22 +777,12 @@ end
 if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
     _size = _size + 4
 end
-if skill_active("sk_grm_dash_2") and self.ability.name:find('Standard') then
-    _size = _size * 2
-end
 if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') then
     _size = _size * 2
 end
 local lovers_indexes = nil
 if skill_active("sk_grm_motley_2") and self.ability.name:find('Arcana') then
-    lovers_indexes = {math.floor(pseudorandom('motley') * _size) + 1}
-    table.insert(lovers_indexes, math.floor(pseudorandom('motley') * (_size - 1)) + 1)
-    if lovers_indexes[2] >= lovers_indexes[1] then
-        lovers_indexes[2] = lovers_indexes[2] + 1
-    end
-    if lovers_indexes[2] < lovers_indexes[1] then
-        lovers_indexes = {lovers_indexes[2], lovers_indexes[1]}
-    end
+    lovers_indexes = math.floor(pseudorandom('motley') * _size) + 1
 end
 local pointer_index = nil
 if skill_active("sk_cry_ace_3") and (self.ability.name:find('code_') or self.ability.name:find('Program')) then
@@ -996,7 +988,7 @@ for i, j in ipairs(pack_cards) do
         pointer_found = true
     end
 end
-if lovers_indexes and (((lovers_indexes[1] == i) and not lovers_found) or (lovers_indexes[2] == i)) then
+if lovers_indexes and (lovers_indexes == i) and not lovers_found then
     card = create_card("Tarot", G.pack_cards, nil, nil, true, true, 'c_lovers', 'ar1')
     card:start_materialize({G.C.WHITE, G.C.WHITE}, nil, 1.5*G.SETTINGS.GAMESPEED)
     card.T.x = self.T.x + 0
@@ -1133,53 +1125,6 @@ if (G.GAME.area == "Ghost Town") and G.GAME.area_data and (pseudorandom('ghost')
 end
 if (G.GAME.blind_on_deck == "Boss") then
     local stake_key = G.P_CENTER_POOLS.Stake[G.GAME.stake].key
-    local add_skill_table = {
-        stake_white = 1,
-        stake_red = 50,
-        stake_green = 90,
-        stake_black = 120,
-        stake_blue = 150,
-        stake_purple = 180,
-        stake_orange = 220,
-        stake_gold = 250,
-        stake_grm_bismuth = 300,
-        stake_bunc_cyan = 227,
-        stake_bunc_pink = 235,
-        stake_bunc_magenta = 242,
-        stake_cry_pink = 270,
-        stake_cry_brown = 300,
-        stake_cry_yellow = 300,
-        stake_cry_jade = 300,
-        stake_cry_cyan = 300,
-        stake_cry_gray = 300,
-        stake_cry_crimson = 300,
-        stake_cry_diamond = 300,
-        stake_cry_amber = 300,
-        stake_cry_bronze = 300,
-        stake_cry_quartz = 300,
-        stake_cry_ruby = 300,
-        stake_cry_glass = 300,
-        stake_cry_sapphire = 300,
-        stake_cry_emerald = 300,
-        stake_cry_platinum = 300,
-        stake_cry_twilight = 300,
-        stake_cry_verdant = 300,
-        stake_cry_ember = 300,
-        stake_cry_dawn = 300,
-        stake_cry_horizon = 300,
-        stake_cry_blossom = 300,
-        stake_cry_azure = 300,
-        stake_cry_ascendant = 300,
-        stake_cruel_mean = 50,
-        stake_cruel_rude = 100,
-        stake_cruel_mocking = 150,
-        stake_cruel_painful = 200,
-        stake_cruel_harsh = 250,
-        stake_cruel_brutal = 300,
-        stake_cruel_horrid = 300,
-        stake_cruel_cruel = 300,
-        stake_cruel_fools = 300,
-    }
     local plus_xp = 100
     local name = localize('boss_blind')
     if G.GAME.modifiers and G.GAME.modifiers.force_stake_xp then
@@ -1189,7 +1134,6 @@ if (G.GAME.blind_on_deck == "Boss") then
         plus_xp = math.floor(plus_xp * 2)
         name = localize('showdown_blind')
     end
-    -- local stake_name = localize {type = 'name_text', key = stake_key, set = 'Stake'}
     if plus_xp and (plus_xp > 0) then
         add_custom_round_eval_row(name , tostring(get_modded_xp(plus_xp)) .. " XP")
         cash_out_xp = cash_out_xp + get_modded_xp(plus_xp)
@@ -1235,7 +1179,7 @@ payload = '''if G.shop then
         G.GAME.grm_unlocks.shop_rerolls = 0
     end
     if skill_active("sk_grm_shelf_2") and G.GAME.grm_did_purchase then
-        change_shop_size(1)
+        change_shop_size(2)
     end
     G.GAME.grm_did_purchase = false
 end'''
@@ -1309,9 +1253,9 @@ target = 'functions/button_callbacks.lua'
 pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
 position = 'before'
 payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big(7)) then
-    ease_dollars(math.floor(G.GAME.current_round.dollars/7))
+    ease_dollars(math.floor(G.GAME.current_round.dollars/4))
 elseif not to_big and skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 7) then
-    ease_dollars(math.floor(G.GAME.current_round.dollars/7))
+    ease_dollars(math.floor(G.GAME.current_round.dollars/4))
 end
 add_skill_xp(cash_out_xp or 0, nil, nil, true)
 cash_out_xp = 0'''
@@ -2074,7 +2018,7 @@ position = "before"
 payload = '''
     if G.shop and skill_active("sk_grm_shelf_2") and not G.GAME.grm_did_purchase then
         c1.immune_to_removal = true
-        change_shop_size(-1)
+        change_shop_size(-2)
     end
     G.GAME.grm_did_purchase = true
 '''
@@ -2243,26 +2187,10 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = 'game.lua'
-pattern = '''elseif v.id == 'no_shop_jokers' then'''
-position = 'before'
-payload = '''elseif v.id == 'force_astronaut' then
-    if G.P_SKILLS['sk_grm_cl_astronaut'] and G.P_SKILLS['sk_grm_cl_astronaut'].unlocked then
-        learn_skill(nil, 'sk_grm_cl_astronaut')
-    end
-elseif v.id == 'force_astronaut' then
-    if G.P_SKILLS['sk_grm_cl_astronaut'] and G.P_SKILLS['sk_grm_cl_astronaut'].unlocked then
-        learn_skill(nil, 'sk_grm_cl_astronaut')
-    end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = 'functions/UI_definitions.lua'
 pattern = '''hand_size = {value = starting_params.hand_size, order = 3},'''
 position = 'after'
-payload = '''force_stake_xp = {value = 1, order = 8},'''
+payload = '''force_stake_xp = {value = 100, order = 8},'''
 match_indent = true
 
 [[patches]]
@@ -2655,4 +2583,131 @@ position = 'after'
 payload = '''   if self.ability and self.ability.grm_destruct then
         return
     end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/state_events.lua'
+pattern = '''G.FUNCS.draw_from_play_to_discard()'''
+position = 'at'
+payload = '''
+if G.GAME.blind and skill_active("sk_grm_dash_1") then
+    refund_played_grim()
+else
+    G.FUNCS.draw_from_play_to_discard()
+end
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''return {n=is_row and G.UIT.R or G.UIT.ROOT, config={align = "cm", r = 0.1, colour = G.C.BLACK}, nodes={'''
+position = 'before'
+payload = '''local skills = CardArea(0,0,
+    3*joker_size,
+    0.6*G.CARD_H, 
+    {card_limit = nil,
+    card_w = joker_size*G.CARD_W, type = 'title_2', spread = true, highlight_limit = 0})
+
+  if challenge.skills then 
+  for k, v in ipairs(challenge.skills) do
+    local card = Card(0,0, G.CARD_W*joker_size, G.CARD_H*joker_size, nil, G.P_SKILLS[v.id], {bypass_discovery_center = true,bypass_discovery_ui = true, bypass_lock=true})
+    if v.edition then card:set_edition({[v.edition] = true}, true, true) end
+    if v.stickers then
+    	for i, _v in ipairs(v.stickers) do
+    		SMODS.Stickers[_v]:apply(card, true)
+    	end
+    end
+    if v.eternal then card:set_eternal(true) end
+    skills:emplace(card)
+  end
+  end
+
+  local skill_col = {n=G.UIT.C, config={align = "cm", padding = 0.05, colour = G.C.L_BLACK, r = 0.1, maxh = 1.8}, nodes={
+    {n=G.UIT.T, config={text = localize('k_skills_cap'), scale = 0.33, colour = G.C.UI.TEXT_LIGHT, vert = true, shadow = true}},
+    {n=G.UIT.C, config={align = "cm", minh = 0.6*G.CARD_H, r = 0.1, colour = G.C.UI.TRANSPARENT_DARK}, nodes={
+      skills and {n=G.UIT.O, config={object = skills}} or {n=G.UIT.T, config={text = localize('k_none'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT}},
+    }}
+  }}'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''joker_col, consumable_col, voucher_col'''
+position = 'after'
+payload = ''',skill_col'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''10*joker_size,'''
+position = 'at'
+payload = '''6.5*joker_size,'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''{n=G.UIT.C, config={align = "cm", minh = 0.6*G.CARD_H, minw = 5, r = 0.1, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
+position = 'at'
+payload = '''{n=G.UIT.C, config={align = "cm", minh = 0.6*G.CARD_H, minw = 4.4, r = 0.1, colour = G.C.UI.TRANSPARENT_DARK}, nodes={'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''local card = Card(0,0, G.CARD_W*card_size, G.CARD_H*card_size, nil, G.P_CENTERS[v.id], {bypass_discovery_center = true,bypass_discovery_ui = true})'''
+position = 'before'
+payload = '''if G.P_CENTERS[v.id] then'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/UI_definitions.lua'
+pattern = '''banned_card_area:emplace(card)'''
+position = 'after'
+payload = '''else
+  local card = Card(0,0, G.CARD_W*card_size, G.CARD_H*card_size, nil, G.P_SKILLS[v.id], {bypass_discovery_center = true,bypass_discovery_ui = true})
+  local a = banned_card_area:emplace(card)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = '''if _ch.rules then'''
+position = 'before'
+payload = '''if _ch.skills then
+    for k, v in ipairs(_ch.skills) do
+        G.E_MANAGER:add_event(Event({
+            func = function()
+                learn_skill(nil, v.id, nil, true)
+            return true
+            end
+        }))
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''if (area == G.shop_jokers) or (area == G.pack_cards) then'''
+position = 'before'
+payload = '''if G.GAME.modifiers.all_rental then
+    card:set_rental(true)
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if self.ability.rental then self.cost = 1 end'''
+position = 'at'
+payload = '''if not G.GAME.modifiers.rental_full_price then
+    if self.ability.rental then self.cost = 1 end
+end'''
 match_indent = true

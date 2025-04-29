@@ -4,9 +4,7 @@ return {
             sk_grm_chime_1 = {
                 name = "Chime I",
                 text = {
-                    "{C:attention}-1{} Ante every {C:attention}8th{}",
-                    "Ante",
-                    "{C:inactive}(once per ante){}"
+                    "When {C:attention}learned{}, {C:attention}-1{} Ante",
                 }
             },
             sk_grm_chime_2 = {
@@ -82,6 +80,7 @@ return {
                 name = "Strike I",
                 text = {
                     "{C:red}+2{} base mult",
+                    "per {C:attention}ante{}"
                 }
             },
             sk_grm_strike_2 = {
@@ -105,14 +104,14 @@ return {
             sk_grm_hexahedron_2 = {
                 name = "Hexahedron II",
                 text = {
-                    "Earn {C:money}$1{} per {C:attention}reroll{}",
-                    "in the shop",
+                    "{C:attention}2{} free {C:attention}Rerolls{}",
+                    "per shop"
                 }
             },
             sk_grm_hexahedron_3 = {
                 name = "Hexahedron III",
                 text = {
-                    "+{C:attention}1{} free {C:green}reroll",
+                    "{C:attention}+1{} free {C:green}reroll",
                     "in the shop per {C:money}$7{} spent",
                     "on {C:green}reroll"
                 },
@@ -234,7 +233,7 @@ return {
                 name = "Motley II",
                 text = {
                     "{C:tarot}Arcana Packs{} have",
-                    "2 {C:tarot}The Lovers{}"
+                    "{C:attention}1{} {C:tarot}The Lovers{}"
                 }
             },
             sk_grm_motley_3 = {
@@ -257,7 +256,8 @@ return {
                 name = "Gravity I",
                 text = {
                     "All {C:planet}Celestial Packs{} have",
-                    "{C:attention}+2{} options",
+                    "{C:attention}+2{} options and {C:attention}+1{}",
+                    "choice"
                 }
             },
             sk_grm_gravity_2 = {
@@ -304,7 +304,7 @@ return {
                 name = "Receipt I",
                 text = {
                     "Earn {C:money}$1{} for every",
-                    "{C:money}$7{} earned at {C:attention}cash out{}",
+                    "{C:money}$4{} earned at {C:attention}cash out{}",
                 }
             },
             sk_grm_receipt_2 = {
@@ -317,22 +317,22 @@ return {
             sk_grm_receipt_3 = {
                 name = "Receipt III",
                 text = {
-                    "Go up to",
-                    "{C:red}-$25{} in debt"
+                    "Go up to {C:red}-$25{} in debt,",
+                    "remove all {C:red}debt{} when {C:attention}Boss{}",
+                    "{C:attention}Blind{} is defeated"
                 }
             },
             sk_grm_dash_1 = {
                 name = "Dash I",
                 text = {
-                    "Each shop has",
-                    "a {C:attention}Standard Pack{}"
+                    "{C:attention}Played{} cards return",
+                    "to {C:attention}deck{}"
                 }
             },
             sk_grm_dash_2 = {
                 name = "Dash II",
                 text = {
-                    "All {C:attention}Standard Packs{} have",
-                    "{X:attention,C:white} X2 {} options",
+                    "{C:dark_edition}+1{} play size",
                 }
             },
             sk_grm_cl_hoarder = {
@@ -429,7 +429,7 @@ return {
             sk_grm_shelf_2 = {
                 name = "Shelf II",
                 text = {
-                    "{C:attention}+1{} shop slot each",
+                    "{C:attention}+2{} shop slots",
                     "shop until an item is",
                     "{C:attention}purchased"
                 }
@@ -1752,6 +1752,7 @@ return {
             region_aether = "Aether",
             boss_blind = "Boss Blind",
             showdown_blind = "Showdown Blind",
+            k_skills_cap = "SKILLS"
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}Hands{} and {C:red}Discards{} are not reset automatically."},
@@ -1760,7 +1761,8 @@ return {
             ch_c_force_astronaut = {"You must play on the {C:attention}Astronaut{} class."},
             ch_c_loot_pack = {"Each shop has a free {C:attention}Loot Pack{}."},
             ch_m_force_stake_xp = {"{C:purple}#1#{} XP per Ante"},
-
+            ch_c_all_rental = {"All Jokers are Rental"},
+            ch_c_rental_full_price = {"Rental Jokers cost {C:attention}Full Price{}"}
         },
         v_dictionary = {
             skill_xp = "XP: #1#",
@@ -1771,7 +1773,9 @@ return {
             xp_interest = "#1# interest per #2# XP (#3# max)"
         },
         challenge_names = {
-            c_astro_dungeon = "Astro Dungeon"
+            c_astro_dungeon = "Astro Dungeon",
+            c_bankruptcy = "Bankruptcy",
+            c_overflow = "Overflow",
         },
         labels = {
             skill = "Skill"

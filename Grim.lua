@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.5
+--- VERSION: 1.2.6
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -601,6 +601,19 @@ function SMODS.SAVE_UNLOCKS()
     end
 end
 
+function refund_played_grim(e)
+    local play_count = #G.play.cards
+    local it = 1
+    for k, v in ipairs(G.play.cards) do
+        if (not v.shattered) and (not v.destroyed) then 
+            draw_card(G.play,G.deck, it*100/play_count,'down', false, v)
+            it = it + 1
+        end
+    end
+    G.GAME.blind.refunded = false
+    G.deck:shuffle('nr'..G.GAME.round_resets.ante .. pseudoseed('dash'))
+end
+
 function get_skills(during_game)
     local shown_skills = {}
     for i, j in ipairs(G.P_CENTER_POOLS['Skill']) do
@@ -630,12 +643,15 @@ function get_skills(during_game)
     return shown_skills
 end
 
-function refresh_skill_menu_skills()
+function refresh_skill_menu_skills(minor_reset)
     local offsets = {}
     offsets[1] = G.GAME.skill_tree_data[1].offset
     offsets[2] = G.GAME.skill_tree_data[2].offset
     offsets[3] = G.GAME.skill_tree_data[3].offset
     G.GAME.skill_tree_data = get_skills(true)
+    if minor_reset then
+        return
+    end
     for i = 1, 3 do
         if offsets[i] + 5 > #G.GAME.skill_tree_data[i] then
             offsets[i] = math.max(0, #G.GAME.skill_tree_data[i] - 5)
@@ -703,7 +719,7 @@ function fix_ante_scaling(do_blind)
     end
 end
 
-function learn_skill(card, direct_, debuffing)
+function learn_skill(card, direct_, debuffing, free)
     local obj, key = "", ""
     if direct_ then
         obj = G.P_SKILLS[direct_]
@@ -718,9 +734,9 @@ function learn_skill(card, direct_, debuffing)
     if G.GAME.ante_banners and not G.GAME.ante_banners[key] then
         G.GAME.ante_banners[key] = G.GAME.round_resets.ante
     end
-    if not obj.class and (G.GAME.free_skills and (G.GAME.free_skills > 0)) then
+    if not free and not obj.class and (G.GAME.free_skills and (G.GAME.free_skills > 0)) then
         G.GAME.free_skills = G.GAME.free_skills - 1
-    elseif not debuffing then
+    elseif not free and not debuffing then
         G.GAME.skill_xp = G.GAME.skill_xp - math.floor(obj.xp_req * (G.GAME.grim_xp_discount or 1))
         G.GAME.xp_spent = (G.GAME.xp_spent or 0) + math.floor(obj.xp_req * (G.GAME.grim_xp_discount or 1))
     end
@@ -743,6 +759,13 @@ function learn_skill(card, direct_, debuffing)
             G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost - 1
             G.GAME.current_round.reroll_cost = math.max(0, G.GAME.current_round.reroll_cost - 1)
         return true end }))
+    elseif key == "sk_grm_hexahedron_2" then
+        G.GAME.round_resets.free_rerolls = (G.GAME.round_resets.free_rerolls or 0) + 2
+        G.GAME.current_round.free_rerolls = G.GAME.round_resets.free_rerolls
+        if G.GAME.current_round.free_rerolls < 0 then
+            G.GAME.current_round.free_rerolls = 0
+        end
+        calculate_reroll_cost(true)
     elseif key == "sk_grm_ocean_1" then
         G.hand:change_size(1)
     elseif key == "sk_grm_stake_1" then
@@ -802,12 +825,13 @@ function learn_skill(card, direct_, debuffing)
                 if v.set_cost then v:set_cost() end
             end
             return true end }))
-    elseif key == "sk_grm_chime_1" and ((G.GAME.round_resets.ante) % 8 == 0) and not G.GAME.reset_antes[G.GAME.round_resets.ante] then
-        G.GAME.reset_antes[G.GAME.round_resets.ante] = true
-        ease_ante(-1, true)
-        if skill_active("sk_grm_stake_3") then
-            G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-            fix_ante_scaling()
+    elseif key == "sk_grm_chime_1" then
+        if not debuffing then
+            ease_ante(-1, true)
+            if skill_active("sk_grm_stake_3") then
+                G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
+                fix_ante_scaling()
+            end
         end
     elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
         G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
@@ -859,7 +883,7 @@ function learn_skill(card, direct_, debuffing)
         end
     elseif key == "sk_grm_shelf_2" then
         if not G.GAME.grm_did_purchase then
-            change_shop_size(1)
+            change_shop_size(2)
         end
     elseif key == "sk_grm_shelf_3" then
         SMODS.change_voucher_limit(1)
@@ -899,10 +923,8 @@ function learn_skill(card, direct_, debuffing)
             G.GAME.legendary_tokens = (G.GAME.legendary_tokens or 0) + 1
             G.GAME.grim_xp_discount = (G.GAME.grim_xp_discount or 1) * 0.75
         end
-    elseif key == "sk_grm_dash_1" then
-        if G.GAME.force_grm_packs then
-            table.insert(G.GAME.force_grm_packs, "Standard")
-        end
+    elseif key == "sk_grm_dash_2" then
+        G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
     elseif key == "sk_grm_midas_touch" then
         for i, j in ipairs(G.playing_cards) do
             j:set_ability(G.P_CENTERS.m_gold)
@@ -959,6 +981,13 @@ function unlearn_skill(direct_, debuffing)
             G.GAME.round_resets.reroll_cost = G.GAME.round_resets.reroll_cost + 1
             G.GAME.current_round.reroll_cost = math.max(0, G.GAME.current_round.reroll_cost + 1)
         return true end }))
+    elseif key == "sk_grm_hexahedron_2" then
+        G.GAME.round_resets.free_rerolls = (G.GAME.round_resets.free_rerolls or 0) - 2
+        G.GAME.current_round.free_rerolls = G.GAME.round_resets.free_rerolls
+        if G.GAME.current_round.free_rerolls < 0 then
+            G.GAME.current_round.free_rerolls = 0
+        end
+        calculate_reroll_cost(true)
     elseif key == "sk_grm_ocean_1" then
         G.hand:change_size(-1)
     elseif key == "sk_grm_stake_1" then
@@ -1044,10 +1073,12 @@ function unlearn_skill(direct_, debuffing)
         G.GAME.grm_modify_booster_slots = (G.GAME.grm_modify_booster_slots or 0) - 2
     elseif key == "sk_grm_shelf_2" then
         if not G.GAME.grm_did_purchase then
-            change_shop_size(-1)
+            change_shop_size(-2)
         end
     elseif key == "sk_grm_shelf_3" then
         SMODS.change_voucher_limit(-1)
+    elseif key == "sk_grm_dash_2" then
+        G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
     elseif key == "sk_cry_m_3" then
         for i = 1, #G.jokers.cards do
             local card = G.jokers.cards[i]
@@ -1231,6 +1262,7 @@ function create_UI_learned_skills()
 end
 
 G.FUNCS.your_skill_tree = function(e)
+    refresh_skill_menu_skills(true)
     G.FUNCS.overlay_menu{
         definition = create_UI_learned_skills(),
     }
@@ -1251,16 +1283,21 @@ function calculate_skill(skill, context)
         elseif skill == "sk_grm_holdover_2" then
             G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
             G.GAME.holdover.hands = math.min(skill_active("sk_grm_holdover_3") and 4 or 2, G.GAME.current_round.hands_left)
+        elseif skill == "sk_grm_receipt_3" then
+            if (G.GAME.blind_on_deck == "Boss") then
+                if to_big then
+                    if G.GAME.dollars < to_big(0) then
+                        ease_dollars(-G.GAME.dollars)
+                    end
+                else
+                    if G.GAME.dollars < 0 then
+                        ease_dollars(-G.GAME.dollars)
+                    end
+                end
+            end
         end
     elseif context.ante_mod then
-        if skill == "sk_grm_chime_1" and ((context.current_ante) % 8 == 0) and not G.GAME.reset_antes[context.current_ante] then
-            G.GAME.reset_antes[context.current_ante] = true
-            ease_ante(-1, true)
-            if skill_active("sk_grm_stake_3") then
-                G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-                fix_ante_scaling(true)
-            end
-        elseif skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
+        if skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
             G.GAME.reset_antes2[context.current_ante] = true
             ease_ante(-1, true)
             if skill_active("sk_grm_stake_3") then
@@ -1293,7 +1330,10 @@ function calculate_skill(skill, context)
         end
     elseif context.modify_base then
         if skill == "sk_grm_strike_1" then
-            return context.chips, (context.mult + 2), true
+            if G.GAME.round_resets.ante <= 0 then
+                return context.chips, context.mult, false
+            end
+            return context.chips, (context.mult + 2 * G.GAME.round_resets.ante), true
         elseif skill == "sk_grm_strike_2" then
             return (context.chips + 50), context.mult, true
         elseif skill == "sk_grm_gravity_2" then
@@ -1319,9 +1359,7 @@ function calculate_skill(skill, context)
             return context.chips, context.mult, false
         end
     elseif context.reroll_shop then
-        if skill == "sk_grm_hexahedron_2" then
-            ease_dollars(1)
-        end
+
     elseif context.pre_discard then
         if skill == "sk_grm_ocean_2" and (G.GAME.current_round.discards_left == 1) then
             ease_hands_played(1)
@@ -1341,7 +1379,7 @@ function calculate_skill(skill, context)
         end
     elseif context.selecting_blind then
         if (skill == "sk_grm_dexterity") and (G.GAME.skill_xp >= 100) then
-            ease_hands_played(math.floor(G.GAME.skill_xp / 100))
+            ease_hands_played(math.max(0, math.floor(G.GAME.skill_xp / 100)))
         elseif skill == "sk_grm_holdover_2" then
             if G.GAME.holdover then
                 if G.GAME.holdover.hands and (G.GAME.holdover.hands > 0) then
@@ -4043,12 +4081,10 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
                 {id = 'blind_attack'},
                 {id = 'loot_pack'},
                 {id = 'astro_blinds'},
-                {id = 'force_astronaut'}
             },
             modifiers = {
                 {id = 'hands', value = 8},
                 {id = 'discards', value = 6},
-                {id = 'force_stake_xp', value = 150},
             }
         },
         jokers = {       
@@ -4056,6 +4092,9 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
         consumeables = {
         },
         vouchers = {
+        },
+        skills = {
+            {id = 'sk_grm_cl_astronaut'}
         },
         deck = {
             type = 'Challenge Deck',
@@ -4069,6 +4108,105 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
             banned_other = {
                 {id = 'bl_water', type = 'blind'},
                 {id = 'bl_needle', type = 'blind'},
+            }
+        },
+    }
+)
+
+table.insert(G.CHALLENGES,#G.CHALLENGES+1,
+    {name = 'Bankruptcy',
+        id = 'c_bankruptcy',
+        rules = {
+            custom = {
+                {id = 'no_reward'},
+                {id = 'no_extra_hand_money'},
+                {id = 'no_interest'},
+                {id = 'all_rental'},
+                {id = 'rental_full_price'}
+            },
+            modifiers = {
+                {id = 'dollars', value = 0},
+            }
+        },
+        jokers = {       
+        },
+        consumeables = {
+        },
+        vouchers = {
+        },
+        skills = {
+            {id = 'sk_grm_receipt_3'}
+        },
+        deck = {
+            type = 'Challenge Deck',
+        },
+        restrictions = {
+            banned_cards = {
+                {id = 'v_seed_money'},
+                {id = 'v_money_tree'},
+                {id = 'j_to_the_moon'},
+                {id = 'j_rocket'},
+                {id = 'j_golden'},
+                {id = 'j_satellite'},
+                {id = 'j_credit_card'},
+                {id = 'j_grm_precious_joker'},
+                {id = 'sk_grm_receipt_1'},
+                {id = 'sk_grm_sticky_3'},
+            },
+            banned_tags = {
+            },
+            banned_other = {
+                {id = 'bl_ox', type = 'blind'},
+                {id = 'bl_tooth', type = 'blind'},
+            }
+        },
+    }
+)
+
+table.insert(G.CHALLENGES,#G.CHALLENGES+1,
+    {name = 'Overflow',
+        id = 'c_overflow',
+        rules = {
+            custom = {
+            },
+            modifiers = {
+                {id = 'hands', value = 1},
+                {id = 'discards', value = 3},
+            }
+        },
+        jokers = { 
+            {id = 'j_joker'},   
+        },
+        consumeables = {
+        },
+        vouchers = {
+        },
+        skills = {
+            {id = 'sk_grm_holdover_1'},
+            {id = 'sk_grm_holdover_2'},
+            {id = 'sk_grm_holdover_3'},
+            {id = 'sk_grm_ocean_2'},
+        },
+        deck = {
+            type = 'Challenge Deck',
+        },
+        restrictions = {
+            banned_cards = {
+                {id = 'sk_grm_ocean_3'},
+                {id = 'sk_grm_dexterity'},
+                {id = 'v_grabber'},
+                {id = 'v_nacho_tong'},
+                {id = 'j_burglar'},
+                {id = 'v_wasteful'},
+                {id = 'v_recyclomancy'},
+                {id = 'j_drunkard'},
+                {id = 'j_merry_andy'},
+            },
+            banned_tags = {
+            },
+            banned_other = {
+                {id = 'bl_needle', type = 'blind'},
+                {id = 'bl_water', type = 'blind'},
             }
         },
     }
