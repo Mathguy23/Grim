@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6
+--- VERSION: 1.2.6a
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -635,6 +635,9 @@ function get_skills(during_game)
                     end
                 end
             end
+            if j.class and G and G.GAME and G.GAME.grim_class and G.GAME.grim_class.class then
+                valid = false
+            end
             if valid then
                 shown_skills[layer][#shown_skills[layer] + 1] = j.key
             end
@@ -650,6 +653,9 @@ function refresh_skill_menu_skills(minor_reset)
     offsets[3] = G.GAME.skill_tree_data[3].offset
     G.GAME.skill_tree_data = get_skills(true)
     if minor_reset then
+        G.GAME.skill_tree_data[1].offset = offsets[1]
+        G.GAME.skill_tree_data[2].offset = offsets[2]
+        G.GAME.skill_tree_data[3].offset = offsets[3]
         return
     end
     for i = 1, 3 do
@@ -805,8 +811,8 @@ function learn_skill(card, direct_, debuffing, free)
             ease_ante(-1, true)
             if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-                fix_ante_scaling()
             end
+            fix_ante_scaling()
         end
     elseif key == "sk_grm_strike_3" then
         G.GAME.scaling_multipliers.strike = 1.2
@@ -827,19 +833,15 @@ function learn_skill(card, direct_, debuffing, free)
             return true end }))
     elseif key == "sk_grm_chime_1" then
         if not debuffing then
-            ease_ante(-1, true)
-            if skill_active("sk_grm_stake_3") then
-                G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-                fix_ante_scaling()
-            end
+            ease_ante(-1)
         end
     elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
         G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
         ease_ante(-1, true)
         if skill_active("sk_grm_stake_3") then
             G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-            fix_ante_scaling()
         end
+        fix_ante_scaling()
     elseif key == "sk_grm_cl_hoarder" then
         G.hand:change_size(-1)
         G.GAME.grim_class.hoarder = true
@@ -1302,15 +1304,15 @@ function calculate_skill(skill, context)
             ease_ante(-1, true)
             if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-                fix_ante_scaling(true)
             end
+            fix_ante_scaling(true)
         elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
             G.GAME.reset_antes3[context.current_ante] = true
             ease_ante(-1, true)
             if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-                fix_ante_scaling(true)
             end
+            fix_ante_scaling(true)
         elseif skill == "sk_grm_stake_3" then
             G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
             fix_ante_scaling(true)
@@ -4150,7 +4152,6 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
                 {id = 'j_satellite'},
                 {id = 'j_credit_card'},
                 {id = 'j_grm_precious_joker'},
-                {id = 'sk_grm_receipt_1'},
                 {id = 'sk_grm_sticky_3'},
             },
             banned_tags = {

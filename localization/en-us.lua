@@ -225,7 +225,7 @@ return {
                 name = "Fortunate III",
                 text = {
                     "{C:attention}The Wheel of Fortune{}",
-                    "is {C:green}guarenteed{} to apply",
+                    "is {C:green}gaurenteed{} to apply",
                     "an {C:attention}edition{}"
                 }
             },
