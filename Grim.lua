@@ -1297,7 +1297,7 @@ function calculate_skill(skill, context)
         elseif skill == "sk_grm_receipt_3" then
             if (G.GAME.blind_on_deck == "Boss") then
                 if to_big then
-                    if G.GAME.dollars < to_big(0) then
+                    if to_big(G.GAME.dollars) < to_big(0) then
                         ease_dollars(-G.GAME.dollars)
                     end
                 else
