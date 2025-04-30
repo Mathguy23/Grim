@@ -2724,8 +2724,16 @@ match_indent = true
 target = 'functions/common_events.lua'
 pattern = '''G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod'''
 position = 'after'
-payload = '''if mod ~= 0 then
-    fix_ante_scaling(nil, G.GAME.round_resets.ante - mod, G.GAME.round_resets.ante)
+payload = '''if (mod ~= 0) then
+    if to_big == nil then
+        if G.GAME.chips - G.GAME.blind.chips < 0 then
+            fix_ante_scaling(nil, G.GAME.round_resets.ante - mod, G.GAME.round_resets.ante)
+        end
+    else
+        if to_big(G.GAME.chips) - to_big(G.GAME.blind.chips) < to_big(0) then
+            fix_ante_scaling(nil, G.GAME.round_resets.ante - mod, G.GAME.round_resets.ante)
+        end
+    end
 end'''
 match_indent = true
 
