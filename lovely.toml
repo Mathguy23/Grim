@@ -2098,9 +2098,16 @@ G.E_MANAGER:add_event(Event({
     func = function()
         G.E_MANAGER:add_event(Event({
         func = function()
-            if (G.GAME.chips < G.GAME.blind.chips) and G.GAME.modifiers["blind_attack"] then
-                do_attack("pre_draw_hand")
-                do_attack("pre_draw")
+            if to_big then
+                if (to_big(G.GAME.chips) < to_big(G.GAME.blind.chips)) and G.GAME.modifiers["blind_attack"] then
+                    do_attack("pre_draw_hand")
+                    do_attack("pre_draw")
+                end
+            else
+                if (G.GAME.chips < G.GAME.blind.chips) and G.GAME.modifiers["blind_attack"] then
+                    do_attack("pre_draw_hand")
+                    do_attack("pre_draw")
+                end
             end
             G.GAME.blind_attack = random_attack()
             return true
@@ -2710,4 +2717,34 @@ position = 'at'
 payload = '''if not G.GAME.modifiers.rental_full_price then
     if self.ability.rental then self.cost = 1 end
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''G.GAME.round_resets.ante = G.GAME.round_resets.ante + mod'''
+position = 'after'
+payload = '''if (mod ~= 0) then
+    if to_big == nil then
+        if G.GAME.chips - G.GAME.blind.chips < 0 then
+            fix_ante_scaling(nil, G.GAME.round_resets.ante - mod, G.GAME.round_resets.ante)
+        end
+    else
+        if to_big(G.GAME.chips) - to_big(G.GAME.blind.chips) < to_big(0) then
+            fix_ante_scaling(nil, G.GAME.round_resets.ante - mod, G.GAME.round_resets.ante)
+        end
+    end
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/common_events.lua'
+pattern = '''config.saved and'''
+position = 'after'
+payload = '''(G.GAME.ease_3_saved) and {n=G.UIT.C, config={padding = 0.05, align = 'cm'}, nodes={
+    {n=G.UIT.R, config={align = 'cm'}, nodes={
+        {n=G.UIT.O, config={object = DynaText({string = {' '..localize('ph_ease_3')..' '}, colours = {G.C.BLUE}, shadow = true, pop_in = 0, scale = 0.5*scale, silent = true})}}
+    }}
+}} or config.saved and'''
 match_indent = true

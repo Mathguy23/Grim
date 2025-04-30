@@ -1567,7 +1567,8 @@ return {
             k_ancient_pack = "古老禮包",
             boss_blind = "Boss Blind",
             showdown_blind = "Showdown Blind",
-            k_skills_cap = "SKILLS"
+            k_skills_cap = "SKILLS",
+            ph_ease_3 = "Saved by Ease III",
         },
         v_text = {
             ch_c_no_hand_discard_reset = {"{C:blue}出牌次數{}及{C:red}棄牌次數{}不會自動重設"},

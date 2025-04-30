@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6
+--- VERSION: 1.2.6d
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -635,6 +635,9 @@ function get_skills(during_game)
                     end
                 end
             end
+            if j.class and G and G.GAME and G.GAME.grim_class and G.GAME.grim_class.class then
+                valid = false
+            end
             if valid then
                 shown_skills[layer][#shown_skills[layer] + 1] = j.key
             end
@@ -650,6 +653,9 @@ function refresh_skill_menu_skills(minor_reset)
     offsets[3] = G.GAME.skill_tree_data[3].offset
     G.GAME.skill_tree_data = get_skills(true)
     if minor_reset then
+        G.GAME.skill_tree_data[1].offset = offsets[1]
+        G.GAME.skill_tree_data[2].offset = offsets[2]
+        G.GAME.skill_tree_data[3].offset = offsets[3]
         return
     end
     for i = 1, 3 do
@@ -704,8 +710,9 @@ function get_skill_layer(direct_)
     return math.min(3, tier)
 end
 
-function fix_ante_scaling(do_blind)
+function fix_ante_scaling(do_blind, orig_ante, new_ante)
     local result = 1
+    G.GAME.round_resets.blind_ante = new_ante
     for i, j in pairs(G.GAME.scaling_multipliers) do
         result = result * j
     end
@@ -714,7 +721,12 @@ function fix_ante_scaling(do_blind)
     G.GAME.starting_params.ante_scaling = result * G.GAME.base_ante_scaling
     local mult = 0.01 * math.max(1,math.floor(G.GAME.starting_params.ante_scaling / orig * 100))
     if not do_blind and G.GAME.blind and G.GAME.blind.chips and G.GAME.blind.chip_text then
-        G.GAME.blind.chips = math.floor(G.GAME.blind.chips * mult)
+        if orig_ante and new_ante then
+            local ante_mult = (get_blind_amount(new_ante) / get_blind_amount(orig_ante) + 0.00000001)
+            mult = mult * ante_mult
+        end
+        local blind_result = (G.GAME.blind.chips * mult) - (G.GAME.blind.chips * mult)%(10^math.floor(math.log10(G.GAME.blind.chips * mult)-1))
+        G.GAME.blind.chips = math.floor(blind_result)
         G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
     end
 end
@@ -802,11 +814,11 @@ function learn_skill(card, direct_, debuffing, free)
         ease_hands_played(-1)
         if ((G.GAME.round_resets.ante) % 3 == 0) and not G.GAME.reset_antes3[G.GAME.round_resets.ante] then
             G.GAME.reset_antes3[G.GAME.round_resets.ante] = true
-            ease_ante(-1, true)
+            ease_ante(-1)
             if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-                fix_ante_scaling()
             end
+            fix_ante_scaling()
         end
     elseif key == "sk_grm_strike_3" then
         G.GAME.scaling_multipliers.strike = 1.2
@@ -827,19 +839,16 @@ function learn_skill(card, direct_, debuffing, free)
             return true end }))
     elseif key == "sk_grm_chime_1" then
         if not debuffing then
-            ease_ante(-1, true)
-            if skill_active("sk_grm_stake_3") then
-                G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-                fix_ante_scaling()
-            end
+            ease_ante(-1)
+            fix_ante_scaling()
         end
     elseif key == "sk_grm_chime_2" and ((G.GAME.round_resets.ante) % 4 == 0) and not G.GAME.reset_antes2[G.GAME.round_resets.ante] then
         G.GAME.reset_antes2[G.GAME.round_resets.ante] = true
-        ease_ante(-1, true)
+        ease_ante(-1)
         if skill_active("sk_grm_stake_3") then
             G.GAME.scaling_multipliers.stake = 1.3 ^ G.GAME.round_resets.ante
-            fix_ante_scaling()
         end
+        fix_ante_scaling()
     elseif key == "sk_grm_cl_hoarder" then
         G.hand:change_size(-1)
         G.GAME.grim_class.hoarder = true
@@ -1275,8 +1284,10 @@ function calculate_skill(skill, context)
     if context.end_of_round then
         if skill == "sk_grm_ease_3" and context.game_over then
             if G.GAME.chips >= (G.GAME.blind.chips * 0.75) then
+                G.GAME.ease_3_saved = true
                 return true
             end
+            G.GAME.ease_3_saved = nil
         elseif skill == "sk_grm_holdover_1" then
             G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
             G.GAME.holdover.discards = math.min(skill_active("sk_grm_holdover_3") and 6 or 3, G.GAME.current_round.discards_left)
@@ -1286,7 +1297,7 @@ function calculate_skill(skill, context)
         elseif skill == "sk_grm_receipt_3" then
             if (G.GAME.blind_on_deck == "Boss") then
                 if to_big then
-                    if G.GAME.dollars < to_big(0) then
+                    if to_big(G.GAME.dollars) < to_big(0) then
                         ease_dollars(-G.GAME.dollars)
                     end
                 else
@@ -1299,18 +1310,18 @@ function calculate_skill(skill, context)
     elseif context.ante_mod then
         if skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
             G.GAME.reset_antes2[context.current_ante] = true
-            ease_ante(-1, true)
+            ease_ante(-1)
             if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-                fix_ante_scaling(true)
             end
+            fix_ante_scaling(true)
         elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
             G.GAME.reset_antes3[context.current_ante] = true
-            ease_ante(-1, true)
+            ease_ante(-1)
             if skill_active("sk_grm_stake_3") then
                 G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-                fix_ante_scaling(true)
             end
+            fix_ante_scaling(true)
         elseif skill == "sk_grm_stake_3" then
             G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
             fix_ante_scaling(true)
@@ -4150,7 +4161,6 @@ table.insert(G.CHALLENGES,#G.CHALLENGES+1,
                 {id = 'j_satellite'},
                 {id = 'j_credit_card'},
                 {id = 'j_grm_precious_joker'},
-                {id = 'sk_grm_receipt_1'},
                 {id = 'sk_grm_sticky_3'},
             },
             banned_tags = {
