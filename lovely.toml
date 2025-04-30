@@ -2098,9 +2098,16 @@ G.E_MANAGER:add_event(Event({
     func = function()
         G.E_MANAGER:add_event(Event({
         func = function()
-            if (G.GAME.chips < G.GAME.blind.chips) and G.GAME.modifiers["blind_attack"] then
-                do_attack("pre_draw_hand")
-                do_attack("pre_draw")
+            if to_big then
+                if (to_big(G.GAME.chips) < to_big(G.GAME.blind.chips)) and G.GAME.modifiers["blind_attack"] then
+                    do_attack("pre_draw_hand")
+                    do_attack("pre_draw")
+                end
+            else
+                if (G.GAME.chips < G.GAME.blind.chips) and G.GAME.modifiers["blind_attack"] then
+                    do_attack("pre_draw_hand")
+                    do_attack("pre_draw")
+                end
             end
             G.GAME.blind_attack = random_attack()
             return true
