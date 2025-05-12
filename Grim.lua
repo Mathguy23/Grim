@@ -4945,10 +4945,14 @@ SMODS.DrawSteps['center'].func = function(self, layer)
 end
 
 local function meets_prereqs(skills, prereqs)
-    for _, r in ipairs(prereqs) do
-        if not skills[r] then return false end
+    if skills then
+        for _, r in ipairs(prereqs) do
+            if not skills[r] then return false end
+        end
+        return true
     end
-    return true
+
+    return false
 end
 
 local can_learn = function(skill)
@@ -5030,7 +5034,7 @@ set_alerts = function()
             if #learnable_skills > 0 and #learnable_skills ~= #G.GAME.learnable_skills then
                 G.GAME.skill_alert = UIBox { definition = create_UIBox_card_alert({ text = tostring(#learnable_skills) }), config = { align = "tri", offset = { x = 0.05, y = -0.05 }, major = G.HUD:get_UIE_by_ID('skill_tree_button') } }
                 G.GAME.skill_alert.states.collide.can = false
-            elseif #learnable_skills == 0 and G.GAME.skill_alert then
+            elseif #learnable_skills == 0 and G.GAME.skill_alert and G.GAME.skill_alert.remove then
                 G.GAME.skill_alert:remove()
                 G.GAME.skill_alert = nil
             end
