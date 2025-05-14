@@ -450,6 +450,10 @@ payload = '''elseif _c.set == 'Skill' then
             loc_vars = {G.GAME.probabilities.normal}
         elseif _c.name == "Starry III" then
             loc_vars = {G.GAME.probabilities.normal}
+        elseif _c.name == "M I" then
+            loc_vars = {number_format(3 * G.GAME.hands["Pair"].played)}
+        elseif _c.name == "Blind Breaker" then
+            loc_vars = {1 + G.GAME.current_round.hands_played * 0.2}
         end
     end
     if card and card.area and card.area.config.skill_table and card.config.center and not G.GAME.skills[card.config.center.key] then
@@ -1181,8 +1185,15 @@ payload = '''if G.shop then
     if skill_active("sk_grm_shelf_2") and G.GAME.grm_did_purchase then
         change_shop_size(2)
     end
-    G.GAME.grm_did_purchase = false
 end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''G.CONTROLLER.locks.toggle_shop = nil'''
+position = 'after'
+payload = '''G.GAME.grm_did_purchase = false'''
 match_indent = true
 
 [[patches]]
@@ -1252,9 +1263,9 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
 position = 'before'
-payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big(7)) then
+payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big()) then
     ease_dollars(math.floor(G.GAME.current_round.dollars/4))
-elseif not to_big and skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 7) then
+elseif not to_big and skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 4) then
     ease_dollars(math.floor(G.GAME.current_round.dollars/4))
 end
 add_skill_xp(cash_out_xp or 0, nil, nil, true)
@@ -1375,7 +1386,7 @@ pattern = '''--Joker Effects'''
 position = 'before'
 payload = '''for i=1, #G.consumeables.cards do
     local _card = G.consumeables.cards[i]
-    local effects = eval_card(_card, {cardarea = G.consumeables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true})
+    local effects = eval_card(_card, {cardarea = G.consumeables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true}).playing_card
     if _card.playing_card then
         local ii = 'talisman_check_key'
         effects[ii] = {}
@@ -2504,30 +2515,31 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
         new_context[i] = j
     end
     local effects = {eval_card(card, new_context)}
+    local new_table = {}
     if (context.cardarea == G.play) then
         if card:is_suit("Hearts") and G.GAME.special_levels and (G.GAME.special_levels["heart"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["hearts"].chips, mult = G.GAME.stellar_levels["hearts"].mult}
         end
         if card:is_suit("Diamonds") and G.GAME.special_levels and (G.GAME.special_levels["diamond"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["diamonds"].chips, mult = G.GAME.stellar_levels["diamonds"].mult}
         end
         if card:is_suit("Spades") and G.GAME.special_levels and (G.GAME.special_levels["spade"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["spades"].chips, mult = G.GAME.stellar_levels["spades"].mult}
         end
         if card:is_suit("Clubs") and G.GAME.special_levels and (G.GAME.special_levels["club"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["clubs"].chips, mult = G.GAME.stellar_levels["clubs"].mult}
         end
         if card:is_suit("bunc_Fleurons") and G.GAME.special_levels and (G.GAME.special_levels["fleuron"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["fleurons"].chips, mult = G.GAME.stellar_levels["fleurons"].mult}
         end
         if card:is_suit("bunc_Halberds") and G.GAME.special_levels and (G.GAME.special_levels["halberd"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["halberds"].chips, mult = G.GAME.stellar_levels["halberds"].mult}
         end
         if card.grim_facing_down and G.GAME.special_levels and (G.GAME.special_levels["face_down"] > 0) then
-            effects[#effects + 1] = {{x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}}
+            new_table[#new_table + 1] = {x_mult = 1 + (G.GAME.special_levels["face_down"] * 0.15)}
         end
         if card.grim_facing_down and (G.GAME.area == "Midnight") and (G.GAME.current_round.hands_left == 0) then
-            effects[#effects + 1] = {{x_mult = G.GAME.area_data.midnight_mult}}
+            new_table[#new_table + 1] = {x_mult = G.GAME.area_data.midnight_mult}
         end
         local has_suit = false
         for i0, j in pairs(SMODS.Suits) do
@@ -2537,10 +2549,10 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
             end
         end
         if not has_suit and G.GAME.special_levels and (G.GAME.special_levels["nothing"] > 0) then
-            effects[#effects + 1] = {{chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}}
+            new_table[#new_table + 1] = {chips = G.GAME.stellar_levels["nothings"].chips, mult = G.GAME.stellar_levels["nothings"].mult}
         end
         if card.ability and card.ability.grm_status and card.ability.grm_status.rocky and not card.debuff then
-            effects[#effects + 1] = {extra = { func = function()
+            new_table[#new_table + 1] = {extra = { func = function()
                 for i, j in ipairs(context.scoring_hand) do
                     j.ability.perma_bonus = j.ability.perma_bonus or 0
                     j.ability.perma_bonus = j.ability.perma_bonus + 3
@@ -2556,6 +2568,7 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
             card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.5}}})
         end
     end
+    effects[1]['grim_stuff'] = new_table
     return unpack(effects)
 end'''
 match_indent = true
@@ -2747,4 +2760,26 @@ payload = '''(G.GAME.ease_3_saved) and {n=G.UIT.C, config={padding = 0.05, align
         {n=G.UIT.O, config={object = DynaText({string = {' '..localize('ph_ease_3')..' '}, colours = {G.C.BLUE}, shadow = true, pop_in = 0, scale = 0.5*scale, silent = true})}}
     }}
 }} or config.saved and'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''draw_card(G.hand, G.play, 1, 'up', true, card, nil, true)'''
+position = 'before'
+payload = '''if (area == G.shop_jokers) or (area == G.shop_vouchers) or (area == G.shop_booster) then
+    if G.shop and skill_active("sk_grm_shelf_2") and not G.GAME.grm_did_purchase then
+        card.immune_to_removal = true
+        change_shop_size(-2)
+    end
+    G.GAME.grm_did_purchase = true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = '''if context.repetition then'''
+position = 'at'
+payload = '''if context.repetition and context.repetition_only then'''
 match_indent = true

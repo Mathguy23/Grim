@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6d
+--- VERSION: 1.2.6e
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -315,7 +315,7 @@ end
 function added_menu_button(scale)
     local mods = {
         GRM = false,
-        NH = false,
+        CON = false,
     }
     local num = 0
     for i, j in pairs(mods) do
@@ -340,7 +340,7 @@ function added_menu_button(scale)
                 {n=G.UIT.T, config={text = localize('b_skill_tree_2'), scale = 1*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true, focus_args = {button = G.F_GUIDE and 'guide' or 'back', orientation = 'bm'}, func = 'set_button_pip'}}
             }}
         }}
-    elseif mods.NH then
+    elseif mods.CON then
         return {n=G.UIT.R, config={align = "cm", minh = 1.2, minw = 1.5,padding = 0.05, r = 0.1, hover = true, colour = G.C.BLUE, button = "your_contracts", shadow = true}, nodes={
             {n=G.UIT.R, config={align = "cm", padding = 0, maxw = 1.4}, nodes={
                 {n=G.UIT.T, config={text = localize('b_contracts'), scale = 0.8*scale, colour = G.C.UI.TEXT_LIGHT, shadow = true}}
@@ -1237,7 +1237,7 @@ function create_UI_learned_skills()
         skills_page = nil
     end
     G.areas = {}
-    area_table = {}
+    local area_table = {}
     for j = 3, 1, -1 do
         table.insert(area_table, skill_tree_row_UI(j))
     end
@@ -2593,11 +2593,9 @@ SMODS.Sticker {
         end
         if (card.ability.set == "Joker") then
             badges.grm_void = 1
-            total = total + 1
-        end
-        if (card.ability.set == "Joker") then
-            badges.grm_accomplishment = 1
-            total = total + 1
+            badges.grm_window_shopper = 1
+            badges.grm_accomplishment = 0.8
+            total = total + 2.8
         end
         if (card.ability.set == "Default") or (card.ability.set == "Enhanced") then
             badges.grm_accomplishment_playing_card = 1
@@ -2715,6 +2713,35 @@ SMODS.Sticker {
     end,
     calculate = function(self, card, context)
         if context.playing_card_end_of_round and (context.cardarea == G.hand) and not context.individual and not context.repetition and G.GAME.blind.boss and not (G.GAME.blind.config and G.GAME.blind.config.bonus) then
+            add_skill_xp(30, card)
+        end
+    end
+}
+
+SMODS.Sticker {
+    key = 'window_shopper',
+    rate = 0,
+    pos = { x = 2, y = 1 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers2',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Window Shopping Badge",
+        text = {
+            "{C:purple}+30{} XP at end at",
+            "{C:attention}shop{} without buying",
+            "anything"
+        },
+        label = "Window Shopper"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+    calculate = function(self, card, context)
+        if context.ending_shop and not context.blueprint and not G.GAME.grm_did_purchase then
             add_skill_xp(30, card)
         end
     end
@@ -4706,46 +4733,6 @@ G.FUNCS.your_nullified_blinds_page = function(args)
     use_page = nil
 end
 
-local old_eval_card = eval_card
-function eval_card(card, context)
-    local result_table = {old_eval_card(card, context)}
-    if (card.area == G.consumeables) and card.playing_card and context.joker_main and result_table[1] and (type(result_table[1]) == "table") then
-        local ret, post_trig = result_table[1], result_table[2]
-        ret.playing_card = ret.playing_card or {}
-        local chips = card:get_chip_bonus()
-        if chips > 0 then 
-            ret.playing_card.chips = chips
-        end
-    
-        local mult = card:get_chip_mult()
-        if mult > 0 then 
-            ret.playing_card.mult = mult
-        end
-    
-        local xp = card:get_chip_xp(context)
-        if xp > 0 then 
-            ret.playing_card.xp = xp
-        end
-    
-        local x_mult = card:get_chip_x_mult(context)
-        if x_mult > 0 then 
-            ret.playing_card.x_mult = x_mult
-        end
-    
-        local p_dollars = card:get_p_dollars()
-        if p_dollars > 0 then 
-            ret.playing_card.p_dollars = p_dollars
-        end
-    
-        local edition = card:get_edition(context)
-        if edition then 
-            ret.playing_card.edition = edition
-        end
-        return ret, post_trig
-    end
-    return unpack(result_table)
-end
-
 local old_set_sprites = Card.set_sprites
 function Card:set_sprites(_center, _front)
     old_set_sprites(self, _center, _front)
@@ -4833,6 +4820,38 @@ function Card:set_sprites(_center, _front)
             _center:set_sprites(self, _front)
         end
     end
+end
+
+SMODS.trigger_effects = function(effects, card)
+    local ret = {}
+    for _, effect_table in ipairs(effects) do
+        -- note: these sections happen to be mutually exclusive:
+        -- Playing cards in scoring
+        for _, key in ipairs({'playing_card', 'enhancement', 'edition', 'seals'}) do
+            SMODS.calculate_effect_table_key(effect_table, key, card, ret)
+        end
+        for _, key in ipairs(SMODS.Sticker.obj_buffer) do
+            SMODS.calculate_effect_table_key(effect_table, key, card, ret)
+        end
+        -- Playing cards at end of round
+        SMODS.calculate_effect_table_key(effect_table, 'end_of_round', card, ret)
+        -- Jokers
+        for _, key in ipairs({'jokers', 'retriggers'}) do
+            SMODS.calculate_effect_table_key(effect_table, key, card, ret)
+        end
+        -- todo: might want to move these keys to a customizable list/lists
+        if effect_table.trading_cards then
+            for i = 1, #effect_table.trading_cards do
+                SMODS.calculate_effect_table_key(effect_table.trading_cards, i, card, ret)
+            end
+        end
+        if effect_table.grim_stuff then
+            for i = 1, #effect_table.grim_stuff do
+                SMODS.calculate_effect_table_key(effect_table.grim_stuff, i, card, ret)
+            end
+        end
+    end
+    return ret
 end
 
 local old_debuff = SMODS.DrawSteps['debuff'].func

@@ -438,7 +438,7 @@ return {
                     "{C:legendary,E:1}傳奇的{}{C:attention}小丑牌{}可能會",
                     "出現在商店或擴充包中",
                 }
-            }
+            },
             sk_grm_dexterity = {
                 name = "Dexterity",
                 text = {
@@ -1590,7 +1590,7 @@ return {
             xp_interest = "每擁有#2#點經驗值給予#1#經驗值的利息(#3# max)"
         },
         challenge_names = {
-            c_astro_dungeon = "太空地牢"
+            c_astro_dungeon = "太空地牢",
             c_bankruptcy = "Bankruptcy",
             c_overflow = "Overflow",
         },
