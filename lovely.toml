@@ -1386,7 +1386,7 @@ pattern = '''--Joker Effects'''
 position = 'before'
 payload = '''for i=1, #G.consumeables.cards do
     local _card = G.consumeables.cards[i]
-    local effects = eval_card(_card, {cardarea = G.consumeables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true}).playing_card
+    local effects = eval_card(_card, {cardarea = G.consumeables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, main_scoring = true}).playing_card
     if effects and _card.playing_card then
         local ii = 'talisman_check_key'
         effects[ii] = {}
@@ -2567,6 +2567,16 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
             card.ability.perma_mult = card.ability.perma_mult + G.GAME.special_levels["debuff"] * 0.5
             card_eval_status_text(card, 'jokers', nil, nil, nil, {colour = G.C.FILTER, message = localize{type='variable',key='a_mult',vars={G.GAME.special_levels["debuff"] * 0.5}}})
         end
+    end
+    if (context.cardarea == G.consumeables) and card.playing_card and context.main_scoring then
+        local new_context2 = {no_extra_grm = true}
+        for i, j in pairs(context) do
+            new_context2[i] = j
+        end
+        new_context2.cardarea = G.play
+        local effects2 = {eval_card(card, new_context2)}
+        print(effects2[1].playing_card)
+        effects[1]['playing_card'] = effects2[1].playing_card or {}
     end
     effects[1]['grim_stuff'] = new_table
     return unpack(effects)
