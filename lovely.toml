@@ -1387,7 +1387,7 @@ position = 'before'
 payload = '''for i=1, #G.consumeables.cards do
     local _card = G.consumeables.cards[i]
     local effects = eval_card(_card, {cardarea = G.consumeables, full_hand = G.play.cards, scoring_hand = scoring_hand, scoring_name = text, poker_hands = poker_hands, joker_main = true}).playing_card
-    if _card.playing_card then
+    if effects and _card.playing_card then
         local ii = 'talisman_check_key'
         effects[ii] = {}
         local reps = {1}
