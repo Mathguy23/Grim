@@ -1263,7 +1263,7 @@ match_indent = true
 target = 'functions/button_callbacks.lua'
 pattern = '''ease_dollars(G.GAME.current_round.dollars)'''
 position = 'before'
-payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big()) then
+payload = '''if to_big and skill_active("sk_grm_receipt_1") and (to_big(G.GAME.current_round.dollars) >= to_big(4)) then
     ease_dollars(math.floor(G.GAME.current_round.dollars/4))
 elseif not to_big and skill_active("sk_grm_receipt_1") and (G.GAME.current_round.dollars >= 4) then
     ease_dollars(math.floor(G.GAME.current_round.dollars/4))
@@ -2469,6 +2469,18 @@ payload = '''if card and skill_active("sk_mf_painted_3") and card.ability and (c
     dont_dissolve = true
     area:remove_from_highlighted(card)
     play_sound('cardSlide2', nil, 0.3)
+    activate_nc = true
+end'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = 'functions/button_callbacks.lua'
+pattern = '''if card.area and (not nc or card.area == G.pack_cards) then card.area:remove_card(card) end'''
+position = 'after'
+payload = '''if card and skill_active("sk_mf_painted_3") and card.ability and (card.ability.set == "Colour") and activate_nc then
+    activate_nc = nil
+    nc = true
 end'''
 match_indent = true
 
