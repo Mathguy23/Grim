@@ -1627,10 +1627,6 @@ return {
                 name = 'The Titan',
                 text = { 'Only final hand', 'allowed' }
             },
-            bl_grm_titan = {
-                name = 'The Titan',
-                text = { 'Only final hand', 'allowed' }
-            },
             bl_grm_triton = {
                 name = 'The Triton',
                 text = { 'Discarding sets', "money to $-100" }
@@ -1641,7 +1637,7 @@ return {
             },
             bl_grm_forgotten = {
                 name = 'The Forgotten',
-                text = { '1 Skill debuffed', 'each hand' }
+                text = { '#1# in 2 Skills debuffed', 'this round' }
             },
         },
         Enhanced = {

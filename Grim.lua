@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6h
+--- VERSION: 1.2.6i
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -934,6 +934,8 @@ function learn_skill(card, direct_, debuffing, free)
         end
     elseif key == "sk_grm_dash_2" then
         G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+        G.GAME.starting_params.play_limit = G.GAME.starting_params.play_limit + 1
+        SMODS.update_hand_limit_text(true)
     elseif key == "sk_grm_midas_touch" then
         for i, j in ipairs(G.playing_cards) do
             j:set_ability(G.P_CENTERS.m_gold)
@@ -1088,6 +1090,8 @@ function unlearn_skill(direct_, debuffing)
         SMODS.change_voucher_limit(-1)
     elseif key == "sk_grm_dash_2" then
         G.hand.config.highlighted_limit = G.hand.config.highlighted_limit - 1
+        G.GAME.starting_params.play_limit = G.GAME.starting_params.play_limit - 1
+        SMODS.update_hand_limit_text(true)
     elseif key == "sk_cry_m_3" then
         for i = 1, #G.jokers.cards do
             local card = G.jokers.cards[i]
@@ -2293,13 +2297,17 @@ SMODS.Blind	{
         end
     end,
     defeat = function(self)
-        if G.GAME.blind.debuffed_skills and G.GAME.blind.debuffed_skills[1] then
-            debuff_skill(false, G.GAME.blind.debuffed_skills[1], true)
+        if G.GAME.blind.debuffed_skills then
+            for i, j in ipairs(G.GAME.blind.debuffed_skills) do
+                debuff_skill(false, j, true)
+            end
         end
     end,
     disable = function(self)
-        if G.GAME.blind.debuffed_skills and G.GAME.blind.debuffed_skills[1] then
-            debuff_skill(false, G.GAME.blind.debuffed_skills[1], true)
+        if G.GAME.blind.debuffed_skills then
+            for i, j in ipairs(G.GAME.blind.debuffed_skills) do
+                debuff_skill(false, j, true)
+            end
         end
     end,
     set_blind = function(self, reset, silent)
@@ -2311,40 +2319,18 @@ SMODS.Blind	{
                     table.insert(pool, i)
                 end
             end
-            if #pool > 0 then
-                local skill = pseudorandom_element(pool, pseudoseed('forgot'))
-                debuff_skill(true, skill)
-                G.GAME.blind.debuffed_skills = {skill}
-            end
-            G.GAME.blind.prepped = false
-        end
-    end,
-    drawn_to_hand = function(self)
-        if G.GAME.blind.prepped then
-            local old_skill = nil
-            if G.GAME.blind.debuffed_skills and G.GAME.blind.debuffed_skills[1] then
-                old_skill = G.GAME.blind.debuffed_skills[1]
-                debuff_skill(false, G.GAME.blind.debuffed_skills[1], true)
-            end
-            G.GAME.blind.debuffed_skills = {}
-            local pool = {}
-            for i, j in pairs(G.GAME.skills) do
-                if not G.P_SKILLS[i].class and (i ~= old_skill) then
-                    table.insert(pool, i)
+            for i = 1, #pool do
+                if pseudorandom(pseudoseed('forgot')) < G.GAME.probabilities.normal/2 then
+                    debuff_skill(true, pool[i])
+                    table.insert(G.GAME.blind.debuffed_skills, pool[i])
                 end
             end
-            if #pool > 0 then
-                local skill = pseudorandom_element(pool, pseudoseed('forgot'))
-                debuff_skill(true, skill)
-                G.GAME.blind.debuffed_skills = {skill}
-            elseif old_skill then
-                debuff_skill(true, old_skill)
-                G.GAME.blind.debuffed_skills = {old_skill}
-            end
             G.GAME.blind.prepped = false
         end
     end,
-    discovered = true,
+    loc_vars = function(self)
+        return {vars = {G.GAME.probabilities.normal}}
+    end,
 }
 
 SMODS.Blind	{
