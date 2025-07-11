@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6i
+--- VERSION: 1.2.6j
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -193,6 +193,8 @@ SMODS.Element = SMODS.Consumable:extend {
                 G.hand.highlighted[i].ability.grm_status = G.hand.highlighted[i].ability.grm_status or {}
                 if (self.status == "gust") and not G.hand.highlighted[i].ability.grm_status.gust and not G.hand.highlighted[i].debuff then
                     G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+                    G.GAME.starting_params.play_limit = G.GAME.starting_params.play_limit + 1
+                    SMODS.update_hand_limit_text(true)
                 end
                 G.E_MANAGER:add_event(Event({trigger = 'after',delay = 0.1,func = function() 
                     if self.status == "gust" then
@@ -2969,9 +2971,12 @@ SMODS.Spectral {
                     if (status == "gust") then
                         G.hand.cards[i].ability.grm_status.debuff_flag = G.hand.cards[i].debuff
                     end
+                    local old_gust = G.hand.cards[i].ability.grm_status.gust
                     G.hand.cards[i].ability.grm_status[status] = true
-                    if (status == "gust") and G.hand.cards[i].highlighted and not G.hand.cards[i].debuff then
+                    if (status == "gust") and G.hand.cards[i].highlighted and not G.hand.cards[i].debuff and not old_gust then
                         G.hand.config.highlighted_limit = G.hand.config.highlighted_limit + 1
+                        G.GAME.starting_params.play_limit = G.GAME.starting_params.play_limit + 1
+                        SMODS.update_hand_limit_text(true)
                     end
                 return true end }))
             end
@@ -4648,13 +4653,9 @@ function pokermon_selected_joker(self)
         if self.etype and (energy_matches(v, self.etype, true) or self.etype == "Trans") then
             if type(v.ability.extra) == "table" then
                 if can_increase_energy(v) then
-                    for l, data in pairs(v.ability.extra) do
-                        if type(data) == "number" then
-                            for m, name in ipairs(energy_whitelist) do
-                                if l == name then
-                                    return v
-                                end
-                            end
+                    for name, _ in pairs(energy_values) do
+                        if type(v.ability.extra[name]) == "number" then
+                            return v
                         end
                     end
                 end
