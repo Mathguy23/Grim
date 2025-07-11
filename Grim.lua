@@ -1145,6 +1145,9 @@ function debuff_skill(debuff_, direct_)
 end
 
 function skill_active(direct_)
+    if not G.GAME.skills then
+        return false
+    end
     if G.GAME.skill_debuffs and G.GAME.skill_debuffs[direct_] then
         return false
     end
