@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6h
+--- VERSION: 1.2.6k
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -2749,7 +2749,7 @@ SMODS.Element {
         return {vars = {(card and card.ability.max_highlighted or 5), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_lead')}}}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2770,7 +2770,7 @@ SMODS.Element {
         }}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2796,7 +2796,7 @@ SMODS.Element {
         }}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2822,7 +2822,7 @@ SMODS.Element {
         }}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2845,7 +2845,7 @@ SMODS.Element {
         return {vars = {}}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2867,7 +2867,7 @@ SMODS.Element {
         return {vars = {}}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2889,7 +2889,7 @@ SMODS.Element {
         return {vars = {}}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2911,7 +2911,7 @@ SMODS.Element {
         return {vars = {}}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2936,7 +2936,7 @@ SMODS.Element {
         }}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -2958,7 +2958,7 @@ SMODS.Element {
         return {vars = {(card and card.ability.max_highlighted or 5), localize{type = 'name_text', set = 'Enhanced', key = (card and card.ability.mod_conv or 'm_grm_iron')}}}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3023,7 +3023,7 @@ SMODS.Spectral {
         return true
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3051,8 +3051,8 @@ SMODS.Enhancement {
     config = {m_type = "Common"},
     pos = {x = 1, y = 1},
     in_pool = function(self)
-        if G.GAME.skills then
-            return false, {allow_duplicates = false}
+        if not G.GAME.skills then
+            return false
         end
         return G.GAME.skills.sk_grm_cl_alchemist
     end
@@ -3079,8 +3079,8 @@ SMODS.Enhancement {
     config = {x_mult = 1.2, m_type = "Common"},
     pos = {x = 0, y = 2},
     in_pool = function(self)
-        if G.GAME.skills then
-            return false, {allow_duplicates = false}
+        if not G.GAME.skills then
+            return false
         end
         return G.GAME.skills.sk_grm_cl_alchemist
     end,
@@ -3116,7 +3116,7 @@ SMODS.Booster {
         return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3137,7 +3137,7 @@ SMODS.Booster {
         return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3158,7 +3158,7 @@ SMODS.Booster {
         return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3179,7 +3179,7 @@ SMODS.Booster {
         return {set = "Elemental", area = G.pack_cards, skip_materialize = true, soulable = true}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3216,8 +3216,8 @@ SMODS.Tag {
         return {}
     end,
     in_pool = function(self)
-        if G.GAME.skills then
-            return false, {allow_duplicates = false}
+        if not G.GAME.skills then
+            return false
         end
         return G.GAME.skills.sk_grm_cl_alchemist
     end,
@@ -3233,7 +3233,7 @@ SMODS.Joker {
     cost = 4,
     config = {extra = {mult = 12, value = 2}},
     in_pool = function(self)
-        if G.GAME.skills then
+        if not G.GAME.skills then
             return false, {allow_duplicates = false}
         end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
@@ -3276,6 +3276,9 @@ SMODS.Joker {
     config = {},
     blueprint_compat = false,
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
     end,
     loc_vars = function(self, info_queue, card)
@@ -3294,6 +3297,9 @@ SMODS.Joker {
     config = {dollar = 1},
     blueprint_compat = false,
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_alchemist, {allow_duplicates = false}
     end,
     loc_vars = function(self, info_queue, card)
@@ -3454,6 +3460,9 @@ SMODS.Lunar {
         }}
     end,
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
     end,
     bulk_use = function(self, card, area, copier, number)
@@ -3483,6 +3492,9 @@ SMODS.Spectral {
         return true
     end,
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_astronaut, {allow_duplicates = false}
     end,
 }
@@ -3526,6 +3538,9 @@ SMODS.Stellar {
     pos = {x = 1, y = 1},
     config = {suit = "Nothings", mult = 0.15, chips = 6},
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_orbit_2, {allow_duplicates = false}
     end
 }
@@ -3575,6 +3590,9 @@ SMODS.Spectral {
         return true
     end,
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_astronaut, {allow_duplicates = false}
     end,
 }
@@ -3865,6 +3883,9 @@ SMODS.Joker {
     cost = 4,
     config = {extra = {Xmult = 4}},
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
     end,
     loc_vars = function(self, info_queue, card)
@@ -3894,6 +3915,9 @@ SMODS.Joker {
     perishable_compat = false,
     config = {extra = {x_mult = 1, x_mult_mod = 0.75}},
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
     end,
     loc_vars = function(self, info_queue, card)
@@ -3928,6 +3952,9 @@ SMODS.Joker {
     cost = 5,
     config = {extra = 1},
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_explorer, {allow_duplicates = false}
     end,
     loc_vars = function(self, info_queue, card)
@@ -4054,6 +4081,9 @@ SMODS.Joker {
     blueprint_compat = false,
     config = {},
     in_pool = function(self)
+        if not G.GAME.skills then
+            return false, {allow_duplicates = false}
+        end
         return G.GAME.skills.sk_grm_cl_hoarder, {allow_duplicates = false}
     end,
 }
