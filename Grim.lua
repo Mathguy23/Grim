@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.6k
+--- VERSION: 1.2.7
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -796,7 +796,7 @@ function learn_skill(card, direct_, debuffing, free)
         fix_ante_scaling()
         G.E_MANAGER:add_event(Event({func = function()
             if G.jokers then 
-                G.jokers.config.card_limit = G.jokers.config.card_limit + 3
+                G.jokers.config.card_limit = G.jokers.config.card_limit + 2
             end
         return true end }))
     elseif key == "sk_grm_scarce_1" then
@@ -964,6 +964,12 @@ function learn_skill(card, direct_, debuffing, free)
         end
         G.GAME.orig_tarot_rate = G.GAME.tarot_rate
         G.GAME.orig_planet_rate = G.GAME.planet_rate
+    elseif key == "sk_grm_magica_2" then
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+            return true end }))
     elseif key == "sk_ortalab_starry_3" then
         G.GAME.orig_Zodiac_Reduction = G.GAME.Ortalab_Zodiac_Reduction
         G.GAME.Ortalab_Zodiac_Reduction = 0
@@ -1017,7 +1023,7 @@ function unlearn_skill(direct_, debuffing)
         fix_ante_scaling()
         G.E_MANAGER:add_event(Event({func = function()
             if G.jokers then 
-                G.jokers.config.card_limit = G.jokers.config.card_limit - 3
+                G.jokers.config.card_limit = G.jokers.config.card_limit - 2
             end
         return true end }))
     elseif key == "sk_grm_scarce_1" then
@@ -1118,6 +1124,12 @@ function unlearn_skill(direct_, debuffing)
         G.GAME.orig_tarot_rate = nil
         G.GAME.planet_rate = G.GAME.orig_planet_rate
         G.GAME.orig_planet_rate = nil
+    elseif key == "sk_grm_magica_2" then
+        G.E_MANAGER:add_event(Event({func = function()
+            for k, v in pairs(G.I.CARD) do
+                if v.set_cost then v:set_cost() end
+            end
+            return true end }))
     elseif key == "sk_ortalab_starry_3" then
         G.GAME.Ortalab_Zodiac_Reduction = G.GAME.orig_Zodiac_Reduction
         G.GAME.orig_Zodiac_Reduction = nil
@@ -2551,7 +2563,7 @@ SMODS.Sticker {
     colour = HEX '97F1EF',
     badge_colour = HEX '97F1EF',
     should_apply = function(self, card, center, area)
-        if (pseudorandom('badges') < 0.5) then
+        if (pseudorandom('badges') < (card.ability.eternal and 0.8 or 0.5)) then
             return
         end
         return (area == G.shop_jokers) or (area == G.pack_cards)
@@ -2571,7 +2583,7 @@ SMODS.Sticker {
         local total = 0
         if not card.ability.eternal and ((card.ability.set == "Joker") or (card.ability.set == "Default") or (card.ability.set == "Enhanced")) then
             if not card.config.center.eternal_compat then
-                badges.grm_destruct = 2
+                badges.grm_destruct = 4
                 total = total + 2
             elseif card.ability.name == "Glass Card" then
                 badges.grm_destruct = 2
@@ -2584,12 +2596,10 @@ SMODS.Sticker {
         if (card.ability.set == "Joker") then
             badges.grm_void = 1
             badges.grm_window_shopper = 1
-            badges.grm_accomplishment = 0.8
-            total = total + 2.8
-        end
-        if (card.ability.set == "Default") or (card.ability.set == "Enhanced") then
-            badges.grm_accomplishment_playing_card = 1
-            total = total + 1
+            badges.grm_incinerate = 1
+            badges.grm_passing = 1
+            badges.grm_counterplay = 1
+            total = total + 5
         end
         if total > 0 then
             local rng = pseudorandom('badges') * total
@@ -2642,7 +2652,7 @@ SMODS.Sticker {
     loc_txt = {
         name = "Void Badge",
         text = {
-            "{C:purple}+15{} XP at {C:attention}end of round{}",
+            "{C:purple}+12{} XP at {C:attention}end of round{}",
             "per {C:attention}empty{} joker slot",
         },
         label = "Void"
@@ -2652,61 +2662,61 @@ SMODS.Sticker {
     end,
 }
 
-SMODS.Sticker {
-    key = 'accomplishment',
-    rate = 0,
-    pos = { x = 1, y = 0 },
-    colour = HEX '8a71e1',
-    badge_colour = HEX '8a71e1',
-    atlas = 'stickers2',
-    should_apply = function(self, card, center, area)
-        return false
-    end,
-    loc_txt = {
-        name = "Accomplishment Badge",
-        text = {
-            "{C:purple}+75{} XP at end",
-            "of {C:attention}ante{}",
-        },
-        label = "Accomplishment"
-    },
-    loc_vars = function(self, info_queue, card)
-        return {vars = {}}
-    end,
-    calculate = function(self, card, context)
-        if context.end_of_round and not context.individual and not context.repetition and not context.blueprint and G.GAME.blind.boss and not (G.GAME.blind.config and  G.GAME.blind.config.bonus) then
-            add_skill_xp(75, card)
-        end
-    end
-}
+-- SMODS.Sticker {
+--     key = 'accomplishment',
+--     rate = 0,
+--     pos = { x = 1, y = 0 },
+--     colour = HEX '8a71e1',
+--     badge_colour = HEX '8a71e1',
+--     atlas = 'stickers2',
+--     should_apply = function(self, card, center, area)
+--         return false
+--     end,
+--     loc_txt = {
+--         name = "Accomplishment Badge",
+--         text = {
+--             "{C:purple}+75{} XP at end",
+--             "of {C:attention}ante{}",
+--         },
+--         label = "Accomplishment"
+--     },
+--     loc_vars = function(self, info_queue, card)
+--         return {vars = {}}
+--     end,
+--     calculate = function(self, card, context)
+--         if context.end_of_round and not context.individual and not context.repetition and not context.blueprint and G.GAME.blind.boss and not (G.GAME.blind.config and  G.GAME.blind.config.bonus) then
+--             add_skill_xp(75, card)
+--         end
+--     end
+-- }
 
-SMODS.Sticker {
-    key = 'accomplishment_playing_card',
-    rate = 0,
-    pos = { x = 1, y = 0 },
-    colour = HEX '8a71e1',
-    badge_colour = HEX '8a71e1',
-    atlas = 'stickers2',
-    should_apply = function(self, card, center, area)
-        return false
-    end,
-    loc_txt = {
-        name = "Accomplishment Badge",
-        text = {
-            "+{C:purple}30{} XP if held in",
-            "hand at end of {C:attention}ante{}"
-        },
-        label = "Accomplishment"
-    },
-    loc_vars = function(self, info_queue, card)
-        return {vars = {}}
-    end,
-    calculate = function(self, card, context)
-        if context.playing_card_end_of_round and (context.cardarea == G.hand) and not context.individual and not context.repetition and G.GAME.blind.boss and not (G.GAME.blind.config and G.GAME.blind.config.bonus) then
-            add_skill_xp(30, card)
-        end
-    end
-}
+-- SMODS.Sticker {
+--     key = 'accomplishment_playing_card',
+--     rate = 0,
+--     pos = { x = 1, y = 0 },
+--     colour = HEX '8a71e1',
+--     badge_colour = HEX '8a71e1',
+--     atlas = 'stickers2',
+--     should_apply = function(self, card, center, area)
+--         return false
+--     end,
+--     loc_txt = {
+--         name = "Accomplishment Badge",
+--         text = {
+--             "+{C:purple}30{} XP if held in",
+--             "hand at end of {C:attention}ante{}"
+--         },
+--         label = "Accomplishment"
+--     },
+--     loc_vars = function(self, info_queue, card)
+--         return {vars = {}}
+--     end,
+--     calculate = function(self, card, context)
+--         if context.playing_card_end_of_round and (context.cardarea == G.hand) and not context.individual and not context.repetition and G.GAME.blind.boss and not (G.GAME.blind.config and G.GAME.blind.config.bonus) then
+--             add_skill_xp(30, card)
+--         end
+--     end
+-- }
 
 SMODS.Sticker {
     key = 'window_shopper',
@@ -2733,6 +2743,97 @@ SMODS.Sticker {
     calculate = function(self, card, context)
         if context.ending_shop and not context.blueprint and not G.GAME.grm_did_purchase then
             add_skill_xp(30, card)
+        end
+    end
+}
+
+SMODS.Sticker {
+    key = 'incinerate',
+    rate = 0,
+    pos = { x = 0, y = 1 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers2',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Incinerate Badge",
+        text = {
+            "{C:purple}+3{} XP for each",
+            "{C:red}discard{} at end of",
+            "{C:attention}round{}"
+        },
+        label = "Incinerate"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+}
+
+SMODS.Sticker {
+    key = 'passing',
+    rate = 0,
+    pos = { x = 0, y = 2 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers2',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Passing Badge",
+        text = {
+            "{C:purple}+30{} XP when you",
+            "skip the {C:attention}Big Blind{}",
+        },
+        label = "Passing"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+    calculate = function(self, card, context)
+        if context.skip_blind and not context.blueprint and (G.GAME.blind_on_deck == 'Boss') then
+            add_skill_xp(30, card)
+        end
+    end
+}
+
+SMODS.Sticker {
+    key = 'counterplay',
+    rate = 0,
+    pos = { x = 1, y = 2 },
+    colour = HEX '8a71e1',
+    badge_colour = HEX '8a71e1',
+    atlas = 'stickers2',
+    should_apply = function(self, card, center, area)
+        return false
+    end,
+    loc_txt = {
+        name = "Counterplay Badge",
+        text = {
+            "{C:purple}+7{} XP when you",
+            "play the {C:attention}least{} played",
+            "{C:attention}poker hand{}"
+        },
+        label = "Counterplay"
+    },
+    loc_vars = function(self, info_queue, card)
+        return {vars = {}}
+    end,
+    calculate = function(self, card, context)
+        if context.joker_main and context.scoring_name and not context.blueprint then
+            local valid = true
+            local count = G.GAME.hands[context.scoring_name].played - 1
+            for k, v in pairs(G.GAME.hands) do
+                if v.visible and ((v.played or 0) < count) then
+                    valid = false
+                    break
+                end
+            end
+            if valid then
+                add_skill_xp(7, card)
+            end
         end
     end
 }
@@ -4344,7 +4445,10 @@ function Card:calculate_xp_bonus()
             total = total + obj:calc_xp_bonus(self)
         end
         if self.ability.grm_void then
-            total = total + 15 * (G.jokers.config.card_limit - #G.jokers.cards)
+            total = total + 12 * (G.jokers.config.card_limit - #G.jokers.cards)
+        end
+        if self.ability.grm_incinerate then
+            total = total + 3 * G.GAME.current_round.discards_left
         end
         if total ~= 0 then
             return total

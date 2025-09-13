@@ -168,7 +168,7 @@ return {
                 name = "賭注 III",
                 text = {
                     "每個{C:attention}底注{}{C:blue}+30%{}盲注要求分數",
-                    "小丑牌欄位{C:attention}+3{}",
+                    "小丑牌欄位{C:attention}+2{}",
                     "{C:inactive}（目前為{C:blue}#1#{C:inactive}）{}",
                 }
             },

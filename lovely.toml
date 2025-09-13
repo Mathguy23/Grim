@@ -754,7 +754,7 @@ if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') the
 G.GAME.pack_choices = G.GAME.pack_choices * 2
 end
 if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
-    G.GAME.pack_choices = G.GAME.pack_choices + 2
+    G.GAME.pack_choices = G.GAME.pack_choices + 1
 end
 if skill_active("sk_grm_gravity_1") and self.ability.name:find('Celestial') then
     G.GAME.pack_choices = G.GAME.pack_choices + 1
@@ -764,8 +764,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = 'card.lua'
-pattern = '''local _size = self.ability.extra'''
-position = 'after'
+pattern = '''for i = 1, _size do'''
+position = 'before'
 payload = '''if skill_active("sk_grm_mystical_1") and self.ability.name:find('Arcana') then
     _size = _size + 1
 end
@@ -779,7 +779,7 @@ if skill_active("sk_grm_gravity_1") and self.ability.name:find('Celestial') then
     _size = _size + 2
 end
 if skill_active("sk_grm_ghost_3") and self.ability.name:find('Spectral') then
-    _size = _size + 4
+    _size = _size + 1
 end
 if skill_active("sk_ortalab_magica_2") and self.ability.name:find('loteria') then
     _size = _size * 2
@@ -960,12 +960,12 @@ payload = '''if skill_active("sk_grm_fortunate_2") and skill_active("sk_grm_fort
 elseif skill_active("sk_grm_fortunate_2") then
     edition = poll_edition('wheel_of_fortune', nil, false, true, {'e_polychrome', 'e_holo'})
 elseif skill_active("sk_grm_fortunate_1") then
-    edition = poll_edition('wheel_of_fortune', nil, false, true)
+    edition = poll_edition('wheel_of_fortune', nil, false, true, {'e_negative', 'e_polychrome', 'e_holo', 'e_foil'})
     if edition == 'e_negative' then
         check_for_unlock({type = 'skill_check', fortune_check = true})
     end
 else
-    edition = poll_edition('wheel_of_fortune', nil, true, true)
+    edition = poll_edition('wheel_of_fortune', nil, true, true, {'e_polychrome', 'e_holo', 'e_foil'})
 end'''
 match_indent = true
 
@@ -2603,7 +2603,6 @@ payload = '''if context.main_scoring and not context.no_extra_grm then
         end
         new_context2.cardarea = G.play
         local effects2 = {eval_card(card, new_context2)}
-        print(effects2[1].playing_card)
         effects[1]['playing_card'] = effects2[1].playing_card or {}
     end
     effects[1]['grim_stuff'] = new_table

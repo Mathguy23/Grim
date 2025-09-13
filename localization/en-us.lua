@@ -180,7 +180,7 @@ return {
                 text = {
                     "{C:blue}x1.3{} Blind Size for ",
                     "each {C:attention}Ante{}.",
-                    "{C:attention}+3{} joker slots",
+                    "{C:attention}+2{} joker slots",
                     "{C:inactive}(Currently {C:blue}#1#{C:inactive}){}",
                 }
             },
@@ -296,7 +296,7 @@ return {
                 name = "Ghost III",
                 text = {
                     "All {C:spectral}Spectral Packs{} have",
-                    "{C:attention}+4{} options and {C:attention}+2{} choices",
+                    "{C:attention}+2{} options and {C:attention}+1{} choice",
                     "{X:purple,C:white} X0.5 {} to all XP sources",
                 }
             },
