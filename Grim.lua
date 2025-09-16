@@ -5142,5 +5142,106 @@ SMODS.DrawSteps['center'].func = function(self, layer)
         end
     end
 end
+
+local function meets_prereqs(skills, prereqs)
+    if skills then
+        for _, r in ipairs(prereqs) do
+            if not skills[r] then return false end
+        end
+        return true
+    end
+
+    return false
+end
+
+local can_learn = function(skill)
+    if skill and skill.key then
+        if skill.class and G.GAME.grim_class.class then
+            return false
+        end
+
+        if (
+                (
+                    not G.GAME.free_skills or
+                    (G.GAME.free_skills <= 0)
+                ) and
+                (
+                    G.GAME.skills[skill.key] or
+                    (
+                        not skill.xp_req or
+                        (
+                            G.GAME.skill_xp < math.floor(skill.xp_req * (G.GAME.grim_xp_discount or 1))
+                        )
+                    ) or
+                    (
+                        skill.token_req and
+                        (G.GAME.legendary_tokens < skill.token_req)
+                    )
+                )
+            ) then
+            return false
+        end
+
+        if (skill.key == "sk_grm_prestige_1") and (not G.GAME.xp_spent or (G.GAME.xp_spent < 2500)) then
+            return false
+        end
+
+        if skill.prereq and not meets_prereqs(skills, skill.prereq) then
+            return false
+        end
+    end
+
+    return true
+end
+
+local last_skill_xp = nil
+local last_flat_game_skills_length = nil
+
+local old_set_alerts = set_alerts
+
+set_alerts = function()
+    if G.HUD and G.GAME then
+        if not G.GAME.learnable_skills then
+            G.GAME.learnable_skills = {}
+        end
+
+        local flat_game_skills = SMODS.merge_lists(get_skills(true));
+
+        local flat_game_skills_length = #flat_game_skills
+
+        if (
+                G.GAME.skill_xp ~= last_skill_xp or
+                flat_game_skills_length ~= last_flat_game_skills_length
+            ) then
+            last_skill_xp = G.GAME.skill_xp
+            last_flat_game_skills_length = flat_game_skills_length
+
+            local skill_lookup = {}
+
+            for _, name in ipairs(flat_game_skills) do
+                skill_lookup[name] = true
+            end
+
+            local learnable_skills = {}
+
+            for key, skill in pairs(G.P_SKILLS) do
+                if skill_lookup[key] and can_learn(skill) then
+                    learnable_skills[#learnable_skills + 1] = skill
+                end
+            end
+
+            if #learnable_skills > 0 and #learnable_skills ~= #G.GAME.learnable_skills then
+                G.GAME.skill_alert = UIBox { definition = create_UIBox_card_alert({ text = tostring(#learnable_skills) }), config = { align = "tri", offset = { x = 0.05, y = -0.05 }, major = G.HUD:get_UIE_by_ID('skill_tree_button') } }
+                G.GAME.skill_alert.states.collide.can = false
+            elseif #learnable_skills == 0 and G.GAME.skill_alert and G.GAME.skill_alert.remove then
+                G.GAME.skill_alert:remove()
+                G.GAME.skill_alert = nil
+            end
+        end
+    end
+
+    old_set_alerts()
+end
+
 ----------------------------------------------
 ------------MOD CODE END----------------------
