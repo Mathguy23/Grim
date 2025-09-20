@@ -4,7 +4,7 @@
 --- PREFIX: grm
 --- MOD_AUTHOR: [mathguy]
 --- MOD_DESCRIPTION: Skill trees in Balatro! Thank you to Mr.Clover for Taiwanese Mandarin translation
---- VERSION: 1.2.7a
+--- VERSION: 1.2.7b
 ----------------------------------------------
 ------------MOD CODE -------------------------
 
@@ -20,6 +20,8 @@ if not IncantationAddons then
         MassUseIndividual = {}
 	} 
 end
+
+to_big = to_big or function(x) return x end
 
 table.insert(IncantationAddons.Stacking, "Lunar")
 table.insert(IncantationAddons.Stacking, "Stellar")
@@ -1303,7 +1305,7 @@ function calculate_skill(skill, context)
     end
     if context.end_of_round then
         if skill == "sk_grm_ease_3" and context.game_over then
-            if G.GAME.chips >= (G.GAME.blind.chips * 0.75) then
+            if to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips * 0.75) then
                 G.GAME.ease_3_saved = true
                 return true
             end
