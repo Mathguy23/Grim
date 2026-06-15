@@ -382,7 +382,9 @@ pattern = '''elseif _c.set == 'Joker' then'''
 position = 'before'
 payload = '''elseif _c.set == 'Skill' then
     if card and card.config and G.P_SKILLS[card.config.center.key].discovered then
-        if _c.name == "Mystical III" then
+		if _c.loc_vars then
+			return _c.loc_vars(_c, info_queue, card)
+        elseif _c.name == "Mystical III" then
             info_queue[#info_queue+1] = G.P_CENTERS["c_fool"]
         elseif _c.name == "Stake III" then
             loc_vars = {tonumber(string.format("%.2f", (1.3 ^ (G.GAME.round_resets.ante or 0))))}

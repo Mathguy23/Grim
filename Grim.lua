@@ -978,6 +978,8 @@ function learn_skill(card, direct_, debuffing, free)
     elseif key == "sk_grm_holdover_1" then
         G.GAME.round_resets.discards = G.GAME.round_resets.discards - 1
         ease_discard(-1)
+	elseif obj.on_learn then
+		obj.on_learn(card, debuffing, free)
     end
 end
 
@@ -1138,6 +1140,8 @@ function unlearn_skill(direct_, debuffing)
     elseif key == "sk_grm_holdover_1" then
         G.GAME.round_resets.discards = G.GAME.round_resets.discards + 1
         ease_discard(1)
+	elseif obj.on_unlearn then
+		obj.on_unlearn(card, debuffing, free)
     end
 end
 
@@ -1303,132 +1307,137 @@ function calculate_skill(skill, context)
     if not skill_active(skill) then
         return
     end
-    if context.end_of_round then
-        if skill == "sk_grm_ease_3" and context.game_over then
-            if to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips * 0.75) then
-                G.GAME.ease_3_saved = true
-                return true
-            end
-            G.GAME.ease_3_saved = nil
-        elseif skill == "sk_grm_holdover_1" then
-            G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
-            G.GAME.holdover.discards = math.min(skill_active("sk_grm_holdover_3") and 6 or 3, G.GAME.current_round.discards_left)
-        elseif skill == "sk_grm_holdover_2" then
-            G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
-            G.GAME.holdover.hands = math.min(skill_active("sk_grm_holdover_3") and 4 or 2, G.GAME.current_round.hands_left)
-        elseif skill == "sk_grm_receipt_3" then
-            if (G.GAME.blind_on_deck == "Boss") then
-                if to_big then
-                    if to_big(G.GAME.dollars) < to_big(0) then
-                        ease_dollars(-G.GAME.dollars)
-                    end
-                else
-                    if G.GAME.dollars < 0 then
-                        ease_dollars(-G.GAME.dollars)
-                    end
-                end
-            end
-        end
-    elseif context.ante_mod then
-        if skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
-            G.GAME.reset_antes2[context.current_ante] = true
-            ease_ante(-1)
-            if skill_active("sk_grm_stake_3") then
-                G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-            end
-            fix_ante_scaling(true)
-        elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
-            G.GAME.reset_antes3[context.current_ante] = true
-            ease_ante(-1)
-            if skill_active("sk_grm_stake_3") then
-                G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-            end
-            fix_ante_scaling(true)
-        elseif skill == "sk_grm_stake_3" then
-            G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
-            fix_ante_scaling(true)
-        end
-    elseif context.using_consumeable then
-        if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.3) then
-            local fool = SMODS.create_card {key = "c_fool", no_edition = true}
-            fool:set_edition('e_negative')
-            fool:add_to_deck()
-            G.consumeables:emplace(fool)
-        elseif skill == "sk_ortalab_magica_3" and (context.card.ability.set == 'Loteria') and (context.card.config.center.key == 'c_ortalab_lot_rooster') and (pseudorandom("magical") < 0.8) then
-            if (context.card.area == G.consumeables) or (#G.consumeables.cards < G.consumeables.config.card_limit) then
-                local rooster = SMODS.create_card {key = "c_ortalab_lot_rooster", no_edition = true}
-                rooster:add_to_deck()
-                G.consumeables:emplace(rooster)
-            end
-        end
-    elseif context.modify_base then
-        if skill == "sk_grm_strike_1" then
-            if G.GAME.round_resets.ante <= 0 then
-                return context.chips, context.mult, false
-            end
-            return context.chips, (context.mult + 2 * G.GAME.round_resets.ante), true
-        elseif skill == "sk_grm_strike_2" then
-            return (context.chips + 50), context.mult, true
-        elseif skill == "sk_grm_gravity_2" then
-            local _handname, _played, _order = 'High Card', -1, 100
-            for k, v in pairs(G.GAME.hands) do
-                if v.played > _played or (v.played == _played and _order > v.order) then 
-                    _played = v.played
-                    _handname = k
-                end
-            end
-            if context.scoring_name == _handname then
-                return context.chips, (context.mult * 2), true
-            else
-                return context.chips, context.mult, false
-            end
-        elseif skill == "sk_grm_strike_3" then
-            local balance = math.floor((context.chips + context.mult) / 2)
-            return balance, balance, true
-        elseif skill == "sk_cry_m_1" then
-            local bonus = 3 * G.GAME.hands["Pair"].played
-            return context.chips + bonus, context.mult, (bonus > 0)
-        else
-            return context.chips, context.mult, false
-        end
-    elseif context.reroll_shop then
-
-    elseif context.pre_discard then
-        if skill == "sk_grm_ocean_2" and (G.GAME.current_round.discards_left == 1) then
-            ease_hands_played(1)
-        end
-    elseif context.before then
-        if skill == "sk_grm_skillful_2" then
-            local level = G.GAME.hands[context.scoring_name].level
-            if (to_big and to_big(level) or level) > (to_big and to_big(0) or 0) then
-                add_skill_xp(to_number and to_number(math.min(40, level)) or math.min(40, level), G.deck)
-            end
-        elseif skill == "sk_grm_ocean_3" and (G.GAME.current_round.hands_played == 0) then
-            ease_discard(2)
-        end
-    elseif context.ending_shop then
-        if skill == "sk_grm_ghost_2" then
-            add_tag(Tag("tag_ethereal"))
-        end
-    elseif context.selecting_blind then
-        if (skill == "sk_grm_dexterity") and (G.GAME.skill_xp >= 100) then
-            ease_hands_played(math.max(0, math.floor(G.GAME.skill_xp / 100)))
-        elseif skill == "sk_grm_holdover_2" then
-            if G.GAME.holdover then
-                if G.GAME.holdover.hands and (G.GAME.holdover.hands > 0) then
-                    ease_hands_played(G.GAME.holdover.hands)
-                    G.GAME.holdover.hands = 0
-                end
-            end
-        elseif skill == "sk_grm_holdover_1" then
-            if G.GAME.holdover then
-                if G.GAME.holdover.discards and (G.GAME.holdover.discards > 0) then
-                    ease_discard(G.GAME.holdover.discards)
-                    G.GAME.holdover.discards = 0
-                end
-            end
-        end
-    end
+	if G.P_SKILLS[skill].calculate then
+		G.P_SKILLS[skill].calculate(context)
+		return true
+	else
+    	if context.end_of_round then
+        	if skill == "sk_grm_ease_3" and context.game_over then
+            	if to_big(G.GAME.chips) >= to_big(G.GAME.blind.chips * 0.75) then
+                	G.GAME.ease_3_saved = true
+                	return true
+            	end
+            	G.GAME.ease_3_saved = nil
+        	elseif skill == "sk_grm_holdover_1" then
+            	G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
+            	G.GAME.holdover.discards = math.min(skill_active("sk_grm_holdover_3") and 6 or 3, G.GAME.current_round.discards_left)
+        	elseif skill == "sk_grm_holdover_2" then
+            	G.GAME.holdover = G.GAME.holdover or {discards = 0, hands = 0}
+            	G.GAME.holdover.hands = math.min(skill_active("sk_grm_holdover_3") and 4 or 2, G.GAME.current_round.hands_left)
+        	elseif skill == "sk_grm_receipt_3" then
+            	if (G.GAME.blind_on_deck == "Boss") then
+                	if to_big then
+                    	if to_big(G.GAME.dollars) < to_big(0) then
+                        	ease_dollars(-G.GAME.dollars)
+                    	end
+                	else
+                    	if G.GAME.dollars < 0 then
+                        	ease_dollars(-G.GAME.dollars)
+                    	end
+                	end
+            	end
+        	end
+    	elseif context.ante_mod then
+        	if skill == "sk_grm_chime_2" and ((context.current_ante) % 4 == 0) and not G.GAME.reset_antes2[context.current_ante] then
+            	G.GAME.reset_antes2[context.current_ante] = true
+            	ease_ante(-1)
+            	if skill_active("sk_grm_stake_3") then
+                	G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+            	end
+            	fix_ante_scaling(true)
+        	elseif skill == "sk_grm_chime_3" and ((context.current_ante) % 3 == 0) and not G.GAME.reset_antes3[context.current_ante] then
+            	G.GAME.reset_antes3[context.current_ante] = true
+            	ease_ante(-1)
+            	if skill_active("sk_grm_stake_3") then
+                	G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+            	end
+            	fix_ante_scaling(true)
+        	elseif skill == "sk_grm_stake_3" then
+            	G.GAME.scaling_multipliers.stake = 1.3 ^ context.current_ante
+            	fix_ante_scaling(true)
+        	end
+    	elseif context.using_consumeable then
+        	if skill == "sk_grm_mystical_3" and (context.card.ability.set == 'Tarot') and not (context.card.ability.name == 'The Fool') and (pseudorandom("mystical") < 0.3) then
+            	local fool = SMODS.create_card {key = "c_fool", no_edition = true}
+            	fool:set_edition('e_negative')
+            	fool:add_to_deck()
+            	G.consumeables:emplace(fool)
+        	elseif skill == "sk_ortalab_magica_3" and (context.card.ability.set == 'Loteria') and (context.card.config.center.key == 'c_ortalab_lot_rooster') and (pseudorandom("magical") < 0.8) then
+            	if (context.card.area == G.consumeables) or (#G.consumeables.cards < G.consumeables.config.card_limit) then
+                	local rooster = SMODS.create_card {key = "c_ortalab_lot_rooster", no_edition = true}
+                	rooster:add_to_deck()
+                	G.consumeables:emplace(rooster)
+            	end
+        	end
+    	elseif context.modify_base then
+        	if skill == "sk_grm_strike_1" then
+            	if G.GAME.round_resets.ante <= 0 then
+                	return context.chips, context.mult, false
+            	end
+            	return context.chips, (context.mult + 2 * G.GAME.round_resets.ante), true
+        	elseif skill == "sk_grm_strike_2" then
+            	return (context.chips + 50), context.mult, true
+        	elseif skill == "sk_grm_gravity_2" then
+            	local _handname, _played, _order = 'High Card', -1, 100
+            	for k, v in pairs(G.GAME.hands) do
+                	if v.played > _played or (v.played == _played and _order > v.order) then 
+                    	_played = v.played
+                    	_handname = k
+                	end
+            	end
+            	if context.scoring_name == _handname then
+                	return context.chips, (context.mult * 2), true
+            	else
+                	return context.chips, context.mult, false
+            	end
+        	elseif skill == "sk_grm_strike_3" then
+            	local balance = math.floor((context.chips + context.mult) / 2)
+            	return balance, balance, true
+        	elseif skill == "sk_cry_m_1" then
+            	local bonus = 3 * G.GAME.hands["Pair"].played
+            	return context.chips + bonus, context.mult, (bonus > 0)
+        	else
+            	return context.chips, context.mult, false
+        	end
+    	elseif context.reroll_shop then
+	
+    	elseif context.pre_discard then
+        	if skill == "sk_grm_ocean_2" and (G.GAME.current_round.discards_left == 1) then
+            	ease_hands_played(1)
+        	end
+    	elseif context.before then
+        	if skill == "sk_grm_skillful_2" then
+            	local level = G.GAME.hands[context.scoring_name].level
+            	if (to_big and to_big(level) or level) > (to_big and to_big(0) or 0) then
+                	add_skill_xp(to_number and to_number(math.min(40, level)) or math.min(40, level), G.deck)
+            	end
+        	elseif skill == "sk_grm_ocean_3" and (G.GAME.current_round.hands_played == 0) then
+            	ease_discard(2)
+        	end
+    	elseif context.ending_shop then
+        	if skill == "sk_grm_ghost_2" then
+            	add_tag(Tag("tag_ethereal"))
+        	end
+    	elseif context.selecting_blind then
+        	if (skill == "sk_grm_dexterity") and (G.GAME.skill_xp >= 100) then
+            	ease_hands_played(math.max(0, math.floor(G.GAME.skill_xp / 100)))
+        	elseif skill == "sk_grm_holdover_2" then
+            	if G.GAME.holdover then
+                	if G.GAME.holdover.hands and (G.GAME.holdover.hands > 0) then
+                    	ease_hands_played(G.GAME.holdover.hands)
+                    	G.GAME.holdover.hands = 0
+                	end
+            	end
+        	elseif skill == "sk_grm_holdover_1" then
+            	if G.GAME.holdover then
+                	if G.GAME.holdover.discards and (G.GAME.holdover.discards > 0) then
+                    	ease_discard(G.GAME.holdover.discards)
+                    	G.GAME.holdover.discards = 0
+                	end
+            	end
+        	end
+    	end
+	end
 end
 
 function add_skill_xp(amount, card, message_, no_mod)
@@ -1548,7 +1557,9 @@ function skill_unlock_check(card, args)
         if args.learned_tier == 3 then
             return true
         end
-    end
+    elseif card.check_unlock then 
+		return card.check_unlock(args)
+	end
 end
 
 function leave_area(area)
@@ -3482,7 +3493,7 @@ SMODS.Lunar {
     use = function(self, card, area, copier)
         local rngpick = {}
         for i, j in pairs(G.P_BLINDS) do
-            if j.boss and not G.GAME.nullified_blinds[i] and not G.GAME.banned_keys[i] then
+            if j.boss and not G.GAME.nullified_blinds[i] and not G.GAME.banned_keys[i] and not j.grm_no_nullify then
                 table.insert(rngpick, i)
             end
         end
@@ -4652,6 +4663,13 @@ function moon_row(moon)
         stat_text = loc_vars[1]
         stat_color = G.C.PURPLE
         level = G.GAME.special_levels["grind"] + 1
+	else 
+		loc_vars = G.P_CENTERS[moon].stats_loc_vars or loc_vars 
+		desc_nodes = G.P_CENTERS[moon].stats_desc_nodes or desc_nodes 
+		moon_name = G.P_CENTERS[moon].stats_moon_name or moon_name
+		stat_text = G.P_CENTERS[moon].stats_stat_text or stat_text
+		stat_color = G.P_CENTERS[moon].stats_stat_color or stat_color
+		level = (G.GAME.special_levels[G.P_CENTERS[moon].special_level] or 0) + 1
     end
     return {n=G.UIT.R, config={align = "cm", padding = 0.05, r = 0.1, colour = darken(G.C.JOKER_GREY, 0.1), emboss = 0.05, hover = true, force_focus = true, on_demand_tooltip = {text = desc_nodes}}, nodes={
         {n=G.UIT.C, config={align = "cl", padding = 0, minw = 5}, nodes={
@@ -4673,17 +4691,22 @@ end
 
 function create_UIBox_current_lunar_stats()
     local moons = {
-        moon_row("c_grm_moon"),
+		moon_row("c_grm_moon"),
         moon_row("c_grm_deimos"),
         moon_row("c_grm_callisto"),
         moon_row("c_grm_rhea"),
         moon_row("c_grm_oberon"),
         moon_row("c_grm_proteus"),
-    }
+	}
     if G.GAME.special_levels and G.GAME.special_levels["grind"] > 0 then
         table.insert(moons, moon_row("c_grm_dysnomia"))
     end
-  
+	
+	for k, v in pairs(G.P_CENTERS) do
+    	if v.set and v.set == 'Lunar' and v.add_to_lunar_ui then
+			table.insert(moons, moon_row(v.key))
+		end
+	end
     local t = {n=G.UIT.ROOT, config={align = "cm", minw = 17, minh = 7, padding = 0.1, r = 0.1, colour = G.C.CLEAR}, nodes={
         {n=G.UIT.C, config={align = "cm", padding = 0.04}, nodes=
             moons
@@ -5137,5 +5160,6 @@ SMODS.DrawSteps['center'].func = function(self, layer)
         end
     end
 end
+
 ----------------------------------------------
 ------------MOD CODE END----------------------
